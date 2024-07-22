@@ -1276,6 +1276,7 @@ impl ForkChoice for HeaviestSubtreeForkChoice {
         bank_forks: &RwLock<BankForks>,
     ) -> (Arc<Bank>, Option<Arc<Bank>>) {
         let r_bank_forks = bank_forks.read().unwrap();
+        info!("select forks best overall slot hash:{:?}", self.best_overall_slot());
 
         // BankForks should only contain one valid version of this slot
         (

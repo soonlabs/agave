@@ -2576,7 +2576,7 @@ impl ReplayStage {
         wait_to_vote_slot: Option<Slot>,
     ) {
         let last_voted_slot = tower.last_voted_slot();
-        info!("Refresh last vote on: {:?},", last_voted_slot);
+        info!("Refresh last vote on: {:?} landed slot:{:?},", last_voted_slot, my_latest_landed_vote);
         if last_voted_slot.is_none() {
             return;
         }
@@ -3302,7 +3302,7 @@ impl ReplayStage {
     ) -> bool /* completed a bank */ {
         let active_bank_slots = bank_forks.read().unwrap().active_bank_slots();
         let num_active_banks = active_bank_slots.len();
-        trace!(
+        info!(
             "{} active bank(s) to replay: {:?}",
             num_active_banks,
             active_bank_slots
@@ -3974,7 +3974,7 @@ impl ReplayStage {
                 && switch_fork_decision.can_vote()
             {
                 info!(
-                    "voting: {} {:.1}%",
+                    "select vote and reset forks, voting: {} {:.1}%",
                     candidate_vote_bank.slot(),
                     100.0 * fork_weight
                 );
@@ -4244,7 +4244,7 @@ impl ReplayStage {
                         bank.hash(),
                     ));
                 } else {
-                    debug!(
+                    info!(
                         "validator fork not confirmed {} {}ms {:?}",
                         *slot,
                         duration,
@@ -4341,7 +4341,7 @@ impl ReplayStage {
         generate_new_bank_forks_get_slots_since.stop();
 
         // Filter out what we've already seen
-        trace!("generate new forks {:?}", {
+        info!("generate new forks {:?}", {
             let mut next_slots = next_slots.iter().collect::<Vec<_>>();
             next_slots.sort();
             next_slots

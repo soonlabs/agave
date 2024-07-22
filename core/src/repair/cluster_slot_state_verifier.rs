@@ -801,6 +801,7 @@ fn apply_state_changes(
     // yet.
     let mut not_duplicate_confirmed_frozen_hash = None;
     for state_change in state_changes {
+        info!("apply slot:{:?} state change:{:?}", slot, state_change);
         match state_change {
             ResultingStateChange::BankFrozen(bank_frozen_hash) => {
                 if !fork_choice
