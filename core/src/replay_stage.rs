@@ -2473,7 +2473,7 @@ impl ReplayStage {
                 return GenerateVoteTxResult::Failed;
             }
         }
-        let vote_acFFcount = match bank.get_vote_account(vote_account_pubkey) {
+        let vote_account = match bank.get_vote_account(vote_account_pubkey) {
             None => {
                 warn!(
                     "Vote account {} does not exist.  Unable to vote",
