@@ -2332,7 +2332,7 @@ impl ReplayStage {
         if bank.is_empty() {
             datapoint_info!("replay_stage-voted_empty_bank", ("slot", bank.slot(), i64));
         }
-        trace!("handle votable bank {}", bank.slot());
+        info!("handle votable bank {}", bank.slot());
         let new_root = tower.record_bank_vote(bank);
 
         if let Some(new_root) = new_root {
@@ -2555,6 +2555,7 @@ impl ReplayStage {
         } else {
             vote_signatures.clear();
         }
+        info!("Generate Vote tx wait on slot: {:?}", wait_to_vote_slot);
 
         GenerateVoteTxResult::Tx(vote_tx)
     }
@@ -2573,6 +2574,7 @@ impl ReplayStage {
         voting_sender: &Sender<VoteOp>,
         wait_to_vote_slot: Option<Slot>,
     ) {
+        info!("Refresh last vote on: {:?},", wait_to_vote_slot);
         let last_voted_slot = tower.last_voted_slot();
         if last_voted_slot.is_none() {
             return;
@@ -2678,6 +2680,7 @@ impl ReplayStage {
         voting_sender: &Sender<VoteOp>,
         wait_to_vote_slot: Option<Slot>,
     ) {
+        info!("Push vote on: {:?},", wait_to_vote_slot);
         let mut generate_time = Measure::start("generate_vote");
         let vote_tx_result = Self::generate_vote_tx(
             identity_keypair,
@@ -4266,6 +4269,7 @@ impl ReplayStage {
         epoch_slots_frozen_slots: &mut EpochSlotsFrozenSlots,
         drop_bank_sender: &Sender<Vec<BankWithScheduler>>,
     ) -> Result<(), SetRootError> {
+        info!("Handle new root: {}", new_root);
         bank_forks.read().unwrap().prune_program_cache(new_root);
         let removed_banks = bank_forks.write().unwrap().set_root(
             new_root,
