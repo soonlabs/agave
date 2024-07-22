@@ -426,6 +426,9 @@ impl Tower {
             }
             let start_root = vote_state.root_slot;
 
+            info!("Collect vote lockouts on root:{:?}, stake:{}, last vote:{:?}",
+                start_root, voted_stake, vote_state.last_voted_slot());
+
             // Add the last vote to update the `heaviest_subtree_fork_choice`
             if let Some(last_landed_voted_slot) = vote_state.last_voted_slot() {
                 latest_validator_votes_for_frozen_banks.check_add_vote(
