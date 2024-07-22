@@ -32,7 +32,7 @@ pub mod vote_state_versions;
 pub use vote_state_versions::*;
 
 // Maximum number of votes to keep around, tightly coupled with epoch_schedule::MINIMUM_SLOTS_PER_EPOCH
-pub const MAX_LOCKOUT_HISTORY: usize = 0;
+pub const MAX_LOCKOUT_HISTORY: usize = 1;
 pub const INITIAL_LOCKOUT: usize = 2;
 
 // Maximum number of credits history to keep around
