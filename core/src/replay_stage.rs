@@ -1880,6 +1880,7 @@ impl ReplayStage {
     ) {
         for (pubkey, slot, hash) in gossip_verified_vote_hash_receiver.try_iter() {
             let is_frozen = heaviest_subtree_fork_choice.contains_block(&(slot, hash));
+            info!("Process gossip verified vote hash:{:?} on slot:{:?}, frozen:{:?}", hash, slot, is_frozen);
             // cluster_info_vote_listener will ensure it doesn't push duplicates
             unfrozen_gossip_verified_vote_hashes.add_vote(
                 pubkey,
@@ -3213,6 +3214,8 @@ impl ReplayStage {
                 if let Some(new_frozen_voters) =
                     unfrozen_gossip_verified_vote_hashes.remove_slot_hash(bank.slot(), &bank_hash)
                 {
+                    info!("Unfrozen gossip verified vote hash:${:?} on slot:{:?}, size:{}",
+                        bank_hash, bank.slot(), new_frozen_voters.len());
                     for pubkey in new_frozen_voters {
                         latest_validator_votes_for_frozen_banks.check_add_vote(
                             pubkey,
