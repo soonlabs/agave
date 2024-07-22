@@ -2473,7 +2473,7 @@ impl ReplayStage {
                 return GenerateVoteTxResult::Failed;
             }
         }
-        let vote_account = match bank.get_vote_account(vote_account_pubkey) {
+        let vote_acFFcount = match bank.get_vote_account(vote_account_pubkey) {
             None => {
                 warn!(
                     "Vote account {} does not exist.  Unable to vote",
@@ -2555,7 +2555,7 @@ impl ReplayStage {
         } else {
             vote_signatures.clear();
         }
-        info!("Generate Vote tx wait on slot: {:?}", wait_to_vote_slot);
+        info!("Generate Vote slot: {:?}, hash:{:?}", bank.slot(), blockhash);
 
         GenerateVoteTxResult::Tx(vote_tx)
     }
@@ -2574,8 +2574,8 @@ impl ReplayStage {
         voting_sender: &Sender<VoteOp>,
         wait_to_vote_slot: Option<Slot>,
     ) {
-        info!("Refresh last vote on: {:?},", wait_to_vote_slot);
         let last_voted_slot = tower.last_voted_slot();
+        info!("Refresh last vote on: {:?},", last_voted_slot);
         if last_voted_slot.is_none() {
             return;
         }
@@ -2680,7 +2680,7 @@ impl ReplayStage {
         voting_sender: &Sender<VoteOp>,
         wait_to_vote_slot: Option<Slot>,
     ) {
-        info!("Push vote on: {:?},", wait_to_vote_slot);
+        info!("Push vote on: {:?},", bank.slot());
         let mut generate_time = Measure::start("generate_vote");
         let vote_tx_result = Self::generate_vote_tx(
             identity_keypair,
