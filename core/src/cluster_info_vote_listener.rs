@@ -702,11 +702,13 @@ impl ClusterInfoVoteListener {
                 }
 
                 if reached_threshold_results[0] {
+                    info!("ClusterVote duplicate_confirmed_slot:{:?} gossip:{:?}", slot, is_gossip_vote);
                     if let Some(sender) = duplicate_confirmed_slot_sender {
                         let _ = sender.send(vec![(last_vote_slot, last_vote_hash)]);
                     }
                 }
                 if reached_threshold_results[1] {
+                    info!("ClusterVote optimistic_confirmed_slots:{:?}, gossip:{:?}", slot, is_gossip_vote);
                     new_optimistic_confirmed_slots.push((last_vote_slot, last_vote_hash));
                     // Notify subscribers about new optimistic confirmation
                     if let Some(sender) = bank_notification_sender {
