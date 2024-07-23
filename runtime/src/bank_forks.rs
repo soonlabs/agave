@@ -254,6 +254,7 @@ impl BankForks {
     }
 
     pub fn remove(&mut self, slot: Slot) -> Option<BankWithScheduler> {
+        info!("bank forks remove slot:{:?}", slot);
         let bank = self.banks.remove(&slot)?;
         for parent in bank.proper_ancestors() {
             let Entry::Occupied(mut entry) = self.descendants.entry(parent) else {

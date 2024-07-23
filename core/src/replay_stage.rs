@@ -1743,6 +1743,7 @@ impl ReplayStage {
 
             // Clear the progress map of these forks
             let _ = progress.remove(&slot);
+            info!("progress map remove slot:{:?}", slot);
         }
     }
 
