@@ -2904,7 +2904,7 @@ impl ReplayStage {
             replay_result: None,
         };
         let my_pubkey = &my_pubkey.clone();
-        trace!("Replay active bank: slot {}", bank_slot);
+        info!("Replay active bank: slot {}", bank_slot);
         if progress.get(&bank_slot).map(|p| p.is_dead).unwrap_or(false) {
             // If the fork was marked as dead, don't replay it
             debug!("bank_slot {:?} is marked dead", bank_slot);
@@ -3028,6 +3028,7 @@ impl ReplayStage {
                 }
             }
 
+            info!("process replay result slot:{:?}, complete:{}", bank_slot, bank.is_complete());
             assert_eq!(bank_slot, bank.slot());
             if bank.is_complete() {
                 let mut bank_complete_time = Measure::start("bank_complete_time");
@@ -3256,7 +3257,7 @@ impl ReplayStage {
                 );
                 execute_timings.accumulate(&r_replay_stats.batch_execute.totals);
             } else {
-                trace!(
+                info!(
                     "bank {} not completed tick_height: {}, max_tick_height: {}",
                     bank.slot(),
                     bank.tick_height(),

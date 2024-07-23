@@ -484,6 +484,7 @@ impl BankForks {
         accounts_background_request_sender: &AbsRequestSender,
         highest_super_majority_root: Option<Slot>,
     ) -> Result<Vec<BankWithScheduler>, SetRootError> {
+        info!("bank forks set root:{:?}", root);
         let program_cache_prune_start = Instant::now();
         let set_root_start = Instant::now();
         let (removed_banks, set_root_metrics) = self.do_set_root_return_metrics(
@@ -663,6 +664,8 @@ impl BankForks {
             })
             .collect();
         prune_slots_time.stop();
+
+        info!("bank forks prune root:{:?} major:{:?}, prune size:{}", root, highest_super_majority_root, prune_slots.len());
 
         let mut prune_remove_time = Measure::start("prune_slots");
         let removed_banks = prune_slots
