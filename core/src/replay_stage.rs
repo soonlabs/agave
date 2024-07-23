@@ -1859,6 +1859,7 @@ impl ReplayStage {
                     || progress.is_dead(confirmed_slot).unwrap_or(false),
                     || bank_forks.read().unwrap().bank_hash(confirmed_slot),
                 );
+                info!("process_duplicate_confirmed_slots slot:{:?}, root:{:?}", confirmed_slot, root);
                 check_slot_agrees_with_cluster(
                     confirmed_slot,
                     root,
@@ -1931,6 +1932,7 @@ impl ReplayStage {
                 || progress.is_dead(duplicate_slot).unwrap_or(false),
                 || bank_hash,
             );
+            info!("process_duplicate_slots slot:{:?}", duplicate_slot);
             check_slot_agrees_with_cluster(
                 duplicate_slot,
                 root_slot,
@@ -4189,6 +4191,7 @@ impl ReplayStage {
                 || false,
                 || Some(*frozen_hash),
             );
+            info!("mark_slots_confirmed slot:{:?}, root:{:?}", slot, root_slot);
             check_slot_agrees_with_cluster(
                 *slot,
                 root_slot,
