@@ -1300,6 +1300,8 @@ impl Bank {
 
         // Update sysvars before processing transactions
         let (_, update_sysvars_time_us) = measure_us!({
+            // Note: we should also update rent here
+            new.update_rent();
             new.update_slot_hashes();
             new.update_stake_history(Some(parent.epoch()));
             new.update_clock(Some(parent.epoch()));
