@@ -1193,7 +1193,12 @@ impl Bank {
             slots_per_year: parent.slots_per_year,
             epoch_schedule,
             collected_rent: AtomicU64::new(0),
-            rent_collector: Self::get_rent_collector_from(&parent.rent_collector, epoch),
+            rent_collector: RentCollector::new(
+                epoch,
+                parent.rent_collector.epoch_schedule.clone(),
+                parent.rent_collector.slots_per_year.clone(),
+                Rent::default(),
+            ),
             max_tick_height: (slot + 1) * parent.ticks_per_slot,
             block_height: parent.block_height + 1,
             fee_rate_governor,
@@ -1610,7 +1615,12 @@ impl Bank {
             fee_rate_governor: fields.fee_rate_governor,
             collected_rent: AtomicU64::new(fields.collected_rent),
             // clone()-ing is needed to consider a gated behavior in rent_collector
-            rent_collector: Self::get_rent_collector_from(&fields.rent_collector, fields.epoch),
+            rent_collector: RentCollector::new(
+                fields.epoch,
+                fields.rent_collector.epoch_schedule.clone(),
+                fields.rent_collector.slots_per_year.clone(),
+                Rent::default(),
+            ),
             epoch_schedule: fields.epoch_schedule,
             inflation: Arc::new(RwLock::new(fields.inflation)),
             stakes_cache: StakesCache::new(stakes),

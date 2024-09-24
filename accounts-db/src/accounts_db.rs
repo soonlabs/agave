@@ -113,6 +113,7 @@ use {
     },
     tempfile::TempDir,
 };
+use solana_sdk::rent::Rent;
 
 const PAGE_SIZE: u64 = 4 * 1024;
 // when the accounts write cache exceeds this many bytes, we will flush it
@@ -8933,7 +8934,7 @@ impl AccountsDb {
             schedule.get_epoch(max_slot),
             schedule.clone(),
             genesis_config.slots_per_year(),
-            genesis_config.rent.clone(),
+            Rent::default(),
         );
         let accounts_data_len = AtomicU64::new(0);
 
