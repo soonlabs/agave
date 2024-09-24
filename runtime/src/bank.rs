@@ -316,6 +316,7 @@ pub struct BankRc {
 
 #[cfg(all(RUSTC_WITH_SPECIALIZATION, feature = "frozen-abi"))]
 use solana_frozen_abi::abi_example::AbiExample;
+use solana_sdk::rent::Rent;
 
 #[cfg(all(RUSTC_WITH_SPECIALIZATION, feature = "frozen-abi"))]
 impl AbiExample for BankRc {
@@ -2956,7 +2957,7 @@ impl Bank {
             self.epoch,
             self.epoch_schedule().clone(),
             self.slots_per_year,
-            genesis_config.rent.clone(),
+            Rent::default(),
         );
 
         // Add additional builtin programs specified in the genesis config
