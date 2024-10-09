@@ -69,6 +69,7 @@ members = [
     "poh",
     "poh-bench",
     "poseidon",
+    "prio-graph-scheduler",
     "program-runtime",
     "program-test",
     "programs/address-lookup-table",
@@ -432,6 +433,7 @@ solana-perf = { path = "perf", version = "=2.1.0" }
 solana-poh = { path = "poh", version = "=2.1.0" }
 solana-poseidon = { path = "poseidon", version = "=2.1.0" }
 solana-program = { path = "sdk/program", version = "=2.1.0", default-features = false }
+solana-prio-graph-scheduler = { path = "prio-graph-scheduler", version = "=2.1.0" }
 solana-program-error = { path = "sdk/program-error", version = "=2.1.0" }
 solana-program-memory = { path = "sdk/program-memory", version = "=2.1.0" }
 solana-program-option = { path = "sdk/program-option", version = "=2.1.0" }
