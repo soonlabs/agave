@@ -1,0 +1,18 @@
+[package]
+name = "solana-prio-graph-scheduler"
+description = "Solana Priority Graph Scheduler"
+documentation = "https://docs.rs/solana-prio-graph-scheduler"
+version.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+license.workspace = true
+edition.workspace = true
+
+[dependencies]
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[lints]
+workspace = true
