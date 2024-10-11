@@ -12,9 +12,25 @@ edition.workspace = true
 [dependencies]
 solana-core = { workspace = true }
 solana-sdk = { workspace = true }
+solana-poh = { workspace = true }
+solana-metrics = { workspace = true }
+solana-ledger = { workspace = true }
+solana-runtime = { workspace = true }
+solana-gossip = { workspace = true }
+solana-cost-model = { workspace = true }
+solana-measure = { workspace = true }
 
 ahash = { workspace = true }
+prio-graph = { workspace = true }
+thiserror = { workspace = true }
+itertools = { workspace = true }
+log = { workspace = true }
+crossbeam-channel = { workspace = true }
+arrayvec = { workspace = true }
+min-max-heap = { workspace = true }
 
+[dev-dependencies]
+assert_matches = { workspace = true }
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]

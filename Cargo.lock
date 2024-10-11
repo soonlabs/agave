@@ -7214,8 +7214,23 @@ name = "solana-prio-graph-scheduler"
 version = "2.1.0"
 dependencies = [
  "ahash 0.8.10",
+ "arrayvec",
+ "assert_matches",
+ "crossbeam-channel",
+ "itertools 0.12.1",
+ "log",
+ "min-max-heap",
+ "prio-graph",
  "solana-core",
+ "solana-cost-model",
+ "solana-gossip",
+ "solana-ledger",
+ "solana-measure",
+ "solana-metrics",
+ "solana-poh",
+ "solana-runtime",
  "solana-sdk",
+ "thiserror",
 ]
 
 [[package]]

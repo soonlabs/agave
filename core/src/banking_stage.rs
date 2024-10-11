@@ -62,7 +62,7 @@ pub mod qos_service;
 pub mod unprocessed_packet_batches;
 pub mod unprocessed_transaction_storage;
 
-mod consume_worker;
+pub mod consume_worker;
 mod decision_maker;
 mod forward_packet_batches_by_accounts;
 mod forward_worker;
@@ -73,7 +73,7 @@ mod multi_iterator_scanner;
 mod packet_deserializer;
 mod packet_filter;
 mod packet_receiver;
-mod read_write_account_set;
+pub mod read_write_account_set;
 #[allow(dead_code)]
 mod scheduler_messages;
 mod transaction_scheduler;
