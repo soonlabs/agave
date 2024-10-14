@@ -10,6 +10,7 @@ pub mod scheduler_metrics;
 // pub mod scheduler_controller;
 pub mod transaction_state_container;
 pub mod prio_graph_scheduler;
+pub mod deserializable_packet;
 
 #[macro_use]
 extern crate solana_metrics;
