@@ -1,13 +1,9 @@
 use {
-    super::immutable_deserialized_packet::{DeserializedPacketError, ImmutableDeserializedPacket},
-    min_max_heap::MinMaxHeap,
-    solana_perf::packet::Packet,
-    solana_sdk::hash::Hash,
-    std::{
+    super::immutable_deserialized_packet::{DeserializedPacketError, ImmutableDeserializedPacket}, min_max_heap::MinMaxHeap, solana_perf::packet::Packet, solana_prio_graph_scheduler::deserializable_packet::DeserializableTxPacket, solana_sdk::hash::Hash, std::{
         cmp::Ordering,
         collections::{hash_map::Entry, HashMap},
         sync::Arc,
-    },
+    }
 };
 
 /// Holds deserialized messages, as well as computed message_hash and other things needed to create

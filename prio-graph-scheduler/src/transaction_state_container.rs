@@ -184,7 +184,7 @@ mod tests {
             Hash::default(),
         ));
         let packet = Arc::new(
-            MockImmutableDeserializedPacket::from_packet(
+            MockImmutableDeserializedPacket::new(
                 Packet::from_data(None, tx.to_versioned_transaction()).unwrap(),
             )
             .unwrap(),

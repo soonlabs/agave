@@ -75,7 +75,7 @@ mod tests {
 
     impl DeserializableTxPacket for MockImmutableDeserializedPacket {
         type DeserializeError = MockDeserializedPacketError;
-        fn from_packet(packet: Packet) -> Result<Self, Self::DeserializeError> {
+        fn new(packet: Packet) -> Result<Self, Self::DeserializeError> {
             let versioned_transaction: VersionedTransaction = packet.deserialize_slice(..)?;
             let sanitized_transaction =
                 SanitizedVersionedTransaction::try_from(versioned_transaction)?;

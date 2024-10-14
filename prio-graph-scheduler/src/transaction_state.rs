@@ -227,7 +227,7 @@ mod tests {
         let tx = Transaction::new(&[&from_keypair], message, Hash::default());
 
         let packet = Arc::new(
-            MockImmutableDeserializedPacket::from_packet(Packet::from_data(None, tx.clone()).unwrap()).unwrap(),
+            MockImmutableDeserializedPacket::new(Packet::from_data(None, tx.clone()).unwrap()).unwrap(),
         );
         let transaction_ttl = SanitizedTransactionTTL {
             transaction: SanitizedTransaction::from_transaction_for_tests(tx),

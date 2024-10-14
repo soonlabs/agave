@@ -13,7 +13,7 @@ use std::error::Error;
 pub trait DeserializableTxPacket: PartialEq + PartialOrd + Eq + Sized {
     type DeserializeError: Error;
 
-    fn from_packet(packet: Packet) -> Result<Self, Self::DeserializeError>;
+    fn new(packet: Packet) -> Result<Self, Self::DeserializeError>;
 
     /// This function deserializes packets into transactions,
     /// computes the blake3 hash of transaction messages.

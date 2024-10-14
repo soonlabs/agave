@@ -2,16 +2,6 @@
 //!
 
 use {
-    super::{
-        prio_graph_scheduler::PrioGraphScheduler,
-        scheduler_error::SchedulerError,
-        scheduler_metrics::{
-            SchedulerCountMetrics, SchedulerLeaderDetectionMetrics, SchedulerTimingMetrics,
-        },
-        transaction_id_generator::TransactionIdGenerator,
-        transaction_state::SanitizedTransactionTTL,
-        transaction_state_container::TransactionStateContainer,
-    },
     crate::banking_stage::{
         consume_worker::ConsumeWorkerMetrics,
         consumer::Consumer,
@@ -26,6 +16,17 @@ use {
     solana_accounts_db::account_locks::validate_account_locks,
     solana_cost_model::cost_model::CostModel,
     solana_measure::measure_us,
+    solana_prio_graph_scheduler::deserializable_packet::DeserializableTxPacket,
+    solana_prio_graph_scheduler::{
+        id_generator::IdGenerator,
+        prio_graph_scheduler::PrioGraphScheduler,
+        scheduler_error::SchedulerError,
+        scheduler_metrics::{
+            SchedulerCountMetrics, SchedulerLeaderDetectionMetrics, SchedulerTimingMetrics,
+        },
+        transaction_state::SanitizedTransactionTTL,
+        transaction_state_container::TransactionStateContainer,
+    },
     solana_runtime::{bank::Bank, bank_forks::BankForks},
     solana_runtime_transaction::instructions_processor::process_compute_budget_instructions,
     solana_sdk::{
@@ -51,12 +52,12 @@ pub(crate) struct SchedulerController<T: LikeClusterInfo> {
     packet_receiver: PacketDeserializer,
     bank_forks: Arc<RwLock<BankForks>>,
     /// Generates unique IDs for incoming transactions.
-    transaction_id_generator: TransactionIdGenerator,
+    transaction_id_generator: IdGenerator,
     /// Container for transaction state.
     /// Shared resource between `packet_receiver` and `scheduler`.
-    container: TransactionStateContainer,
+    container: TransactionStateContainer<ImmutableDeserializedPacket>,
     /// State for scheduling and communicating with worker threads.
-    scheduler: PrioGraphScheduler,
+    scheduler: PrioGraphScheduler<ImmutableDeserializedPacket>,
     /// Metrics tracking time for leader bank detection.
     leader_detection_metrics: SchedulerLeaderDetectionMetrics,
     /// Metrics tracking counts on transactions in different states
@@ -76,7 +77,7 @@ impl<T: LikeClusterInfo> SchedulerController<T> {
         decision_maker: DecisionMaker,
         packet_deserializer: PacketDeserializer,
         bank_forks: Arc<RwLock<BankForks>>,
-        scheduler: PrioGraphScheduler,
+        scheduler: PrioGraphScheduler<ImmutableDeserializedPacket>,
         worker_metrics: Vec<Arc<ConsumeWorkerMetrics>>,
         forwarder: Option<Forwarder<T>>,
     ) -> Self {
@@ -84,8 +85,10 @@ impl<T: LikeClusterInfo> SchedulerController<T> {
             decision_maker,
             packet_receiver: packet_deserializer,
             bank_forks,
-            transaction_id_generator: TransactionIdGenerator::default(),
-            container: TransactionStateContainer::with_capacity(TOTAL_BUFFERED_PACKETS),
+            transaction_id_generator: IdGenerator::default(),
+            container: TransactionStateContainer::<ImmutableDeserializedPacket>::with_capacity(
+                TOTAL_BUFFERED_PACKETS,
+            ),
             scheduler,
             leader_detection_metrics: SchedulerLeaderDetectionMetrics::default(),
             count_metrics: SchedulerCountMetrics::default(),
@@ -661,9 +664,7 @@ mod tests {
         super::*,
         crate::{
             banking_stage::{
-                consumer::TARGET_NUM_TRANSACTIONS_PER_BATCH,
-                scheduler_messages::{ConsumeWork, FinishedConsumeWork, TransactionBatchId},
-                tests::create_slow_genesis_config,
+                consumer::TARGET_NUM_TRANSACTIONS_PER_BATCH, tests::create_slow_genesis_config,
             },
             banking_trace::BankingPacketBatch,
             sigverify::SigverifyTracerPacketStats,
@@ -677,6 +678,9 @@ mod tests {
         },
         solana_perf::packet::{to_packet_batches, PacketBatch, NUM_PACKETS},
         solana_poh::poh_recorder::{PohRecorder, Record, WorkingBankEntry},
+        solana_prio_graph_scheduler::scheduler_messages::{
+            ConsumeWork, FinishedConsumeWork, TransactionBatchId,
+        },
         solana_runtime::bank::Bank,
         solana_sdk::{
             compute_budget::ComputeBudgetInstruction, fee_calculator::FeeRateGovernor, hash::Hash,

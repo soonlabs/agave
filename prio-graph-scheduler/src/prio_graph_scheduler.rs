@@ -679,7 +679,7 @@ mod tests {
                 compute_unit_price,
             );
             let packet = Arc::new(
-                MockImmutableDeserializedPacket::from_packet(
+                MockImmutableDeserializedPacket::new(
                     Packet::from_data(None, transaction.to_versioned_transaction()).unwrap(),
                 )
                 .unwrap(),

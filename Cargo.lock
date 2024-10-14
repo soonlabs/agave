@@ -6430,6 +6430,7 @@ dependencies = [
  "solana-net-utils",
  "solana-perf",
  "solana-poh",
+ "solana-prio-graph-scheduler",
  "solana-program-runtime",
  "solana-quic-client",
  "solana-rayon-threadlimit",

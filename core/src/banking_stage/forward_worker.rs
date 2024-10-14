@@ -1,36 +1,40 @@
 use {
     super::{
-        forwarder::Forwarder,
-        scheduler_messages::{FinishedForwardWork, ForwardWork},
+        forwarder::Forwarder, immutable_deserialized_packet::ImmutableDeserializedPacket,
         ForwardOption,
     },
     crate::banking_stage::LikeClusterInfo,
     crossbeam_channel::{Receiver, RecvError, SendError, Sender},
+    solana_prio_graph_scheduler::deserializable_packet::DeserializableTxPacket,
+    solana_prio_graph_scheduler::scheduler_messages::{FinishedForwardWork, ForwardWork},
     thiserror::Error,
 };
+
+type DefaultForwardWork = ForwardWork<ImmutableDeserializedPacket>;
+type DefaultFinishedForwardWork = FinishedForwardWork<ImmutableDeserializedPacket>;
 
 #[derive(Debug, Error)]
 pub enum ForwardWorkerError {
     #[error("Failed to receive work from scheduler: {0}")]
     Recv(#[from] RecvError),
     #[error("Failed to send finalized forward work to scheduler: {0}")]
-    Send(#[from] SendError<FinishedForwardWork>),
+    Send(#[from] SendError<DefaultFinishedForwardWork>),
 }
 
 pub(crate) struct ForwardWorker<T: LikeClusterInfo> {
-    forward_receiver: Receiver<ForwardWork>,
+    forward_receiver: Receiver<DefaultForwardWork>,
     forward_option: ForwardOption,
     forwarder: Forwarder<T>,
-    forwarded_sender: Sender<FinishedForwardWork>,
+    forwarded_sender: Sender<DefaultFinishedForwardWork>,
 }
 
 #[allow(dead_code)]
 impl<T: LikeClusterInfo> ForwardWorker<T> {
     pub fn new(
-        forward_receiver: Receiver<ForwardWork>,
+        forward_receiver: Receiver<DefaultForwardWork>,
         forward_option: ForwardOption,
         forwarder: Forwarder<T>,
-        forwarded_sender: Sender<FinishedForwardWork>,
+        forwarded_sender: Sender<DefaultFinishedForwardWork>,
     ) -> Self {
         Self {
             forward_receiver,
@@ -47,7 +51,7 @@ impl<T: LikeClusterInfo> ForwardWorker<T> {
         }
     }
 
-    fn forward_loop(&self, work: ForwardWork) -> Result<(), ForwardWorkerError> {
+    fn forward_loop(&self, work: DefaultForwardWork) -> Result<(), ForwardWorkerError> {
         for work in try_drain_iter(work, &self.forward_receiver) {
             let (res, _num_packets, _forward_us, _leader_pubkey) = self.forwarder.forward_packets(
                 &self.forward_option,
@@ -64,7 +68,7 @@ impl<T: LikeClusterInfo> ForwardWorker<T> {
         Ok(())
     }
 
-    fn failed_forward_drain(&self, work: ForwardWork) -> Result<(), ForwardWorkerError> {
+    fn failed_forward_drain(&self, work: DefaultForwardWork) -> Result<(), ForwardWorkerError> {
         for work in try_drain_iter(work, &self.forward_receiver) {
             self.forwarded_sender.send(FinishedForwardWork {
                 work,
@@ -98,6 +102,7 @@ mod tests {
         },
         solana_perf::packet::to_packet_batches,
         solana_poh::poh_recorder::{PohRecorder, WorkingBankEntry},
+        solana_prio_graph_scheduler::deserializable_packet::DeserializableTxPacket,
         solana_runtime::bank::Bank,
         solana_sdk::{
             genesis_config::GenesisConfig, poh_config::PohConfig, pubkey::Pubkey,
@@ -119,8 +124,8 @@ mod tests {
         _entry_receiver: Receiver<WorkingBankEntry>,
         _poh_simulator: JoinHandle<()>,
 
-        forward_sender: Sender<ForwardWork>,
-        forwarded_receiver: Receiver<FinishedForwardWork>,
+        forward_sender: Sender<DefaultForwardWork>,
+        forwarded_receiver: Receiver<DefaultFinishedForwardWork>,
     }
 
     fn setup_test_frame() -> (TestFrame, ForwardWorker<Arc<ClusterInfo>>) {
