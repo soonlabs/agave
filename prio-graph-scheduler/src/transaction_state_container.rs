@@ -146,7 +146,7 @@ impl<P: DeserializableTxPacket> TransactionStateContainer<P> {
 #[cfg(test)]
 mod tests {
     use {
-        super::*, solana_core::banking_stage::immutable_deserialized_packet::ImmutableDeserializedPacket, solana_sdk::{
+        super::*, crate::tests::MockImmutableDeserializedPacket, solana_sdk::{
             compute_budget::ComputeBudgetInstruction,
             hash::Hash,
             message::Message,
@@ -164,7 +164,7 @@ mod tests {
         priority: u64,
     ) -> (
         SanitizedTransactionTTL,
-        Arc<ImmutableDeserializedPacket>,
+        Arc<MockImmutableDeserializedPacket>,
         u64,
         u64,
     ) {
@@ -184,7 +184,7 @@ mod tests {
             Hash::default(),
         ));
         let packet = Arc::new(
-            ImmutableDeserializedPacket::new(
+            MockImmutableDeserializedPacket::from_packet(
                 Packet::from_data(None, tx.to_versioned_transaction()).unwrap(),
             )
             .unwrap(),
@@ -198,7 +198,7 @@ mod tests {
     }
 
     fn push_to_container(
-        container: &mut TransactionStateContainer<ImmutableDeserializedPacket>,
+        container: &mut TransactionStateContainer<MockImmutableDeserializedPacket>,
         num: usize,
     ) {
         for id in 0..num as u64 {

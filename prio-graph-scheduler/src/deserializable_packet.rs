@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use solana_core::banking_stage::immutable_deserialized_packet::{DeserializedPacketError, ImmutableDeserializedPacket};
 use solana_sdk::hash::Hash;
 use solana_sdk::message::AddressLoader;
 use solana_sdk::packet::Packet;
@@ -37,47 +36,4 @@ pub trait DeserializableTxPacket: PartialEq + PartialOrd + Eq + Sized {
     fn compute_unit_price(&self) -> u64;
 
     fn compute_unit_limit(&self) -> u64;
-}
-
-
-/// TODO: migrate to solana_core
-impl DeserializableTxPacket for ImmutableDeserializedPacket {
-    type DeserializeError = DeserializedPacketError;
-
-    fn from_packet(packet: Packet) -> Result<Self, Self::DeserializeError> {
-        ImmutableDeserializedPacket::new(packet)
-    }
-
-    fn build_sanitized_transaction(
-        &self,
-        votes_only: bool,
-        address_loader: impl AddressLoader,
-        reserved_account_keys: &HashSet<Pubkey>,
-    ) -> Option<SanitizedTransaction> {
-        self.build_sanitized_transaction(votes_only, address_loader, reserved_account_keys)
-    }
-
-    fn original_packet(&self) -> &Packet {
-        &self.original_packet
-    }
-
-    fn transaction(&self) -> &SanitizedVersionedTransaction {
-        &self.transaction
-    }
-
-    fn message_hash(&self) -> &Hash {
-        &self.message_hash
-    }
-
-    fn is_simple_vote(&self) -> bool {
-        self.is_simple_vote
-    }
-
-    fn compute_unit_price(&self) -> u64 {
-        self.compute_unit_price
-    }
-
-    fn compute_unit_limit(&self) -> u64 {
-        u64::from(self.compute_unit_limit)
-    }
 }

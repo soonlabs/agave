@@ -205,17 +205,15 @@ impl<P: DeserializableTxPacket> TransactionState<P> {
 #[cfg(test)]
 mod tests {
     use {
-        super::*,
-        solana_core::banking_stage::immutable_deserialized_packet::ImmutableDeserializedPacket,
-        solana_sdk::{
+        super::*, crate::tests::MockImmutableDeserializedPacket, solana_sdk::{
             compute_budget::ComputeBudgetInstruction, hash::Hash, message::Message, packet::Packet,
             signature::Keypair, signer::Signer, system_instruction, transaction::Transaction,
-        },
+        }
     };
 
     fn create_transaction_state(
         compute_unit_price: u64,
-    ) -> TransactionState<ImmutableDeserializedPacket> {
+    ) -> TransactionState<MockImmutableDeserializedPacket> {
         let from_keypair = Keypair::new();
         let ixs = vec![
             system_instruction::transfer(
@@ -229,7 +227,7 @@ mod tests {
         let tx = Transaction::new(&[&from_keypair], message, Hash::default());
 
         let packet = Arc::new(
-            ImmutableDeserializedPacket::new(Packet::from_data(None, tx.clone()).unwrap()).unwrap(),
+            MockImmutableDeserializedPacket::from_packet(Packet::from_data(None, tx.clone()).unwrap()).unwrap(),
         );
         let transaction_ttl = SanitizedTransactionTTL {
             transaction: SanitizedTransaction::from_transaction_for_tests(tx),

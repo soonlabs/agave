@@ -2,19 +2,18 @@ use {
     crate::{
         deserializable_packet::DeserializableTxPacket,
         in_flight_tracker::InFlightTracker,
+        read_write_account_set::ReadWriteAccountSet,
         scheduler_error::SchedulerError,
         scheduler_messages::{ConsumeWork, FinishedConsumeWork, TransactionBatchId, TransactionId},
         thread_aware_account_locks::{ThreadAwareAccountLocks, ThreadId, ThreadSet},
         transaction_priority_id::TransactionPriorityId,
         transaction_state::{SanitizedTransactionTTL, TransactionState},
         transaction_state_container::TransactionStateContainer,
+        TARGET_NUM_TRANSACTIONS_PER_BATCH,
     },
     crossbeam_channel::{Receiver, Sender, TryRecvError},
     itertools::izip,
     prio_graph::{AccessKind, PrioGraph},
-    solana_core::banking_stage::{
-        consumer::TARGET_NUM_TRANSACTIONS_PER_BATCH, read_write_account_set::ReadWriteAccountSet,
-    },
     solana_cost_model::block_cost_limits::MAX_BLOCK_UNITS,
     solana_measure::measure_us,
     solana_sdk::{
@@ -592,12 +591,10 @@ fn try_schedule_transaction<P: DeserializableTxPacket>(
 mod tests {
     use {
         super::*,
+        crate::tests::MockImmutableDeserializedPacket,
+        crate::TARGET_NUM_TRANSACTIONS_PER_BATCH,
         crossbeam_channel::{unbounded, Receiver},
         itertools::Itertools,
-        solana_core::banking_stage::{
-            consumer::TARGET_NUM_TRANSACTIONS_PER_BATCH,
-            immutable_deserialized_packet::ImmutableDeserializedPacket,
-        },
         solana_sdk::{
             compute_budget::ComputeBudgetInstruction, hash::Hash, message::Message, packet::Packet,
             pubkey::Pubkey, signature::Keypair, signer::Signer, system_instruction,
@@ -621,14 +618,14 @@ mod tests {
     fn create_test_frame(
         num_threads: usize,
     ) -> (
-        PrioGraphScheduler<ImmutableDeserializedPacket>,
+        PrioGraphScheduler<MockImmutableDeserializedPacket>,
         Vec<Receiver<ConsumeWork>>,
         Sender<FinishedConsumeWork>,
     ) {
         let (consume_work_senders, consume_work_receivers) =
             (0..num_threads).map(|_| unbounded()).unzip();
         let (finished_consume_work_sender, finished_consume_work_receiver) = unbounded();
-        let scheduler = PrioGraphScheduler::<ImmutableDeserializedPacket>::new(
+        let scheduler = PrioGraphScheduler::<MockImmutableDeserializedPacket>::new(
             consume_work_senders,
             finished_consume_work_receiver,
         );
@@ -668,9 +665,9 @@ mod tests {
                 u64,
             ),
         >,
-    ) -> TransactionStateContainer<ImmutableDeserializedPacket> {
+    ) -> TransactionStateContainer<MockImmutableDeserializedPacket> {
         let mut container =
-            TransactionStateContainer::<ImmutableDeserializedPacket>::with_capacity(10 * 1024);
+            TransactionStateContainer::<MockImmutableDeserializedPacket>::with_capacity(10 * 1024);
         for (index, (from_keypair, to_pubkeys, lamports, compute_unit_price)) in
             tx_infos.into_iter().enumerate()
         {
@@ -682,7 +679,7 @@ mod tests {
                 compute_unit_price,
             );
             let packet = Arc::new(
-                ImmutableDeserializedPacket::new(
+                MockImmutableDeserializedPacket::from_packet(
                     Packet::from_data(None, transaction.to_versioned_transaction()).unwrap(),
                 )
                 .unwrap(),
