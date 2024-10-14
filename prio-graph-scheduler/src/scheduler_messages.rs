@@ -1,5 +1,5 @@
 use {
-    solana_core::banking_stage::immutable_deserialized_packet::ImmutableDeserializedPacket,
+    crate::deserializable_packet::DeserializableTxPacket,
     solana_sdk::{clock::Slot, transaction::SanitizedTransaction},
     std::{fmt::Display, sync::Arc},
 };
@@ -59,8 +59,8 @@ pub struct ConsumeWork {
 
 /// Message: [Scheduler -> Worker]
 /// Transactions to be forwarded to the next leader(s)
-pub struct ForwardWork {
-    pub packets: Vec<Arc<ImmutableDeserializedPacket>>,
+pub struct ForwardWork<P: DeserializableTxPacket> {
+    pub packets: Vec<Arc<P>>,
 }
 
 /// Message: [Worker -> Scheduler]
@@ -72,7 +72,7 @@ pub struct FinishedConsumeWork {
 
 /// Message: [Worker -> Scheduler]
 /// Forwarded transactions.
-pub struct FinishedForwardWork {
-    pub work: ForwardWork,
+pub struct FinishedForwardWork<P: DeserializableTxPacket> {
+    pub work: ForwardWork<P>,
     pub successful: bool,
 }

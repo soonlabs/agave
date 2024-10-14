@@ -3,10 +3,9 @@ use {
         transaction_priority_id::TransactionPriorityId,
         transaction_state::{SanitizedTransactionTTL, TransactionState},
     },
-    crate::scheduler_messages::TransactionId,
+    crate::{deserializable_packet::DeserializableTxPacket, scheduler_messages::TransactionId},
     itertools::MinMaxResult,
     min_max_heap::MinMaxHeap,
-    solana_core::banking_stage::immutable_deserialized_packet::ImmutableDeserializedPacket,
     std::{collections::HashMap, sync::Arc},
 };
 
@@ -35,12 +34,12 @@ use {
 ///
 /// The container maintains a fixed capacity. If the queue is full when pushing
 /// a new transaction, the lowest priority transaction will be dropped.
-pub struct TransactionStateContainer {
+pub struct TransactionStateContainer<P: DeserializableTxPacket> {
     priority_queue: MinMaxHeap<TransactionPriorityId>,
-    id_to_transaction_state: HashMap<TransactionId, TransactionState>,
+    id_to_transaction_state: HashMap<TransactionId, TransactionState<P>>,
 }
 
-impl TransactionStateContainer {
+impl<P: DeserializableTxPacket> TransactionStateContainer<P> {
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
             priority_queue: MinMaxHeap::with_capacity(capacity),
@@ -67,16 +66,13 @@ impl TransactionStateContainer {
     pub fn get_mut_transaction_state(
         &mut self,
         id: &TransactionId,
-    ) -> Option<&mut TransactionState> {
+    ) -> Option<&mut TransactionState<P>> {
         self.id_to_transaction_state.get_mut(id)
     }
 
     /// Get reference to `SanitizedTransactionTTL` by id.
     /// Panics if the transaction does not exist.
-    pub fn get_transaction_ttl(
-        &self,
-        id: &TransactionId,
-    ) -> Option<&SanitizedTransactionTTL> {
+    pub fn get_transaction_ttl(&self, id: &TransactionId) -> Option<&SanitizedTransactionTTL> {
         self.id_to_transaction_state
             .get(id)
             .map(|state| state.transaction_ttl())
@@ -88,7 +84,7 @@ impl TransactionStateContainer {
         &mut self,
         transaction_id: TransactionId,
         transaction_ttl: SanitizedTransactionTTL,
-        packet: Arc<ImmutableDeserializedPacket>,
+        packet: Arc<P>,
         priority: u64,
         cost: u64,
     ) -> bool {
@@ -150,8 +146,7 @@ impl TransactionStateContainer {
 #[cfg(test)]
 mod tests {
     use {
-        super::*,
-        solana_sdk::{
+        super::*, solana_core::banking_stage::immutable_deserialized_packet::ImmutableDeserializedPacket, solana_sdk::{
             compute_budget::ComputeBudgetInstruction,
             hash::Hash,
             message::Message,
@@ -161,7 +156,7 @@ mod tests {
             slot_history::Slot,
             system_instruction,
             transaction::{SanitizedTransaction, Transaction},
-        },
+        }
     };
 
     /// Returns (transaction_ttl, priority, cost)
@@ -202,7 +197,10 @@ mod tests {
         (transaction_ttl, packet, priority, TEST_TRANSACTION_COST)
     }
 
-    fn push_to_container(container: &mut TransactionStateContainer, num: usize) {
+    fn push_to_container(
+        container: &mut TransactionStateContainer<ImmutableDeserializedPacket>,
+        num: usize,
+    ) {
         for id in 0..num as u64 {
             let priority = id;
             let (transaction_ttl, packet, priority, cost) = test_transaction(priority);

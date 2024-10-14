@@ -41,12 +41,12 @@ pub enum DeserializedPacketError {
 
 #[derive(Debug, Eq)]
 pub struct ImmutableDeserializedPacket {
-    original_packet: Packet,
-    transaction: SanitizedVersionedTransaction,
-    message_hash: Hash,
-    is_simple_vote: bool,
-    compute_unit_price: u64,
-    compute_unit_limit: u32,
+    pub original_packet: Packet,
+    pub transaction: SanitizedVersionedTransaction,
+    pub message_hash: Hash,
+    pub is_simple_vote: bool,
+    pub compute_unit_price: u64,
+    pub compute_unit_limit: u32,
 }
 
 impl ImmutableDeserializedPacket {
