@@ -1,7 +1,6 @@
 use {
-    crate::deserializable_packet::DeserializableTxPacket,
     solana_sdk::{clock::Slot, transaction::SanitizedTransaction},
-    std::{fmt::Display, sync::Arc},
+    std::fmt::Display,
 };
 
 /// A unique identifier for a transaction batch.
@@ -57,22 +56,9 @@ pub struct ConsumeWork {
     pub max_age_slots: Vec<Slot>,
 }
 
-/// Message: [Scheduler -> Worker]
-/// Transactions to be forwarded to the next leader(s)
-pub struct ForwardWork<P: DeserializableTxPacket> {
-    pub packets: Vec<Arc<P>>,
-}
-
 /// Message: [Worker -> Scheduler]
 /// Processed transactions.
 pub struct FinishedConsumeWork {
     pub work: ConsumeWork,
     pub retryable_indexes: Vec<usize>,
-}
-
-/// Message: [Worker -> Scheduler]
-/// Forwarded transactions.
-pub struct FinishedForwardWork<P: DeserializableTxPacket> {
-    pub work: ForwardWork<P>,
-    pub successful: bool,
 }
