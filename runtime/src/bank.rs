@@ -1300,8 +1300,9 @@ impl Bank {
 
         // Update sysvars before processing transactions
         let (_, update_sysvars_time_us) = measure_us!({
-            // Note: we should also update rent here
+            // Note: we should also update rent and native mint here
             new.update_rent();
+            new.update_native_mint();
             new.update_slot_hashes();
             new.update_stake_history(Some(parent.epoch()));
             new.update_clock(Some(parent.epoch()));
@@ -2050,6 +2051,18 @@ impl Bank {
                 &self.rent_collector.rent,
                 self.inherit_specially_retained_account_fields(account),
             )
+        });
+    }
+
+    fn update_native_mint(&self) {
+        self.update_sysvar_account(&solana_inline_spl::token::native_mint::id(), |account| {
+            Account {
+                lamports: account.as_ref().map(|account| account.lamports()).unwrap_or(1),
+                data: solana_inline_spl::token::native_mint::ACCOUNT_DATA.to_vec(),
+                owner: solana_inline_spl::token::id(),
+                executable: false,
+                rent_epoch: account.as_ref().map(|account| account.rent_epoch()).unwrap_or(INITIAL_RENT_EPOCH),
+            }.into()
         });
     }
 
