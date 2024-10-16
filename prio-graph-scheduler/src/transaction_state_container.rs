@@ -156,7 +156,8 @@ mod tests {
             slot_history::Slot,
             system_instruction,
             transaction::{SanitizedTransaction, Transaction},
-        }
+        },
+        crate::scheduler_messages::MaxAge,
     };
 
     /// Returns (transaction_ttl, priority, cost)
@@ -191,7 +192,10 @@ mod tests {
         );
         let transaction_ttl = SanitizedTransactionTTL {
             transaction: tx,
-            max_age_slot: Slot::MAX,
+            max_age: MaxAge {
+                epoch_invalidation_slot: Slot::MAX,
+                alt_invalidation_slot: Slot::MAX,
+            },
         };
         const TEST_TRANSACTION_COST: u64 = 5000;
         (transaction_ttl, packet, priority, TEST_TRANSACTION_COST)

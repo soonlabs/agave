@@ -100,7 +100,6 @@ members = [
     "rpc-test",
     "runtime",
     "runtime-transaction",
-    "sanitize",
     "sdk",
     "sdk/account",
     "sdk/account-info",
@@ -118,14 +117,18 @@ members = [
     "sdk/instruction",
     "sdk/macro",
     "sdk/msg",
+    "sdk/native-token",
+    "sdk/package-metadata",
     "sdk/package-metadata-macro",
     "sdk/program",
+    "sdk/program-entrypoint",
     "sdk/program-error",
     "sdk/program-memory",
     "sdk/program-option",
     "sdk/program-pack",
     "sdk/pubkey",
     "sdk/rent",
+    "sdk/sanitize",
     "sdk/serde-varint",
     "sdk/serialize-utils",
     "sdk/sha256-hasher",
@@ -407,6 +410,7 @@ solana-define-syscall = { path = "define-syscall", version = "=2.1.0" }
 solana-derivation-path = { path = "sdk/derivation-path", version = "=2.1.0" }
 solana-download-utils = { path = "download-utils", version = "=2.1.0" }
 solana-entry = { path = "entry", version = "=2.1.0" }
+solana-program-entrypoint = { path = "sdk/program-entrypoint", version = "=2.1.0" }
 solana-epoch-schedule = { path = "sdk/epoch-schedule", version = "=2.1.0" }
 solana-faucet = { path = "faucet", version = "=2.1.0" }
 solana-feature-set = { path = "sdk/feature-set", version = "=2.1.0" }
@@ -432,9 +436,11 @@ solana-measure = { path = "measure", version = "=2.1.0" }
 solana-merkle-tree = { path = "merkle-tree", version = "=2.1.0" }
 solana-metrics = { path = "metrics", version = "=2.1.0" }
 solana-msg = { path = "sdk/msg", version = "=2.1.0" }
+solana-native-token = { path = "sdk/native-token", version = "=2.1.0" }
 solana-net-utils = { path = "net-utils", version = "=2.1.0" }
 solana-nohash-hasher = "0.2.1"
 solana-notifier = { path = "notifier", version = "=2.1.0" }
+solana-package-metadata = { path = "sdk/package-metadata", version = "=2.1.0" }
 solana-package-metadata-macro = { path = "sdk/package-metadata-macro", version = "=2.1.0" }
 solana-perf = { path = "perf", version = "=2.1.0" }
 solana-poh = { path = "poh", version = "=2.1.0" }
@@ -453,7 +459,7 @@ solana-quic-client = { path = "quic-client", version = "=2.1.0" }
 solana-rayon-threadlimit = { path = "rayon-threadlimit", version = "=2.1.0" }
 solana-remote-wallet = { path = "remote-wallet", version = "=2.1.0", default-features = false }
 solana-rent = { path = "sdk/rent", version = "=2.1.0", default-features = false }
-solana-sanitize = { path = "sanitize", version = "=2.1.0" }
+solana-sanitize = { path = "sdk/sanitize", version = "=2.1.0" }
 solana-serde-varint = { path = "sdk/serde-varint", version = "=2.1.0" }
 solana-serialize-utils = { path = "sdk/serialize-utils", version = "=2.1.0" }
 solana-sha256-hasher = { path = "sdk/sha256-hasher", version = "=2.1.0" }

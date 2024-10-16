@@ -1,9 +1,10 @@
-use std::collections::HashSet;
+use solana_runtime::bank::Bank;
+use solana_sdk::clock::Slot;
 use solana_sdk::hash::Hash;
-use solana_sdk::message::AddressLoader;
 use solana_sdk::packet::Packet;
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::transaction::{SanitizedTransaction, SanitizedVersionedTransaction};
+use std::collections::HashSet;
 use std::error::Error;
 
 /// DeserializablePacket can be deserialized from a Packet.
@@ -20,9 +21,9 @@ pub trait DeserializableTxPacket: PartialEq + PartialOrd + Eq + Sized {
     fn build_sanitized_transaction(
         &self,
         votes_only: bool,
-        address_loader: impl AddressLoader,
+        address_loader: &Bank,
         reserved_account_keys: &HashSet<Pubkey>,
-    ) -> Option<SanitizedTransaction>;
+    ) -> Option<(SanitizedTransaction, Slot)>;
 
     fn original_packet(&self) -> &Packet;
 

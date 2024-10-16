@@ -1,13 +1,12 @@
 use {
-    crate::deserializable_packet::DeserializableTxPacket,
-    solana_sdk::{clock::Slot, transaction::SanitizedTransaction},
-    std::sync::Arc,
+    crate::deserializable_packet::DeserializableTxPacket, crate::scheduler_messages::MaxAge,
+    solana_sdk::transaction::SanitizedTransaction, std::sync::Arc,
 };
 
 /// Simple wrapper type to tie a sanitized transaction to max age slot.
 pub struct SanitizedTransactionTTL {
     pub transaction: SanitizedTransaction,
-    pub max_age_slot: Slot,
+    pub max_age: MaxAge,
 }
 
 /// TransactionState is used to track the state of a transaction in the transaction scheduler
@@ -205,10 +204,13 @@ impl<P: DeserializableTxPacket> TransactionState<P> {
 #[cfg(test)]
 mod tests {
     use {
-        super::*, crate::tests::MockImmutableDeserializedPacket, solana_sdk::{
-            compute_budget::ComputeBudgetInstruction, hash::Hash, message::Message, packet::Packet,
-            signature::Keypair, signer::Signer, system_instruction, transaction::Transaction,
-        }
+        super::*,
+        crate::tests::MockImmutableDeserializedPacket,
+        solana_sdk::{
+            clock::Slot, compute_budget::ComputeBudgetInstruction, hash::Hash, message::Message,
+            packet::Packet, signature::Keypair, signer::Signer, system_instruction,
+            transaction::Transaction,
+        },
     };
 
     fn create_transaction_state(
@@ -227,11 +229,15 @@ mod tests {
         let tx = Transaction::new(&[&from_keypair], message, Hash::default());
 
         let packet = Arc::new(
-            MockImmutableDeserializedPacket::new(Packet::from_data(None, tx.clone()).unwrap()).unwrap(),
+            MockImmutableDeserializedPacket::new(Packet::from_data(None, tx.clone()).unwrap())
+                .unwrap(),
         );
         let transaction_ttl = SanitizedTransactionTTL {
             transaction: SanitizedTransaction::from_transaction_for_tests(tx),
-            max_age_slot: Slot::MAX,
+            max_age: MaxAge {
+                epoch_invalidation_slot: Slot::MAX,
+                alt_invalidation_slot: Slot::MAX,
+            },
         };
         const TEST_TRANSACTION_COST: u64 = 5000;
         TransactionState::new(
@@ -272,11 +278,11 @@ mod tests {
         // Manually clone `SanitizedTransactionTTL`
         let SanitizedTransactionTTL {
             transaction,
-            max_age_slot,
+            max_age,
         } = transaction_state.transaction_ttl();
         let transaction_ttl = SanitizedTransactionTTL {
             transaction: transaction.clone(),
-            max_age_slot: *max_age_slot,
+            max_age: *max_age,
         };
         transaction_state.transition_to_unprocessed(transaction_ttl); // invalid transition
     }
@@ -322,7 +328,13 @@ mod tests {
             transaction_state,
             TransactionState::Unprocessed { .. }
         ));
-        assert_eq!(transaction_ttl.max_age_slot, Slot::MAX);
+        assert_eq!(
+            transaction_ttl.max_age,
+            MaxAge {
+                epoch_invalidation_slot: Slot::MAX,
+                alt_invalidation_slot: Slot::MAX,
+            }
+        );
 
         let _ = transaction_state.transition_to_pending();
         assert!(matches!(
@@ -340,7 +352,13 @@ mod tests {
             transaction_state,
             TransactionState::Unprocessed { .. }
         ));
-        assert_eq!(transaction_ttl.max_age_slot, Slot::MAX);
+        assert_eq!(
+            transaction_ttl.max_age,
+            MaxAge {
+                epoch_invalidation_slot: Slot::MAX,
+                alt_invalidation_slot: Slot::MAX,
+            }
+        );
 
         // ensure transaction_ttl is not lost through state transitions
         let transaction_ttl = transaction_state.transition_to_pending();
@@ -355,6 +373,12 @@ mod tests {
             transaction_state,
             TransactionState::Unprocessed { .. }
         ));
-        assert_eq!(transaction_ttl.max_age_slot, Slot::MAX);
+        assert_eq!(
+            transaction_ttl.max_age,
+            MaxAge {
+                epoch_invalidation_slot: Slot::MAX,
+                alt_invalidation_slot: Slot::MAX,
+            }
+        );
     }
 }
