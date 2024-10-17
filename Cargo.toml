@@ -120,6 +120,7 @@ members = [
     "sdk/native-token",
     "sdk/package-metadata",
     "sdk/package-metadata-macro",
+    "sdk/precompile-error",
     "sdk/program",
     "sdk/program-entrypoint",
     "sdk/program-error",
@@ -283,7 +284,7 @@ histogram = "0.6.9"
 hmac = "0.12.1"
 http = "0.2.12"
 humantime = "2.0.1"
-hyper = "0.14.30"
+hyper = "0.14.31"
 hyper-proxy = "0.9.1"
 im = "15.1.0"
 index_list = "0.2.13"
@@ -446,6 +447,7 @@ solana-perf = { path = "perf", version = "=2.1.0" }
 solana-poh = { path = "poh", version = "=2.1.0" }
 solana-poseidon = { path = "poseidon", version = "=2.1.0" }
 solana-prio-graph-scheduler = { path = "prio-graph-scheduler", version = "=2.1.0" }
+solana-precompile-error = { path = "sdk/precompile-error", version = "=2.1.0" }
 solana-program = { path = "sdk/program", version = "=2.1.0", default-features = false }
 solana-program-error = { path = "sdk/program-error", version = "=2.1.0" }
 solana-program-memory = { path = "sdk/program-memory", version = "=2.1.0" }

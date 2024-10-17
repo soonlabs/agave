@@ -2874,9 +2874,9 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "hyper"
-version = "0.14.30"
+version = "0.14.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a152ddd61dfaec7273fe8419ab357f33aee0d914c5f4efbf0d96fa749eea5ec9"
+checksum = "8c08302e8fa335b151b788c775ff56e7a03ae64ff85c548ee820fecb70356e85"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -3936,9 +3936,9 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "openssl"
-version = "0.10.66"
+version = "0.10.67"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9529f4786b70a3e8c61e11179af17ab6188ad8d0ded78c5529441ed39d4bd9c1"
+checksum = "7b8cefcf97f41316955f9294cd61f639bdcfa9f2f230faac6cb896aa8ab64704"
 dependencies = [
  "bitflags 2.6.0",
  "cfg-if 1.0.0",
@@ -3977,9 +3977,9 @@ dependencies = [
 
 [[package]]
 name = "openssl-sys"
-version = "0.9.103"
+version = "0.9.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f9e8deee91df40a943c71b917e5874b951d32a802526c85721ce3b776c929d6"
+checksum = "45abf306cbf99debc8195b66b7346498d7b10c210de50418b5ccd7ceba08c741"
 dependencies = [
  "cc",
  "libc",
@@ -6496,6 +6496,7 @@ dependencies = [
  "rand 0.8.5",
  "solana-builtins-default-costs",
  "solana-compute-budget",
+ "solana-cost-model",
  "solana-feature-set",
  "solana-frozen-abi",
  "solana-frozen-abi-macro",
@@ -7271,6 +7272,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "solana-precompile-error"
+version = "2.1.0"
+dependencies = [
+ "num-traits",
+ "solana-decode-error",
+]
+
+[[package]]
 name = "solana-prio-graph-scheduler"
 version = "2.1.0"
 dependencies = [
@@ -7946,8 +7955,10 @@ dependencies = [
  "solana-feature-set",
  "solana-frozen-abi",
  "solana-frozen-abi-macro",
+ "solana-instruction",
  "solana-logger",
  "solana-native-token",
+ "solana-precompile-error",
  "solana-program",
  "solana-program-memory",
  "solana-pubkey",
