@@ -8,16 +8,16 @@ use {
   },
 };
 
-pub(crate) const MAX_THREADS: usize = u64::BITS as usize;
+pub const MAX_THREADS: usize = u64::BITS as usize;
 
 /// Identifier for a thread
-pub(crate) type ThreadId = usize; // 0..MAX_THREADS-1
+pub type ThreadId = usize; // 0..MAX_THREADS-1
 
 type LockCount = u32;
 
 /// A bit-set of threads an account is scheduled or can be scheduled for.
 #[derive(Copy, Clone, PartialEq, Eq)]
-pub(crate) struct ThreadSet(u64);
+pub struct ThreadSet(u64);
 
 struct AccountWriteLocks {
   thread_id: ThreadId,
@@ -44,7 +44,7 @@ struct AccountLocks {
 /// that already hold locks on the account. This is useful for allowing
 /// queued transactions to be scheduled on a thread while the transaction
 /// is still being executed on the thread.
-pub(crate) struct ThreadAwareAccountLocks {
+pub struct ThreadAwareAccountLocks {
   /// Number of threads.
   num_threads: usize, // 0..MAX_THREADS
   /// Locks for each account. An account should only have an entry if there
@@ -54,7 +54,7 @@ pub(crate) struct ThreadAwareAccountLocks {
 
 impl ThreadAwareAccountLocks {
   /// Creates a new `ThreadAwareAccountLocks` with the given number of threads.
-  pub(crate) fn new(num_threads: usize) -> Self {
+  pub fn new(num_threads: usize) -> Self {
       assert!(num_threads > 0, "num threads must be > 0");
       assert!(
           num_threads <= MAX_THREADS,
@@ -74,7 +74,7 @@ impl ThreadAwareAccountLocks {
   /// selected by the `thread_selector` function.
   /// `thread_selector` is only called if all accounts are schdulable, meaning
   /// that the `thread_set` passed to `thread_selector` is non-empty.
-  pub(crate) fn try_lock_accounts<'a>(
+  pub fn try_lock_accounts<'a>(
       &mut self,
       write_account_locks: impl Iterator<Item = &'a Pubkey> + Clone,
       read_account_locks: impl Iterator<Item = &'a Pubkey> + Clone,
@@ -93,7 +93,7 @@ impl ThreadAwareAccountLocks {
   }
 
   /// Unlocks the accounts for the given thread.
-  pub(crate) fn unlock_accounts<'a>(
+  pub fn unlock_accounts<'a>(
       &mut self,
       write_account_locks: impl Iterator<Item = &'a Pubkey>,
       read_account_locks: impl Iterator<Item = &'a Pubkey>,
@@ -371,12 +371,12 @@ impl Debug for ThreadSet {
 
 impl ThreadSet {
   #[inline(always)]
-  pub(crate) const fn none() -> Self {
+  pub const fn none() -> Self {
       Self(0b0)
   }
 
   #[inline(always)]
-  pub(crate) const fn any(num_threads: usize) -> Self {
+  pub const fn any(num_threads: usize) -> Self {
       if num_threads == MAX_THREADS {
           Self(u64::MAX)
       } else {
@@ -385,42 +385,42 @@ impl ThreadSet {
   }
 
   #[inline(always)]
-  pub(crate) const fn only(thread_id: ThreadId) -> Self {
+  pub const fn only(thread_id: ThreadId) -> Self {
       Self(Self::as_flag(thread_id))
   }
 
   #[inline(always)]
-  pub(crate) fn num_threads(&self) -> u32 {
+  pub fn num_threads(&self) -> u32 {
       self.0.count_ones()
   }
 
   #[inline(always)]
-  pub(crate) fn only_one_contained(&self) -> Option<ThreadId> {
+  pub fn only_one_contained(&self) -> Option<ThreadId> {
       (self.num_threads() == 1).then_some(self.0.trailing_zeros() as ThreadId)
   }
 
   #[inline(always)]
-  pub(crate) fn is_empty(&self) -> bool {
+  pub fn is_empty(&self) -> bool {
       self == &Self::none()
   }
 
   #[inline(always)]
-  pub(crate) fn contains(&self, thread_id: ThreadId) -> bool {
+  pub fn contains(&self, thread_id: ThreadId) -> bool {
       self.0 & Self::as_flag(thread_id) != 0
   }
 
   #[inline(always)]
-  pub(crate) fn insert(&mut self, thread_id: ThreadId) {
+  pub fn insert(&mut self, thread_id: ThreadId) {
       self.0 |= Self::as_flag(thread_id);
   }
 
   #[inline(always)]
-  pub(crate) fn remove(&mut self, thread_id: ThreadId) {
+  pub fn remove(&mut self, thread_id: ThreadId) {
       self.0 &= !Self::as_flag(thread_id);
   }
 
   #[inline(always)]
-  pub(crate) fn contained_threads_iter(self) -> impl Iterator<Item = ThreadId> {
+  pub fn contained_threads_iter(self) -> impl Iterator<Item = ThreadId> {
       (0..MAX_THREADS).filter(move |thread_id| self.contains(*thread_id))
   }
 
