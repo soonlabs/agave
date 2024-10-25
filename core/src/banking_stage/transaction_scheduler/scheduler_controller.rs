@@ -8,7 +8,6 @@ use {
         scheduler_metrics::{
             SchedulerCountMetrics, SchedulerLeaderDetectionMetrics, SchedulerTimingMetrics,
         },
-        transaction_id_generator::TransactionIdGenerator,
         transaction_state::SanitizedTransactionTTL,
         transaction_state_container::TransactionStateContainer,
     },
@@ -26,7 +25,9 @@ use {
     solana_accounts_db::account_locks::validate_account_locks,
     solana_cost_model::cost_model::CostModel,
     solana_measure::measure_us,
-    solana_prio_graph_scheduler::scheduler_messages::MaxAge,
+    solana_prio_graph_scheduler::{
+        scheduler_messages::MaxAge, transaction_id_generator::TransactionIdGenerator,
+    },
     solana_runtime::{bank::Bank, bank_forks::BankForks},
     solana_runtime_transaction::instructions_processor::process_compute_budget_instructions,
     solana_sdk::{
