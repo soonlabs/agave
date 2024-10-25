@@ -1,4 +1,4 @@
-use crate::banking_stage::scheduler_messages::TransactionId;
+use solana_prio_graph_scheduler::scheduler_messages::TransactionId;
 
 /// Simple reverse-sequential ID generator for `TransactionId`s.
 /// These IDs uniquely identify transactions during the scheduling process.

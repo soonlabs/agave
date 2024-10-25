@@ -19,7 +19,6 @@ use {
         forwarder::Forwarder,
         immutable_deserialized_packet::ImmutableDeserializedPacket,
         packet_deserializer::PacketDeserializer,
-        scheduler_messages::MaxAge,
         ForwardOption, LikeClusterInfo, TOTAL_BUFFERED_PACKETS,
     },
     arrayvec::ArrayVec,
@@ -27,6 +26,7 @@ use {
     solana_accounts_db::account_locks::validate_account_locks,
     solana_cost_model::cost_model::CostModel,
     solana_measure::measure_us,
+    solana_prio_graph_scheduler::scheduler_messages::MaxAge,
     solana_runtime::{bank::Bank, bank_forks::BankForks},
     solana_runtime_transaction::instructions_processor::process_compute_budget_instructions,
     solana_sdk::{
@@ -717,9 +717,7 @@ mod tests {
         super::*,
         crate::{
             banking_stage::{
-                consumer::TARGET_NUM_TRANSACTIONS_PER_BATCH,
-                scheduler_messages::{ConsumeWork, FinishedConsumeWork, TransactionBatchId},
-                tests::create_slow_genesis_config,
+                consumer::TARGET_NUM_TRANSACTIONS_PER_BATCH, tests::create_slow_genesis_config,
             },
             banking_trace::BankingPacketBatch,
             sigverify::SigverifyTracerPacketStats,
@@ -733,6 +731,9 @@ mod tests {
         },
         solana_perf::packet::{to_packet_batches, PacketBatch, NUM_PACKETS},
         solana_poh::poh_recorder::{PohRecorder, Record, WorkingBankEntry},
+        solana_prio_graph_scheduler::scheduler_messages::{
+            ConsumeWork, FinishedConsumeWork, TransactionBatchId,
+        },
         solana_runtime::bank::Bank,
         solana_sdk::{
             compute_budget::ComputeBudgetInstruction, fee_calculator::FeeRateGovernor, hash::Hash,

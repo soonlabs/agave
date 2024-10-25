@@ -1,6 +1,6 @@
 use {
-    crate::banking_stage::scheduler_messages::TransactionId,
     prio_graph::TopLevelId,
+    solana_prio_graph_scheduler::scheduler_messages::TransactionId,
     std::hash::{Hash, Hasher},
 };
 

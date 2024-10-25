@@ -1,6 +1,6 @@
 use {
     super::{batch_id_generator::BatchIdGenerator, thread_aware_account_locks::ThreadId},
-    crate::banking_stage::scheduler_messages::TransactionBatchId,
+    solana_prio_graph_scheduler::scheduler_messages::TransactionBatchId,
     std::collections::HashMap,
 };
 

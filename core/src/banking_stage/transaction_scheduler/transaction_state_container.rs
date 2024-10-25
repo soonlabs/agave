@@ -3,12 +3,10 @@ use {
         transaction_priority_id::TransactionPriorityId,
         transaction_state::{SanitizedTransactionTTL, TransactionState},
     },
-    crate::banking_stage::{
-        immutable_deserialized_packet::ImmutableDeserializedPacket,
-        scheduler_messages::TransactionId,
-    },
+    crate::banking_stage::immutable_deserialized_packet::ImmutableDeserializedPacket,
     itertools::MinMaxResult,
     min_max_heap::MinMaxHeap,
+    solana_prio_graph_scheduler::scheduler_messages::TransactionId,
     std::{collections::HashMap, sync::Arc},
 };
 
@@ -153,7 +151,7 @@ impl TransactionStateContainer {
 mod tests {
     use {
         super::*,
-        crate::banking_stage::scheduler_messages::MaxAge,
+        solana_prio_graph_scheduler::scheduler_messages::MaxAge,
         solana_sdk::{
             compute_budget::ComputeBudgetInstruction,
             hash::Hash,

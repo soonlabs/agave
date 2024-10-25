@@ -9,9 +9,6 @@ use {
     crate::banking_stage::{
         consumer::TARGET_NUM_TRANSACTIONS_PER_BATCH,
         read_write_account_set::ReadWriteAccountSet,
-        scheduler_messages::{
-            ConsumeWork, FinishedConsumeWork, MaxAge, TransactionBatchId, TransactionId,
-        },
         transaction_scheduler::{
             transaction_priority_id::TransactionPriorityId, transaction_state::TransactionState,
         },
@@ -21,6 +18,9 @@ use {
     prio_graph::{AccessKind, PrioGraph},
     solana_cost_model::block_cost_limits::MAX_BLOCK_UNITS,
     solana_measure::measure_us,
+    solana_prio_graph_scheduler::scheduler_messages::{
+        ConsumeWork, FinishedConsumeWork, MaxAge, TransactionBatchId, TransactionId,
+    },
     solana_sdk::{pubkey::Pubkey, saturating_add_assign, transaction::SanitizedTransaction},
 };
 

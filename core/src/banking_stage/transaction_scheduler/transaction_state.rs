@@ -1,9 +1,7 @@
 use {
-    crate::banking_stage::{
-        immutable_deserialized_packet::ImmutableDeserializedPacket, scheduler_messages::MaxAge,
-    },
-    solana_sdk::transaction::SanitizedTransaction,
-    std::sync::Arc,
+    crate::banking_stage::immutable_deserialized_packet::ImmutableDeserializedPacket,
+    solana_prio_graph_scheduler::scheduler_messages::MaxAge,
+    solana_sdk::transaction::SanitizedTransaction, std::sync::Arc,
 };
 
 /// Simple wrapper type to tie a sanitized transaction to max age slot.

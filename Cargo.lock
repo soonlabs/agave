@@ -6447,6 +6447,7 @@ dependencies = [
  "solana-net-utils",
  "solana-perf",
  "solana-poh",
+ "solana-prio-graph-scheduler",
  "solana-program-runtime",
  "solana-quic-client",
  "solana-rayon-threadlimit",
@@ -7281,6 +7282,9 @@ dependencies = [
 [[package]]
 name = "solana-prio-graph-scheduler"
 version = "2.1.0"
+dependencies = [
+ "solana-sdk",
+]
 
 [[package]]
 name = "solana-program"

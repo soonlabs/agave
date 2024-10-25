@@ -1,4 +1,4 @@
-use crate::banking_stage::scheduler_messages::TransactionBatchId;
+use solana_prio_graph_scheduler::scheduler_messages::TransactionBatchId;
 
 #[derive(Default)]
 pub struct BatchIdGenerator {
