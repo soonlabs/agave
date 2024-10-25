@@ -1,4 +1,3 @@
-mod batch_id_generator;
 mod in_flight_tracker;
 pub(crate) mod prio_graph_scheduler;
 pub(crate) mod scheduler_controller;

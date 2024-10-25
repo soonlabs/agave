@@ -1,6 +1,8 @@
 use {
-    super::{batch_id_generator::BatchIdGenerator, thread_aware_account_locks::ThreadId},
-    solana_prio_graph_scheduler::scheduler_messages::TransactionBatchId,
+    super::thread_aware_account_locks::ThreadId,
+    solana_prio_graph_scheduler::{
+        batch_id_generator::BatchIdGenerator, scheduler_messages::TransactionBatchId,
+    },
     std::collections::HashMap,
 };
 

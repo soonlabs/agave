@@ -1,4 +1,4 @@
-use solana_prio_graph_scheduler::scheduler_messages::TransactionBatchId;
+use crate::scheduler_messages::TransactionBatchId;
 
 #[derive(Default)]
 pub struct BatchIdGenerator {
@@ -6,6 +6,7 @@ pub struct BatchIdGenerator {
 }
 
 impl BatchIdGenerator {
+    #[allow(clippy::should_implement_trait)]
     pub fn next(&mut self) -> TransactionBatchId {
         let id = self.next_id;
         self.next_id = self.next_id.wrapping_sub(1);
