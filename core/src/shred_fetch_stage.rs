@@ -31,7 +31,7 @@ use {
 
 const PACKET_COALESCE_DURATION: Duration = Duration::from_millis(1);
 
-pub(crate) struct ShredFetchStage {
+pub struct ShredFetchStage {
     thread_hdls: Vec<JoinHandle<()>>,
 }
 
@@ -198,7 +198,7 @@ impl ShredFetchStage {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub(crate) fn new(
+    pub fn new(
         sockets: Vec<Arc<UdpSocket>>,
         turbine_quic_endpoint_receiver: Receiver<(Pubkey, SocketAddr, Bytes)>,
         repair_socket: Arc<UdpSocket>,
