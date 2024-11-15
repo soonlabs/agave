@@ -854,10 +854,12 @@ impl<FG: ForkGraph> ProgramCache<FG> {
     /// Insert a single entry. It's typically called during transaction loading,
     /// when the cache doesn't contain the entry corresponding to program `key`.
     pub fn assign_program(&mut self, key: Pubkey, entry: Arc<ProgramCacheEntry>) -> bool {
+        debug!("[JOE]: [RPPC]: [CLT]: Assigning program...");
         debug_assert!(!matches!(
             &entry.program,
             ProgramCacheEntryType::DelayVisibility
         ));
+        debug!("[JOE]: [RPPC]: [CLT]: [AP] Program is not delayed visibility.");
         // This function always returns `true` during normal operation.
         // Only during the cache preparation phase this can return `false`
         // for entries with `upcoming_environments`.
@@ -892,7 +894,12 @@ impl<FG: ForkGraph> ProgramCache<FG> {
                         )
                 }) {
                     Ok(index) => {
+                        debug!("[JOE]: [RPPC]: [CLT]: [AP] Index found: {}.", index);
                         let existing = slot_versions.get_mut(index).unwrap();
+                        debug!(
+                            "[JOE]: [RPPC]: [CLT]: [AP] Slot version found: {:#?}.",
+                            existing.program
+                        );
                         match (&existing.program, &entry.program) {
                             (
                                 ProgramCacheEntryType::Builtin(_),
@@ -923,6 +930,10 @@ impl<FG: ForkGraph> ProgramCache<FG> {
                         self.stats.reloads.fetch_add(1, Ordering::Relaxed);
                     }
                     Err(index) => {
+                        debug!(
+                            "[JOE]: [RPPC]: [CLT]: [AP] No index found at {}. Inserting.",
+                            index
+                        );
                         self.stats.insertions.fetch_add(1, Ordering::Relaxed);
                         slot_versions.insert(index, Arc::clone(&entry));
                     }
@@ -1157,6 +1168,7 @@ impl<FG: ForkGraph> ProgramCache<FG> {
         key: Pubkey,
         loaded_program: Arc<ProgramCacheEntry>,
     ) -> bool {
+        debug!("[JOE]: [RPPC]: Finishing cooperative loading task...");
         match &mut self.index {
             IndexImplementation::V1 {
                 loading_entries, ..
@@ -1180,6 +1192,7 @@ impl<FG: ForkGraph> ProgramCache<FG> {
                     self.stats.lost_insertions.fetch_add(1, Ordering::Relaxed);
                 }
                 let was_occupied = self.assign_program(key, loaded_program);
+                debug!("[JOE]: [RPPC]: [CLT]: Was occupied: {}", was_occupied);
                 self.loading_task_waiter.notify();
                 was_occupied
             }

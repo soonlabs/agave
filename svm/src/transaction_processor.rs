@@ -233,6 +233,8 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
         let mut error_metrics = TransactionErrorMetrics::default();
         let mut execute_timings = ExecuteTimings::default();
 
+        debug!("[JOE]: SVM API invoked.",);
+
         let (validation_results, validate_fees_time) = measure!(self.validate_fees(
             callbacks,
             config.account_overrides,
@@ -535,6 +537,8 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
         check_program_modification_slot: bool,
         limit_to_load_programs: bool,
     ) -> ProgramCacheForTxBatch {
+        debug!("[JOE]: Replenishing program cache...");
+
         let mut missing_programs: Vec<(Pubkey, (ProgramCacheMatchCriteria, u64))> =
             program_accounts_map
                 .iter()
@@ -551,8 +555,21 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                 })
                 .collect();
 
+        debug!(
+            "[JOE]: [RPPC]: Missing programs: len: {}, programs: {:?}",
+            missing_programs.len(),
+            missing_programs
+                .iter()
+                .map(|(key, _)| key)
+                .collect::<Vec<_>>(),
+        );
+
+        let mut round = 1;
+
         let mut loaded_programs_for_txs: Option<ProgramCacheForTxBatch> = None;
         loop {
+            debug!("[JOE]: [RPPC]: Round: {}", round,);
+
             let (program_to_store, task_cookie, task_waiter) = {
                 // Lock the global cache.
                 let program_cache = self.program_cache.read().unwrap();
@@ -565,6 +582,9 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                         &program_cache,
                     ));
                 }
+
+                debug!("[JOE]: [RPPC]: Attempting extraction...",);
+
                 // Figure out which program needs to be loaded next.
                 let program_to_load = program_cache.extract(
                     &mut missing_programs,
@@ -572,7 +592,10 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                     is_first_round,
                 );
 
+                debug!("[JOE]: [RPPC]: Program to load: {:#?}", program_to_load,);
+
                 let program_to_store = program_to_load.map(|(key, count)| {
+                    debug!("[JOE]: [RPPC]: Loading program...");
                     // Load, verify and compile one program.
                     let program = load_program_with_pubkey(
                         callback,
@@ -582,6 +605,9 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                         false,
                     )
                     .expect("called load_program_with_pubkey() with nonexistent account");
+
+                    debug!("[JOE]: [RPPC]: ...Success",);
+
                     program.tx_usage_counter.store(count, Ordering::Relaxed);
                     (key, program)
                 });
@@ -595,9 +621,11 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                 loaded_programs_for_txs.as_mut().unwrap().loaded_missing = true;
                 let mut program_cache = self.program_cache.write().unwrap();
                 // Submit our last completed loading task.
+                debug!("[JOE]: [RPPC]: Submitting cooperative loading task...");
                 if program_cache.finish_cooperative_loading_task(self.slot, key, program)
                     && limit_to_load_programs
                 {
+                    debug!("[JOE]: [RPPC]: ERR: Entry was occupied. Throwing.");
                     // This branch is taken when there is an error in assigning a program to a
                     // cache slot. It is not possible to mock this error for SVM unit
                     // tests purposes.
@@ -617,6 +645,8 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                 // missing programs inside the tx batch again.
                 let _new_cookie = task_waiter.wait(task_cookie);
             }
+
+            round += 1;
         }
 
         loaded_programs_for_txs.unwrap()
