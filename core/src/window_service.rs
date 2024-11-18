@@ -384,7 +384,7 @@ struct RepairMeta {
     nonce: Nonce,
 }
 
-pub(crate) struct WindowService {
+pub struct WindowService {
     t_insert: JoinHandle<()>,
     t_check_duplicate: JoinHandle<()>,
     repair_service: RepairService,
@@ -392,7 +392,7 @@ pub(crate) struct WindowService {
 
 impl WindowService {
     #[allow(clippy::too_many_arguments)]
-    pub(crate) fn new(
+    pub fn new(
         blockstore: Arc<Blockstore>,
         verified_receiver: Receiver<Vec<PacketBatch>>,
         retransmit_sender: Sender<Vec<ShredPayload>>,
