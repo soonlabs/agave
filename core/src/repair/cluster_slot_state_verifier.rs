@@ -1,5 +1,3 @@
-#[cfg(feature = "dev-context-only-utils")]
-use qualifier_attr::qualifiers;
 use {
     crate::{
         consensus::{
@@ -14,14 +12,11 @@ use {
     std::collections::{BTreeMap, BTreeSet, HashMap},
 };
 
-#[cfg_attr(feature = "dev-context-only-utils", qualifiers(pub))]
-pub(crate) type DuplicateSlotsTracker = BTreeSet<Slot>;
-pub(crate) type DuplicateSlotsToRepair = HashMap<Slot, Hash>;
-pub(crate) type PurgeRepairSlotCounter = BTreeMap<Slot, usize>;
-#[cfg_attr(feature = "dev-context-only-utils", qualifiers(pub))]
-pub(crate) type EpochSlotsFrozenSlots = BTreeMap<Slot, Hash>;
-#[cfg_attr(feature = "dev-context-only-utils", qualifiers(pub))]
-pub(crate) type DuplicateConfirmedSlots = BTreeMap<Slot, Hash>;
+pub type DuplicateSlotsTracker = BTreeSet<Slot>;
+pub type DuplicateSlotsToRepair = HashMap<Slot, Hash>;
+pub type PurgeRepairSlotCounter = BTreeMap<Slot, usize>;
+pub type EpochSlotsFrozenSlots = BTreeMap<Slot, Hash>;
+pub type DuplicateConfirmedSlots = BTreeMap<Slot, Hash>;
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum ClusterConfirmedHash {
@@ -170,8 +165,8 @@ impl BankFrozenState {
 pub struct DuplicateConfirmedState {
     // Keep fields private, forces construction
     // via constructor
-    duplicate_confirmed_hash: Hash,
-    bank_status: BankStatus,
+    pub duplicate_confirmed_hash: Hash,
+    pub bank_status: BankStatus,
 }
 impl DuplicateConfirmedState {
     pub fn new_from_state(
