@@ -58,7 +58,7 @@ impl BankStatus {
         }
     }
 
-    fn bank_hash(&self) -> Option<Hash> {
+    pub fn bank_hash(&self) -> Option<Hash> {
         match self {
             BankStatus::Frozen(hash) => Some(*hash),
             BankStatus::Dead => None,
@@ -66,7 +66,7 @@ impl BankStatus {
         }
     }
 
-    fn is_dead(&self) -> bool {
+    pub fn is_dead(&self) -> bool {
         match self {
             BankStatus::Frozen(_) => false,
             BankStatus::Dead => true,
@@ -74,7 +74,7 @@ impl BankStatus {
         }
     }
 
-    fn can_be_further_replayed(&self) -> bool {
+    pub fn can_be_further_replayed(&self) -> bool {
         match self {
             BankStatus::Unprocessed => true,
             BankStatus::Dead => false,
@@ -190,8 +190,8 @@ impl DuplicateConfirmedState {
 pub struct DuplicateState {
     // Keep fields private, forces construction
     // via constructor
-    duplicate_confirmed_hash: Option<Hash>,
-    bank_status: BankStatus,
+    pub duplicate_confirmed_hash: Option<Hash>,
+    pub bank_status: BankStatus,
 }
 impl DuplicateState {
     pub fn new_from_state(
@@ -227,10 +227,10 @@ impl DuplicateState {
 pub struct EpochSlotsFrozenState {
     // Keep fields private, forces construction
     // via constructor
-    epoch_slots_frozen_hash: Hash,
-    duplicate_confirmed_hash: Option<Hash>,
-    bank_status: BankStatus,
-    is_popular_pruned: bool,
+    pub epoch_slots_frozen_hash: Hash,
+    pub duplicate_confirmed_hash: Option<Hash>,
+    pub bank_status: BankStatus,
+    pub is_popular_pruned: bool,
 }
 impl EpochSlotsFrozenState {
     pub fn new_from_state(
@@ -289,7 +289,7 @@ pub enum SlotStateUpdate {
 }
 
 impl SlotStateUpdate {
-    fn into_state_changes(self, slot: Slot) -> Vec<ResultingStateChange> {
+    pub fn into_state_changes(self, slot: Slot) -> Vec<ResultingStateChange> {
         if self.can_be_further_replayed() {
             // If the bank is still awaiting replay, then there's nothing to do yet
             return vec![];
@@ -838,7 +838,7 @@ fn apply_state_changes(
 }
 
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn check_slot_agrees_with_cluster(
+pub fn check_slot_agrees_with_cluster(
     slot: Slot,
     root: Slot,
     blockstore: &Blockstore,
