@@ -128,7 +128,7 @@ enum ForkReplayMode {
 }
 
 #[derive(PartialEq, Eq, Debug)]
-enum ConfirmationType {
+pub enum ConfirmationType {
     SupermajorityVoted,
     DuplicateConfirmed,
 }
@@ -156,14 +156,14 @@ impl GenerateVoteTxResult {
 }
 
 #[derive(PartialEq, Eq, Debug)]
-struct ConfirmedSlot {
-    slot: Slot,
-    frozen_hash: Hash,
-    confirmation_type: ConfirmationType,
+pub struct ConfirmedSlot {
+    pub slot: Slot,
+    pub frozen_hash: Hash,
+    pub confirmation_type: ConfirmationType,
 }
 
 impl ConfirmedSlot {
-    fn new_supermajority_voted(slot: Slot, frozen_hash: Hash) -> Self {
+    pub fn new_supermajority_voted(slot: Slot, frozen_hash: Hash) -> Self {
         Self {
             slot,
             frozen_hash,
@@ -171,7 +171,7 @@ impl ConfirmedSlot {
         }
     }
 
-    fn new_duplicate_confirmed_slot(slot: Slot, frozen_hash: Hash) -> Self {
+    pub fn new_duplicate_confirmed_slot(slot: Slot, frozen_hash: Hash) -> Self {
         Self {
             slot,
             frozen_hash,
