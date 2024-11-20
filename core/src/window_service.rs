@@ -572,7 +572,7 @@ impl WindowService {
         }
     }
 
-    pub(crate) fn join(self) -> thread::Result<()> {
+    pub fn join(self) -> thread::Result<()> {
         self.t_insert.join()?;
         self.t_check_duplicate.join()?;
         self.repair_service.join()

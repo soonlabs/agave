@@ -317,7 +317,7 @@ impl ShredFetchStage {
         }
     }
 
-    pub(crate) fn join(self) -> thread::Result<()> {
+    pub fn join(self) -> thread::Result<()> {
         for thread_hdl in self.thread_hdls {
             thread_hdl.join()?;
         }
