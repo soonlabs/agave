@@ -334,15 +334,15 @@ fn get_nodes(
         Node { node, stake }
     }))
     // All staked nodes.
-    .chain(
-        stakes
-            .iter()
-            .filter(|(_, stake)| **stake > 0)
-            .map(|(&pubkey, &stake)| Node {
-                node: NodeId::from(pubkey),
-                stake,
-            }),
-    )
+    // .chain(
+    //     stakes
+    //         .iter()
+    //         .filter(|(_, stake)| **stake > 0)
+    //         .map(|(&pubkey, &stake)| Node {
+    //             node: NodeId::from(pubkey),
+    //             stake,
+    //         }),
+    // )
     .sorted_by_key(|node| Reverse((node.stake, node.pubkey())))
     // Since sorted_by_key is stable, in case of duplicates, this
     // will keep nodes with contact-info.
