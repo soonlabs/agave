@@ -290,9 +290,9 @@ fn check_block_cost_limits(
 
 #[derive(Default)]
 pub struct ExecuteBatchesInternalMetrics {
-    execution_timings_per_thread: HashMap<usize, ThreadExecuteTimings>,
-    total_batches_len: u64,
-    execute_batches_us: u64,
+    pub execution_timings_per_thread: HashMap<usize, ThreadExecuteTimings>,
+    pub total_batches_len: u64,
+    pub execute_batches_us: u64,
 }
 
 impl ExecuteBatchesInternalMetrics {
