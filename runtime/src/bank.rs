@@ -1808,7 +1808,7 @@ impl Bank {
         )
     }
 
-    fn update_sysvar_account<F>(&self, pubkey: &Pubkey, updater: F)
+    pub fn update_sysvar_account<F>(&self, pubkey: &Pubkey, updater: F)
     where
         F: Fn(&Option<AccountSharedData>) -> AccountSharedData,
     {
