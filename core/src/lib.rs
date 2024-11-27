@@ -28,7 +28,7 @@ pub mod poh_timing_report_service;
 pub mod poh_timing_reporter;
 pub mod repair;
 pub mod replay_stage;
-mod result;
+pub mod result;
 pub mod rewards_recorder_service;
 pub mod sample_performance_service;
 pub mod shred_fetch_stage;
