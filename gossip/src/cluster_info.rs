@@ -1260,12 +1260,44 @@ impl ClusterInfo {
     }
 
     pub fn get_snapshot_hashes_for_node(&self, pubkey: &Pubkey) -> Option<SnapshotHashes> {
-        self.gossip
-            .crds
-            .read()
-            .unwrap()
-            .get::<&SnapshotHashes>(*pubkey)
-            .cloned()
+        let crds = self.gossip.crds.read().unwrap();
+
+        // 打印正在查找的特定信息
+        info!("Looking for SnapshotHashes for pubkey: {}", pubkey);
+
+        let result = crds.get::<&SnapshotHashes>(*pubkey).cloned();
+
+        match &result {
+            Some(snapshot_hashes) => {
+                info!(
+                    "Found SnapshotHashes - Node: {}\n\
+                     Full snapshot: slot={}, hash={}\n\
+                     Number of incremental snapshots: {}",
+                    pubkey,
+                    snapshot_hashes.full.0,
+                    snapshot_hashes.full.1,
+                    snapshot_hashes.incremental.len()
+                );
+
+                // 打印所有增量快照信息
+                for (i, (slot, hash)) in snapshot_hashes.incremental.iter().enumerate() {
+                    info!("Incremental snapshot {}: slot={}, hash={}", i, slot, hash);
+                }
+
+                // 打印额外的元数据
+                info!(
+                    "SnapshotHashes metadata:\n\
+                     From: {}\n\
+                     Wallclock: {}",
+                    snapshot_hashes.from, snapshot_hashes.wallclock
+                );
+            }
+            None => {
+                info!("No SnapshotHashes found for node {}", pubkey);
+            }
+        }
+
+        result
     }
 
     /// Returns epoch-slots inserted since the given cursor.
