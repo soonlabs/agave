@@ -1263,13 +1263,13 @@ impl ClusterInfo {
         let crds = self.gossip.crds.read().unwrap();
 
         // 打印正在查找的特定信息
-        println!("Looking for SnapshotHashes for pubkey: {}", pubkey);
+        info!("Looking for SnapshotHashes for pubkey: {}", pubkey);
 
         let result = crds.get::<&SnapshotHashes>(*pubkey).cloned();
 
         match &result {
             Some(snapshot_hashes) => {
-                println!(
+                info!(
                     "Found SnapshotHashes - Node: {}\n\
                      Full snapshot: slot={}, hash={}\n\
                      Number of incremental snapshots: {}",
@@ -1281,11 +1281,11 @@ impl ClusterInfo {
 
                 // 打印所有增量快照信息
                 for (i, (slot, hash)) in snapshot_hashes.incremental.iter().enumerate() {
-                    println!("Incremental snapshot {}: slot={}, hash={}", i, slot, hash);
+                    info!("Incremental snapshot {}: slot={}, hash={}", i, slot, hash);
                 }
 
                 // 打印额外的元数据
-                println!(
+                info!(
                     "SnapshotHashes metadata:\n\
                      From: {}\n\
                      Wallclock: {}",
@@ -1293,7 +1293,7 @@ impl ClusterInfo {
                 );
             }
             None => {
-                println!("No SnapshotHashes found for node {}", pubkey);
+                info!("No SnapshotHashes found for node {}", pubkey);
             }
         }
 
