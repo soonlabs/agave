@@ -159,12 +159,12 @@ fn do_verify_reachable_ports(
             .unwrap();
         match receiver.recv_timeout(timeout) {
             Ok(_) => {
-                info!("tcp/{} is reachable", port);
+                info!("{}:tcp/{} is reachable", listening_addr.ip(), port);
             }
             Err(err) => {
                 error!(
-                    "Received no response at tcp/{}, check your port configuration: {}",
-                    port, err
+                    "Received no response at {}:tcp/{}, check your port configuration: {}",
+                   listening_addr.ip(), port, err
                 );
                 // Ugh, std rustc doesn't provide accepting with timeout or restoring original
                 // nonblocking-status of sockets because of lack of getter, only the setter...
