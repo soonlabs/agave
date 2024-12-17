@@ -2,7 +2,7 @@ use {crate::replay_stage::DUPLICATE_THRESHOLD, solana_sdk::feature_set};
 
 pub mod fork_choice;
 pub mod heaviest_subtree_fork_choice;
-pub(crate) mod latest_validator_votes_for_frozen_banks;
+pub mod latest_validator_votes_for_frozen_banks;
 pub mod progress_map;
 mod tower1_14_11;
 mod tower1_7_14;
