@@ -31,11 +31,11 @@ pub struct ClusterSlots {
 }
 
 impl ClusterSlots {
-    pub(crate) fn lookup(&self, slot: Slot) -> Option<Arc<RwLock<SlotPubkeys>>> {
+    pub fn lookup(&self, slot: Slot) -> Option<Arc<RwLock<SlotPubkeys>>> {
         self.cluster_slots.read().unwrap().get(&slot).cloned()
     }
 
-    pub(crate) fn update(&self, root_bank: &Bank, cluster_info: &ClusterInfo) {
+    pub fn update(&self, root_bank: &Bank, cluster_info: &ClusterInfo) {
         self.update_peers(root_bank);
         let epoch_slots = {
             let mut cursor = self.cursor.lock().unwrap();
