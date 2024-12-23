@@ -399,7 +399,7 @@ impl BankForks {
         // intervals), it *is* possible, and there are tests to exercise this possibility.
         if let Some(bank) = banks.iter().find(|bank| {
             bank.slot() > self.last_accounts_hash_slot
-                && bank.block_height() % self.accounts_hash_interval_slots == 0
+                && bank.slot() % self.accounts_hash_interval_slots == 0
         }) {
             let bank_slot = bank.slot();
             self.last_accounts_hash_slot = bank_slot;
