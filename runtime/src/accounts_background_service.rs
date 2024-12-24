@@ -440,7 +440,7 @@ impl SnapshotRequestHandler {
             ("non_snapshot_time_us", non_snapshot_time_us, i64),
             ("shrink_ancient_time_us", shrink_ancient_time_us, i64),
         );
-        Ok(snapshot_root_bank.block_height())
+        Ok(snapshot_root_bank.slot())
     }
 }
 
@@ -575,7 +575,7 @@ impl AccountsBackgroundService {
         test_hash_calculation: bool,
         mut last_full_snapshot_slot: Option<Slot>,
     ) -> Self {
-        let mut last_cleaned_block_height = 0;
+        let mut last_cleaned_slot = 0;
         let mut removed_slots_count = 0;
         let mut total_remove_slots_time = 0;
         let t_background = Builder::new()
@@ -657,8 +657,8 @@ impl AccountsBackgroundService {
 
                         match snapshot_handle_result {
                             Ok(snapshot_block_height) => {
-                                assert!(last_cleaned_block_height <= snapshot_block_height);
-                                last_cleaned_block_height = snapshot_block_height;
+                                assert!(last_cleaned_slot <= snapshot_block_height);
+                                last_cleaned_slot = snapshot_block_height;
                             }
                             Err(err) => {
                                 error!("Stopping AccountsBackgroundService! Fatal error while handling snapshot requests: {err}");
@@ -667,7 +667,7 @@ impl AccountsBackgroundService {
                             }
                         }
                     } else {
-                        if bank.block_height() - last_cleaned_block_height
+                        if bank.slot() - last_cleaned_slot
                             > (CLEAN_INTERVAL_BLOCKS + thread_rng().gen_range(0..10))
                         {
                             // Note that the flush will do an internal clean of the
@@ -676,7 +676,7 @@ impl AccountsBackgroundService {
                             // slots >= bank.slot()
                             bank.force_flush_accounts_cache();
                             bank.clean_accounts(last_full_snapshot_slot);
-                            last_cleaned_block_height = bank.block_height();
+                            last_cleaned_slot = bank.slot();
                             // See justification below for why we skip 'shrink' here.
                             if bank.is_startup_verification_complete() {
                                 bank.shrink_ancient_slots();
@@ -738,17 +738,17 @@ fn new_accounts_package_kind(
     snapshot_config: &SnapshotConfig,
     last_full_snapshot_slot: Option<Slot>,
 ) -> AccountsPackageKind {
-    let block_height = snapshot_request.snapshot_root_bank.block_height();
+    let slot = snapshot_request.snapshot_root_bank.slot();
     match snapshot_request.request_kind {
         SnapshotRequestKind::EpochAccountsHash => AccountsPackageKind::EpochAccountsHash,
         SnapshotRequestKind::Snapshot => {
             if snapshot_utils::should_take_full_snapshot(
-                block_height,
+                slot,
                 snapshot_config.full_snapshot_archive_interval_slots,
             ) {
                 AccountsPackageKind::Snapshot(SnapshotKind::FullSnapshot)
             } else if snapshot_utils::should_take_incremental_snapshot(
-                block_height,
+                slot,
                 snapshot_config.incremental_snapshot_archive_interval_slots,
                 last_full_snapshot_slot,
             ) {
