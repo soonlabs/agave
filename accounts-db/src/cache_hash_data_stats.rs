@@ -24,7 +24,7 @@ pub struct CacheHashDataStats {
 
 impl CacheHashDataStats {
     pub fn report(&self) {
-        datapoint_info!(
+        datapoint_trace!(
             "cache_hash_data_stats",
             (
                 "cache_file_size",

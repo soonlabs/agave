@@ -133,7 +133,7 @@ impl AccountHashesFile {
                                 num_retries
                             );
                         }
-                        datapoint_info!(
+                        datapoint_trace!(
                             "retry_account_hashes_file_allocation",
                             ("retry", num_retries, i64)
                         );
@@ -234,7 +234,7 @@ impl HashStats {
     }
 
     pub fn log(&self) {
-        datapoint_info!(
+        datapoint_trace!(
             "calculate_accounts_hash_from_storages",
             ("total_us", self.total_us, i64),
             ("mark_time_us", self.mark_time_us, i64),

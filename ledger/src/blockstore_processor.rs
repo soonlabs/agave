@@ -1001,7 +1001,7 @@ pub fn process_blockstore_from_root(
 
     let processing_time = now.elapsed();
 
-    datapoint_info!(
+    datapoint_trace!(
         "process_blockstore_from_root",
         ("total_time_us", processing_time.as_micros(), i64),
         (
@@ -1258,7 +1258,7 @@ pub struct ThreadExecuteTimings {
 impl ThreadExecuteTimings {
     pub fn report_stats(&self, slot: Slot) {
         lazy! {
-            datapoint_info!(
+            datapoint_trace!(
                 "replay-slot-end-to-end-stats",
                 ("slot", slot as i64, i64),
                 ("total_thread_us", self.total_thread_us as i64, i64),
@@ -1322,7 +1322,7 @@ impl ReplaySlotStats {
         };
 
         lazy! {
-            datapoint_info!(
+            datapoint_trace!(
                 "replay-slot-stats",
                 ("slot", slot as i64, i64),
                 ("fetch_entries_time", self.fetch_elapsed as i64, i64),
@@ -1405,7 +1405,7 @@ impl ReplaySlotStats {
                 ),
             );
         }
-        datapoint_info!(
+        datapoint_trace!(
             "per_program_timings",
             ("slot", slot as i64, i64),
             ("pubkey", "all", String),

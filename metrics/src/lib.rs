@@ -43,7 +43,7 @@ impl TokenCounter {
         // new_count = strong_count
         //    - 1 (in TokenCounter)
         //    + 1 (token that's being created)
-        datapoint_info!(*self.0, ("count", Arc::strong_count(&self.0), i64));
+        datapoint_trace!(*self.0, ("count", Arc::strong_count(&self.0), i64));
         CounterToken(self.0.clone())
     }
 }
@@ -57,7 +57,7 @@ impl Clone for CounterToken {
         // new_count = strong_count
         //    - 1 (in TokenCounter)
         //    + 1 (token that's being created)
-        datapoint_info!(*self.0, ("count", Arc::strong_count(&self.0), i64));
+        datapoint_trace!(*self.0, ("count", Arc::strong_count(&self.0), i64));
         CounterToken(self.0.clone())
     }
 }
@@ -67,7 +67,7 @@ impl Drop for CounterToken {
         // new_count = strong_count
         //    - 1 (in TokenCounter, if it still exists)
         //    - 1 (token that's being dropped)
-        datapoint_info!(
+        datapoint_trace!(
             *self.0,
             ("count", Arc::strong_count(&self.0).saturating_sub(2), i64)
         );
@@ -76,7 +76,7 @@ impl Drop for CounterToken {
 
 impl Drop for TokenCounter {
     fn drop(&mut self) {
-        datapoint_info!(
+        datapoint_trace!(
             *self.0,
             ("count", Arc::strong_count(&self.0).saturating_sub(2), i64)
         );

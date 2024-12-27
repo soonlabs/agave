@@ -253,7 +253,7 @@ impl SubscriptionControl {
                     .sender
                     .send(NotificationEntry::Subscribed(token.0.params.clone(), id).into());
                 entry.insert(weak_ref);
-                datapoint_info!(
+                datapoint_trace!(
                     "rpc-subscription",
                     ("total", self.0.subscriptions.len(), i64)
                 );
@@ -563,7 +563,7 @@ impl Drop for SubscriptionTokenInner {
                     .sender
                     .send(NotificationEntry::Unsubscribed(self.params.clone(), self.id).into());
                 entry.remove();
-                datapoint_info!(
+                datapoint_trace!(
                     "rpc-subscription",
                     ("total", self.control.subscriptions.len(), i64)
                 );

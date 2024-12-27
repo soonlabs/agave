@@ -3359,7 +3359,7 @@ impl Blockstore {
         }
         get_status_info_timer.stop();
 
-        datapoint_info!(
+        datapoint_trace!(
             "blockstore-get-conf-sigs-for-addr-2",
             (
                 "get_before_slot_us",
@@ -4198,7 +4198,7 @@ impl Blockstore {
             debug!("No missing roots found in range {start_root} to {end_slot}");
         }
         fix_roots.stop();
-        datapoint_info!(
+        datapoint_trace!(
             "blockstore-scan_and_fix_roots",
             (
                 "find_missing_roots_us",

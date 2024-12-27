@@ -333,7 +333,7 @@ impl PohRecorder {
                 leader_first_tick_height_including_grace_ticks;
             self.leader_last_tick_height = leader_last_tick_height;
 
-            datapoint_info!(
+            datapoint_trace!(
                 "leader-slot-start-to-cleared-elapsed-ms",
                 ("slot", bank.slot(), i64),
                 ("elapsed", start.elapsed().as_millis(), i64),
@@ -535,7 +535,7 @@ impl PohRecorder {
         }
         *last_slot = next_slot;
 
-        datapoint_info!(
+        datapoint_trace!(
             "poh_recorder-detected_pending_fork",
             ("next_leader_slot", next_slot, i64),
             (
@@ -916,7 +916,7 @@ impl PohRecorder {
 
     fn report_metrics(&mut self, bank_slot: Slot) {
         if self.last_metric.elapsed().as_millis() > 1000 {
-            datapoint_info!(
+            datapoint_trace!(
                 "poh_recorder",
                 ("slot", bank_slot, i64),
                 ("tick_lock_contention", self.tick_lock_contention_us, i64),

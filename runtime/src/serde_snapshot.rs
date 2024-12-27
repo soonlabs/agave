@@ -780,7 +780,7 @@ impl<'a> Serialize for SerializableAccountsDb<'a> {
         )
             .serialize(serializer);
         serialize_account_storage_timer.stop();
-        datapoint_info!(
+        datapoint_trace!(
             "serialize_account_storage_ms",
             ("duration", serialize_account_storage_timer.as_ms(), i64),
             ("num_entries", *entry_count.borrow(), i64),
@@ -1194,7 +1194,7 @@ where
     handle.join().unwrap();
     measure_notify.stop();
 
-    datapoint_info!(
+    datapoint_trace!(
         "reconstruct_accountsdb_from_fields()",
         ("accountsdb-notify-at-start-us", measure_notify.as_us(), i64),
     );

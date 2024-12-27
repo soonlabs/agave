@@ -81,7 +81,7 @@ impl PrioritizationFeeCacheMetrics {
     }
 
     fn report(&self, slot: Slot) {
-        datapoint_info!(
+        datapoint_trace!(
             "block_prioritization_fee_counters",
             ("slot", slot as i64, i64),
             (

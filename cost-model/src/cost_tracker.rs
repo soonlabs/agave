@@ -204,7 +204,7 @@ impl CostTracker {
 
         let (costliest_account, costliest_account_cost) = self.find_costliest_account();
 
-        datapoint_info!(
+        datapoint_trace!(
             "cost_tracker_stats",
             ("bank_slot", bank_slot as i64, i64),
             ("block_cost", self.block_cost as i64, i64),

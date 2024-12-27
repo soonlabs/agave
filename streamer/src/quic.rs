@@ -200,7 +200,7 @@ impl StreamStats {
             process_sampled_packets_us_hist
         };
 
-        datapoint_info!(
+        datapoint_trace!(
             name,
             (
                 "active_connections",

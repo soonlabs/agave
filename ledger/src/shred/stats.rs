@@ -66,7 +66,7 @@ impl ProcessShredsStats {
             *num += acc;
             *num
         });
-        datapoint_info!(
+        datapoint_trace!(
             name,
             ("slot", slot, i64),
             ("shredding_time", self.shredding_elapsed, i64),
@@ -121,7 +121,7 @@ impl ShredFetchStats {
         if elapsed.unwrap_or(Duration::MAX) < cadence {
             return;
         }
-        datapoint_info!(
+        datapoint_trace!(
             name,
             ("index_overrun", self.index_overrun, i64),
             ("shred_count", self.shred_count, i64),

@@ -91,7 +91,7 @@ impl TransactionErrorMetrics {
     }
 
     pub fn report(&self, id: &str, slot: Slot) {
-        datapoint_info!(
+        datapoint_trace!(
             "banking_stage-leader_slot_transaction_errors",
             "id" => id,
             ("slot", slot as i64, i64),

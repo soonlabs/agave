@@ -244,7 +244,7 @@ impl SendTransactionServiceStatsReport {
             .last_report
             .should_update(SEND_TRANSACTION_METRICS_REPORT_RATE_MS)
         {
-            datapoint_info!(
+            datapoint_trace!(
                 "send_transaction_service",
                 (
                     "recv-tx",

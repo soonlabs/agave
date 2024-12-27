@@ -916,7 +916,7 @@ fn serialize_snapshot(
         measure_everything.stop();
 
         // Monitor sizes because they're capped to MAX_SNAPSHOT_DATA_FILE_SIZE
-        datapoint_info!(
+        datapoint_trace!(
             "snapshot_bank",
             ("slot", slot, i64),
             ("bank_size", bank_snapshot_consumed_size, i64),
@@ -1119,7 +1119,7 @@ fn archive_snapshot(
         metadata.len()
     );
 
-    datapoint_info!(
+    datapoint_trace!(
         "archive-snapshot-package",
         ("slot", snapshot_slot, i64),
         ("archive_format", archive_format.to_string(), String),

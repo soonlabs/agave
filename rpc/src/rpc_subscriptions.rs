@@ -245,7 +245,7 @@ impl RecentItems {
         let now = Instant::now();
         let last_metrics_ago = now.duration_since(self.last_metrics_submission);
         if last_metrics_ago > RPC_NOTIFICATIONS_METRICS_SUBMISSION_INTERVAL_MS {
-            datapoint_info!(
+            datapoint_trace!(
                 "rpc_subscriptions_recent_items",
                 ("num", self.queue.len(), i64),
                 ("total_bytes", self.total_bytes, i64),
@@ -489,7 +489,7 @@ impl PubsubNotificationStats {
         if elapsed.unwrap_or(Duration::MAX) < SUBMIT_CADENCE {
             return;
         }
-        datapoint_info!(
+        datapoint_trace!(
             "pubsub_notification_entries",
             (
                 "notification_entry_processing_count",
@@ -1154,7 +1154,7 @@ impl RpcSubscriptions {
                 num_signatures_found.load(Ordering::Relaxed),
                 num_signatures_notified.load(Ordering::Relaxed),
             );
-            datapoint_info!(
+            datapoint_trace!(
                 "rpc_subscriptions",
                 ("source", source, String),
                 (

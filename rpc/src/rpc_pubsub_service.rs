@@ -144,7 +144,7 @@ struct SentNotificationStats {
 impl SentNotificationStats {
     fn maybe_report(&self) {
         if self.last_report.should_update(METRICS_REPORT_INTERVAL_MS) {
-            datapoint_info!(
+            datapoint_trace!(
                 "rpc_pubsub-sent_notifications",
                 (
                     "num_account",

@@ -1067,7 +1067,7 @@ impl LedgerStorage {
             .connection
             .put_protobuf_cells_with_retry::<generated::ConfirmedBlock>("blocks", &blocks_cells)
             .await?;
-        datapoint_info!(
+        datapoint_trace!(
             "storage-bigtable-upload-block",
             ("slot", slot, i64),
             ("transactions", num_transactions, i64),

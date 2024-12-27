@@ -66,7 +66,7 @@ impl PrioritizationFeeMetrics {
     }
 
     fn report(&self, slot: Slot) {
-        datapoint_info!(
+        datapoint_trace!(
             "block_prioritization_fee",
             ("slot", slot as i64, i64),
             (
@@ -242,7 +242,7 @@ impl PrioritizationFee {
         let min_transaction_fee = self.get_min_transaction_fee().unwrap_or(0);
         let mut accounts_fees: Vec<_> = self.get_writable_account_fees().collect();
         accounts_fees.sort_by(|lh, rh| rh.1.cmp(lh.1));
-        datapoint_info!(
+        datapoint_trace!(
             "block_min_prioritization_fee",
             ("slot", slot as i64, i64),
             ("entity", "block", String),

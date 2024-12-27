@@ -67,7 +67,7 @@ fn main() {
                 let deviation: i64 = v["deviation"].to_string().parse().unwrap();
                 assert!(!upload_metrics, "TODO");
                 /*
-                solana_metrics::datapoint_info!(
+                solana_metrics::datapoint_trace!(
                     &v["name"].as_str().unwrap().trim_matches('\"'),
                     ("test", "bench", String),
                     ("branch", branch.to_string(), String),

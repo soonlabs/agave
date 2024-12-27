@@ -40,7 +40,7 @@ impl Drop for SlotCacheInner {
 
 impl SlotCacheInner {
     pub fn report_slot_store_metrics(&self) {
-        datapoint_info!(
+        datapoint_trace!(
             "slot_repeated_writes",
             (
                 "same_account_writes",
@@ -191,7 +191,7 @@ impl AccountsCache {
         self.total_size.load(Ordering::Relaxed)
     }
     pub fn report_size(&self) {
-        datapoint_info!(
+        datapoint_trace!(
             "accounts_cache_size",
             (
                 "num_roots",

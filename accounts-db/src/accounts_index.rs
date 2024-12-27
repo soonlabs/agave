@@ -1048,7 +1048,7 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> AccountsIndex<T, U> {
 
         total_elapsed_timer.stop();
         if !metric_name.is_empty() {
-            datapoint_info!(
+            datapoint_trace!(
                 metric_name,
                 ("total_elapsed", total_elapsed_timer.as_us(), i64),
                 ("latest_slot_elapsed", latest_slot_elapsed, i64),

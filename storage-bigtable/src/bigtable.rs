@@ -885,7 +885,7 @@ impl<F: FnMut(Request<()>) -> InterceptedRequestResult> BigTable<F> {
         } else {
             "bigtable_unknown"
         };
-        datapoint_info!(datapoint_bigtable, ("read_rows", 1, i64));
+        datapoint_trace!(datapoint_bigtable, ("read_rows", 1, i64));
         tokio::time::timeout(
             self.timeout.unwrap_or(Duration::from_secs(30)),
             self.client.read_rows(request),

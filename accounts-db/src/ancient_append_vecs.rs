@@ -427,7 +427,7 @@ impl AccountsDb {
             &accounts_to_combine.target_slots_sorted,
             &tuning,
         ) {
-            datapoint_info!("shrink_ancient_stats", ("high_slot", 1, i64));
+            datapoint_trace!("shrink_ancient_stats", ("high_slot", 1, i64));
             log::info!(
                 "unable to ancient pack: highest available slot: {:?}, lowest required slot: {:?}",
                 accounts_to_combine.target_slots_sorted.last(),

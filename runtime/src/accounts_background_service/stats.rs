@@ -40,7 +40,7 @@ impl StatsManager {
             return;
         }
 
-        datapoint_info!(
+        datapoint_trace!(
             "accounts_background_service",
             (
                 "duration_since_previous_submit_us",

@@ -244,7 +244,7 @@ impl BlockstoreCleanupService {
         total_shreds: u64,
     ) {
         if let (Ok(pre), Ok(post)) = (pre, post) {
-            datapoint_info!(
+            datapoint_trace!(
                 "ledger_disk_utilization",
                 ("disk_utilization_pre", pre as i64, i64),
                 ("disk_utilization_post", post as i64, i64),

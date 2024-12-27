@@ -103,7 +103,7 @@ impl ConnectionCacheStats {
             (0, 0)
         };
 
-        datapoint_info!(
+        datapoint_trace!(
             name,
             (
                 "cache_hits",

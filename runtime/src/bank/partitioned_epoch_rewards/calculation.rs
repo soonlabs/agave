@@ -83,7 +83,7 @@ impl Bank {
             point_value,
         );
 
-        datapoint_info!(
+        datapoint_trace!(
             "epoch-rewards-status-update",
             ("start_slot", slot, i64),
             ("calculation_block_height", self.block_height(), i64),
@@ -160,7 +160,7 @@ impl Bank {
             0
         };
 
-        datapoint_info!(
+        datapoint_trace!(
             "epoch_rewards",
             ("slot", self.slot, i64),
             ("epoch", prev_epoch, i64),

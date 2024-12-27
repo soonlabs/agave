@@ -44,7 +44,7 @@ impl Blockstore {
         let purge_result =
             self.run_purge_with_stats(from_slot, to_slot, purge_type, &mut purge_stats);
 
-        datapoint_info!(
+        datapoint_trace!(
             "blockstore-purge",
             ("from_slot", from_slot as i64, i64),
             ("to_slot", to_slot as i64, i64),

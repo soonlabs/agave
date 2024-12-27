@@ -21,7 +21,7 @@ pub struct GeyserPluginNotifyAtSnapshotRestoreStats {
 
 impl GeyserPluginNotifyAtSnapshotRestoreStats {
     pub fn report(&self) {
-        datapoint_info!(
+        datapoint_trace!(
             "accountsdb_plugin_notify_account_restore_from_snapshot_summary",
             ("total_accounts", self.total_accounts, i64),
             ("skipped_accounts", self.skipped_accounts, i64),

@@ -55,7 +55,7 @@ pub(crate) fn report_new_epoch_metrics(
     timings: NewEpochTimings,
     metrics: RewardsMetrics,
 ) {
-    datapoint_info!(
+    datapoint_trace!(
         "bank-new_from_parent-new_epoch_timings",
         ("epoch", epoch, i64),
         ("slot", slot, i64),
@@ -117,7 +117,7 @@ pub(crate) fn report_new_bank_metrics(
     block_height: u64,
     timings: NewBankTimings,
 ) {
-    datapoint_info!(
+    datapoint_trace!(
         "bank-new_from_parent-heights",
         ("slot", slot, i64),
         ("block_height", block_height, i64),
@@ -181,7 +181,7 @@ pub(crate) struct RewardsStoreMetrics {
 }
 
 pub(crate) fn report_partitioned_reward_metrics(bank: &Bank, timings: RewardsStoreMetrics) {
-    datapoint_info!(
+    datapoint_trace!(
         "bank-partitioned_epoch_rewards_credit",
         ("slot", bank.slot(), i64),
         ("epoch", bank.epoch(), i64),
@@ -224,7 +224,7 @@ pub(crate) fn report_loaded_programs_stats(stats: &ProgramCacheStats, slot: Slot
     let prunes_environment = stats.prunes_environment.load(Ordering::Relaxed);
     let empty_entries = stats.empty_entries.load(Ordering::Relaxed);
     let water_level = stats.water_level.load(Ordering::Relaxed);
-    datapoint_info!(
+    datapoint_trace!(
         "loaded-programs-cache-stats",
         ("slot", slot, i64),
         ("hits", hits, i64),

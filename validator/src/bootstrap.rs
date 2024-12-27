@@ -689,7 +689,7 @@ pub fn rpc_bootstrap(
         shutdown_gossip_service(gossip);
     }
 
-    datapoint_info!(
+    datapoint_trace!(
         "bootstrap-snapshot-download",
         (
             "total_time_secs",

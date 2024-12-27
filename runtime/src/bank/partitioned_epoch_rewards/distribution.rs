@@ -62,7 +62,7 @@ impl Bank {
         }
 
         if height.saturating_add(1) >= distribution_end_exclusive {
-            datapoint_info!(
+            datapoint_trace!(
                 "epoch-rewards-status-update",
                 ("slot", self.slot(), i64),
                 ("block_height", height, i64),

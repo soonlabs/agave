@@ -66,23 +66,23 @@ impl ActiveStats {
         };
         let value = modify_stat(stat);
         match item {
-            ActiveStatItem::Clean => datapoint_info!("accounts_db_active", ("clean", value, i64)),
+            ActiveStatItem::Clean => datapoint_trace!("accounts_db_active", ("clean", value, i64)),
             ActiveStatItem::SquashAncient => {
-                datapoint_info!("accounts_db_active", ("squash_ancient", value, i64))
+                datapoint_trace!("accounts_db_active", ("squash_ancient", value, i64))
             }
             ActiveStatItem::Shrink => {
-                datapoint_info!("accounts_db_active", ("shrink", value, i64))
+                datapoint_trace!("accounts_db_active", ("shrink", value, i64))
             }
-            ActiveStatItem::Hash => datapoint_info!("accounts_db_active", ("hash", value, i64)),
-            ActiveStatItem::Flush => datapoint_info!("accounts_db_active", ("flush", value, i64)),
+            ActiveStatItem::Hash => datapoint_trace!("accounts_db_active", ("hash", value, i64)),
+            ActiveStatItem::Flush => datapoint_trace!("accounts_db_active", ("flush", value, i64)),
             ActiveStatItem::HashDeDup => {
-                datapoint_info!("accounts_db_active", ("hash_dedup", value, i64))
+                datapoint_trace!("accounts_db_active", ("hash_dedup", value, i64))
             }
             ActiveStatItem::HashMerkleTree => {
-                datapoint_info!("accounts_db_active", ("hash_merkle_tree", value, i64))
+                datapoint_trace!("accounts_db_active", ("hash_merkle_tree", value, i64))
             }
             ActiveStatItem::HashScan => {
-                datapoint_info!("accounts_db_active", ("hash_scan", value, i64))
+                datapoint_trace!("accounts_db_active", ("hash_scan", value, i64))
             }
         };
     }

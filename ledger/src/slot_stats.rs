@@ -47,7 +47,7 @@ impl SlotStats {
 
     fn report(&self, slot: Slot) {
         let min_fec_set_count = self.get_min_index_count();
-        datapoint_info!(
+        datapoint_trace!(
             "slot_stats_tracking_complete",
             ("slot", slot, i64),
             ("last_index", self.last_index, i64),
@@ -129,7 +129,7 @@ impl SlotsStats {
                 .last_index
                 .and_then(|ix| i64::try_from(ix).ok())
                 .unwrap_or(-1);
-            datapoint_info!(
+            datapoint_trace!(
                 "shred_insert_is_full",
                 ("slot", slot, i64),
                 ("total_time_ms", total_time_ms, i64),

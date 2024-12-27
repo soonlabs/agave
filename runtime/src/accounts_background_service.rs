@@ -157,7 +157,7 @@ impl SnapshotRequestHandler {
             num_re_enqueued_requests,
         ) = self.get_next_snapshot_request(*last_full_snapshot_slot)?;
 
-        datapoint_info!(
+        datapoint_trace!(
             "handle_snapshot_requests",
             ("num_outstanding_requests", num_outstanding_requests, i64),
             ("num_re_enqueued_requests", num_re_enqueued_requests, i64),
@@ -426,7 +426,7 @@ impl SnapshotRequestHandler {
 
         total_time.stop();
 
-        datapoint_info!(
+        datapoint_trace!(
             "handle_snapshot_requests-timing",
             (
                 "flush_accounts_cache_time",
@@ -495,7 +495,7 @@ impl PrunedBanksRequestHandler {
         let num_banks_with_same_slot =
             num_banks_to_purge.saturating_sub(grouped_banks_to_purge.len());
         if num_banks_with_same_slot > 0 {
-            datapoint_info!(
+            datapoint_trace!(
                 "pruned_banks_request_handler",
                 ("num_pruned_banks", num_banks_to_purge, i64),
                 ("num_banks_with_same_slot", num_banks_with_same_slot, i64),
@@ -528,7 +528,7 @@ impl PrunedBanksRequestHandler {
         *total_remove_slots_time += remove_slots_time.as_us();
 
         if *removed_slots_count >= 100 {
-            datapoint_info!(
+            datapoint_trace!(
                 "remove_slots_timing",
                 ("remove_slots_time", *total_remove_slots_time, i64),
                 ("removed_slots_count", *removed_slots_count, i64),

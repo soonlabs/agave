@@ -149,7 +149,7 @@ impl<SecondaryIndexEntryType: SecondaryIndexEntry + Default + Sync + Send>
         }
 
         if self.stats.last_report.should_update(1000) {
-            datapoint_info!(
+            datapoint_trace!(
                 self.metrics_name,
                 ("num_secondary_keys", self.index.len() as i64, i64),
                 (

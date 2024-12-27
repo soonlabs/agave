@@ -228,7 +228,7 @@ impl BucketMapHolderStats {
         if disk.is_some() {
             if was_startup {
                 // these stats only apply at startup
-                datapoint_info!(
+                datapoint_trace!(
                     "accounts_index_startup",
                     (
                         "entries_created",
@@ -254,7 +254,7 @@ impl BucketMapHolderStats {
                     ),
                 );
             }
-            datapoint_info!(
+            datapoint_trace!(
                 if startup || was_startup {
                     thread_time_elapsed_ms *= 2; // more threads are allocated during startup
                     "accounts_index_startup"
@@ -546,7 +546,7 @@ impl BucketMapHolderStats {
                 ),
             );
         } else {
-            datapoint_info!(
+            datapoint_trace!(
                 if startup || was_startup {
                     thread_time_elapsed_ms *= 2; // more threads are allocated during startup
                     "accounts_index_startup"

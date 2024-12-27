@@ -45,7 +45,7 @@ pub struct BlockstoreInsertionMetrics {
 
 impl BlockstoreInsertionMetrics {
     pub fn report_metrics(&self, metric_name: &'static str) {
-        datapoint_info!(
+        datapoint_trace!(
             metric_name,
             ("num_shreds", self.num_shreds as i64, i64),
             ("total_elapsed_us", self.total_elapsed_us as i64, i64),
@@ -192,7 +192,7 @@ impl BlockstoreRpcApiMetrics {
             .saturating_add(num_get_transaction_status);
 
         if total_num_queries > 0 {
-            datapoint_info!(
+            datapoint_trace!(
                 "blockstore-rpc-api",
                 ("num_get_block_height", num_get_block_height as i64, i64),
                 (
@@ -343,7 +343,7 @@ impl BlockstoreRocksDbColumnFamilyMetrics {
     ///
     /// For example, "blockstore_rocksdb_cfs,cf_name=shred_data".
     pub fn report_metrics(&self, cf_name: &'static str, column_options: &LedgerColumnOptions) {
-        datapoint_info!(
+        datapoint_trace!(
             "blockstore_rocksdb_cfs",
             // tags that support group-by operations
             "cf_name" => cf_name,
@@ -454,7 +454,7 @@ pub(crate) fn report_rocksdb_read_perf(
     PER_THREAD_ROCKS_PERF_CONTEXT.with(|perf_context_cell| {
         set_perf_stats(PerfStatsLevel::Disable);
         let perf_context = perf_context_cell.borrow();
-        datapoint_info!(
+        datapoint_trace!(
             "blockstore_rocksdb_read_perf",
             // tags that support group-by operations
             "op" => op_name,
@@ -630,7 +630,7 @@ pub(crate) fn report_rocksdb_write_perf(
     PER_THREAD_ROCKS_PERF_CONTEXT.with(|perf_context_cell| {
         set_perf_stats(PerfStatsLevel::Disable);
         let perf_context = perf_context_cell.borrow();
-        datapoint_info!(
+        datapoint_trace!(
             "blockstore_rocksdb_write_perf",
             // tags that support group-by operations
             "op" => op_name,

@@ -490,7 +490,7 @@ impl BankForks {
             accounts_background_request_sender,
             highest_super_majority_root,
         )?;
-        datapoint_info!(
+        datapoint_trace!(
             "bank-forks_set_root",
             (
                 "elapsed_ms",

@@ -235,7 +235,7 @@ where
             duration_as_ms(&duration),
             blockhash,
         );
-        datapoint_info!(
+        datapoint_trace!(
             "bench-tps-generate_txs",
             ("duration", duration_as_us(&duration), i64)
         );
@@ -329,7 +329,7 @@ fn generate_chunked_transfers<T: 'static + TpsClient + Send + Sync + ?Sized>(
             use_durable_nonce,
         );
 
-        datapoint_info!(
+        datapoint_trace!(
             "blockhash_stats",
             (
                 "time_elapsed_since_last_generate_txs",
@@ -561,7 +561,7 @@ where
 
 fn metrics_submit_lamport_balance(lamport_balance: u64) {
     info!("Token balance: {}", lamport_balance);
-    datapoint_info!(
+    datapoint_trace!(
         "bench-tps-lamport_balance",
         ("balance", lamport_balance, i64)
     );
@@ -923,7 +923,7 @@ fn poll_blockhash<T: TpsClient + ?Sized>(
         if blockhash_updated {
             let balance = client.get_balance(id).unwrap_or(0);
             metrics_submit_lamport_balance(balance);
-            datapoint_info!(
+            datapoint_trace!(
                 "blockhash_stats",
                 (
                     "time_elapsed_since_last_blockhash_update",
@@ -988,7 +988,7 @@ fn do_tx_transfers<T: TpsClient + ?Sized>(
             }
 
             if min_timestamp != u64::MAX {
-                datapoint_info!(
+                datapoint_trace!(
                     "bench-tps-do_tx_transfers",
                     ("oldest-blockhash-age", timestamp() - min_timestamp, i64),
                 );
@@ -1009,7 +1009,7 @@ fn do_tx_transfers<T: TpsClient + ?Sized>(
                 warn!("send_batch_sync in do_tx_transfers failed: {}", error);
             }
 
-            datapoint_info!(
+            datapoint_trace!(
                 "bench-tps-do_tx_transfers",
                 (
                     "time-elapsed-since-last-send",
@@ -1031,7 +1031,7 @@ fn do_tx_transfers<T: TpsClient + ?Sized>(
                 duration_as_ms(&transfer_start.elapsed()),
                 num_txs as f32 / duration_as_s(&transfer_start.elapsed()),
             );
-            datapoint_info!(
+            datapoint_trace!(
                 "bench-tps-do_tx_transfers",
                 ("duration", duration_as_us(&transfer_start.elapsed()), i64),
                 ("count", num_txs, i64)

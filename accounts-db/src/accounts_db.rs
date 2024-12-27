@@ -697,7 +697,7 @@ type StorageSizeAndCountMap = DashMap<AccountsFileId, StorageSizeAndCount>;
 
 impl GenerateIndexTimings {
     pub fn report(&self, startup_stats: &StartupStats) {
-        datapoint_info!(
+        datapoint_trace!(
             "generate_index",
             ("overall_us", self.total_time_us, i64),
             // we cannot accurately measure index insertion time because of many threads and lock contention
@@ -1553,7 +1553,7 @@ impl PurgeStats {
             .unwrap_or(true);
 
         if should_report {
-            datapoint_info!(
+            datapoint_trace!(
                 metric_name,
                 (
                     "safety_checks_elapsed",
@@ -1871,7 +1871,7 @@ impl LatestAccountsIndexRootsStats {
     }
 
     fn report(&self) {
-        datapoint_info!(
+        datapoint_trace!(
             "accounts_index_roots_len",
             (
                 "roots_len",
@@ -2008,7 +2008,7 @@ pub struct ShrinkStats {
 impl ShrinkStats {
     fn report(&self) {
         if self.last_report.should_update(1000) {
-            datapoint_info!(
+            datapoint_trace!(
                 "shrink_stats",
                 (
                     "num_slots_shrunk",
@@ -2103,7 +2103,7 @@ impl ShrinkStats {
 
 impl ShrinkAncientStats {
     pub(crate) fn report(&self) {
-        datapoint_info!(
+        datapoint_trace!(
             "shrink_ancient_stats",
             (
                 "num_slots_shrunk",
@@ -3506,7 +3506,7 @@ impl AccountsDb {
         measure_all.stop();
 
         self.clean_accounts_stats.report();
-        datapoint_info!(
+        datapoint_trace!(
             "clean_accounts",
             ("total_us", measure_all.as_us(), i64),
             (
@@ -6369,7 +6369,7 @@ impl AccountsDb {
                     unflushable_unrooted_slot_count += 1;
                 }
             });
-            datapoint_info!(
+            datapoint_trace!(
                 "accounts_db-flush_accounts_cache_aggressively",
                 ("num_flushed", flush_stats.num_flushed.0, i64),
                 ("num_purged", flush_stats.num_purged.0, i64),
@@ -6380,7 +6380,7 @@ impl AccountsDb {
             );
         }
 
-        datapoint_info!(
+        datapoint_trace!(
             "accounts_db-flush_accounts_cache",
             ("total_new_cleaned_roots", total_new_cleaned_roots, i64),
             ("num_cleaned_roots_flushed", num_cleaned_roots_flushed, i64),
@@ -6745,14 +6745,14 @@ impl AccountsDb {
             0.
         };
 
-        datapoint_info!(
+        datapoint_trace!(
             "accounts_db-stores",
             ("total_count", total_count, i64),
             ("total_bytes", total_bytes, i64),
             ("total_alive_bytes", total_alive_bytes, i64),
             ("total_alive_ratio", total_alive_ratio, f64),
         );
-        datapoint_info!(
+        datapoint_trace!(
             "accounts_db-perf-stats",
             (
                 "delta_hash_num",
@@ -6876,7 +6876,7 @@ impl AccountsDb {
         let (accumulated_hash, hash_total) = AccountsHasher::calculate_hash(account_hashes);
         hash_time.stop();
 
-        datapoint_info!(
+        datapoint_trace!(
             "calculate_accounts_hash_from_index",
             ("accounts_scan", scan.as_us(), i64),
             ("hash", hash_time.as_us(), i64),
@@ -8433,7 +8433,7 @@ impl AccountsDb {
     fn report_store_timings(&self) {
         if self.stats.last_store_report.should_update(1000) {
             let read_cache_stats = self.read_only_accounts_cache.get_and_reset_stats();
-            datapoint_info!(
+            datapoint_trace!(
                 "accounts_db_store_timings",
                 (
                     "hash_accounts",
@@ -8545,7 +8545,7 @@ impl AccountsDb {
                 ),
             );
 
-            datapoint_info!(
+            datapoint_trace!(
                 "accounts_db_store_timings2",
                 (
                     "create_store_count",

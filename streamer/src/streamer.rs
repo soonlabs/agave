@@ -73,7 +73,7 @@ impl StreamerReceiveStats {
     }
 
     pub fn report(&self) {
-        datapoint_info!(
+        datapoint_trace!(
             self.name,
             (
                 "packets_count",
@@ -221,7 +221,7 @@ impl StreamerSendStats {
             pkt_count += host_stats.count;
         });
 
-        datapoint_info!(
+        datapoint_trace!(
             name,
             ("streamer-send-sample_duration_ms", sample_ms, i64),
             ("streamer-send-host_count", host_map.len(), i64),
@@ -419,7 +419,7 @@ pub fn responder(
                 }
                 let now = timestamp();
                 if now - last_print > 1000 && errors != 0 {
-                    datapoint_info!(name, ("errors", errors, i64),);
+                    datapoint_trace!(name, ("errors", errors, i64),);
                     info!("{} last-error: {:?} count: {}", name, last_error, errors);
                     last_print = now;
                     errors = 0;

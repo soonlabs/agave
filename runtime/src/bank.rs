@@ -1687,7 +1687,7 @@ impl Bank {
         assert_eq!(bank.epoch_schedule, genesis_config.epoch_schedule);
         assert_eq!(bank.epoch, bank.epoch_schedule.get_epoch(bank.slot));
 
-        datapoint_info!(
+        datapoint_trace!(
             "bank-new-from-fields",
             (
                 "accounts_data_len-from-snapshot",
@@ -1873,7 +1873,7 @@ impl Bank {
                 unix_timestamp = ancestor_timestamp;
             }
         }
-        datapoint_info!(
+        datapoint_trace!(
             "bank-timestamp-correction",
             ("slot", self.slot(), i64),
             ("from_genesis", self.unix_timestamp_from_genesis(), i64),
@@ -2262,7 +2262,7 @@ impl Bank {
                 })
                 .collect::<Vec<_>>());
 
-            datapoint_info!(
+            datapoint_trace!(
                 "stake_account_filter_time",
                 ("filter_time_us", filter_timer.as_us(), i64),
                 ("num_stake_delegations_before", num_stake_delegations, i64),
@@ -2781,7 +2781,7 @@ impl Bank {
                 .is_active(&feature_set::warp_timestamp_again::id()),
         );
         get_timestamp_estimate_time.stop();
-        datapoint_info!(
+        datapoint_trace!(
             "bank-timestamp",
             (
                 "get_timestamp_estimate_us",
@@ -4312,7 +4312,7 @@ impl Bank {
                 .for_each(|partition| self.collect_rent_in_partition(partition, &rent_metrics));
         }
         measure.stop();
-        datapoint_info!(
+        datapoint_trace!(
             "collect_rent_eagerly",
             ("accounts", rent_metrics.count.load(Relaxed), i64),
             ("partitions", count, i64),
@@ -5503,7 +5503,7 @@ impl Bank {
             .epoch_accounts_hash_manager
             .wait_get_epoch_accounts_hash());
 
-        datapoint_info!(
+        datapoint_trace!(
             "bank-wait_get_epoch_accounts_hash",
             ("slot", self.slot() as i64, i64),
             ("waiting-time-us", measure.as_us() as i64, i64),
@@ -5862,7 +5862,7 @@ impl Bank {
                 is_startup,
             );
         if total_lamports != self.capitalization() {
-            datapoint_info!(
+            datapoint_trace!(
                 "capitalization_mismatch",
                 ("slot", self.slot(), i64),
                 ("calculated_lamports", total_lamports, i64),
@@ -5997,7 +5997,7 @@ impl Bank {
         let (verified_bank, verify_bank_time_us) = measure_us!(self.verify_hash());
         info!("Verifying bank... Done.");
 
-        datapoint_info!(
+        datapoint_trace!(
             "verify_snapshot_bank",
             ("clean_us", clean_time_us, i64),
             ("shrink_us", shrink_time_us, i64),
@@ -6597,7 +6597,7 @@ impl Bank {
     ) {
         if let Some(old_account) = self.get_account_with_fixed_root(old_address) {
             if let Some(new_account) = self.get_account_with_fixed_root(new_address) {
-                datapoint_info!(datapoint_name, ("slot", self.slot, i64));
+                datapoint_trace!(datapoint_name, ("slot", self.slot, i64));
 
                 // Burn lamports in the old account
                 self.capitalization
@@ -6667,7 +6667,7 @@ impl Bank {
             .epoch_accounts_hash_manager
             .wait_get_epoch_accounts_hash());
 
-        datapoint_info!(
+        datapoint_trace!(
             "bank-get_epoch_accounts_hash_to_serialize",
             ("slot", self.slot(), i64),
             ("waiting-time-us", measure.as_us(), i64),

@@ -6,7 +6,7 @@
 //! - datapoint_error!
 //! - datapoint_warn!
 //! - datapoint_trace!
-//! - datapoint_info!
+//! - datapoint_trace!
 //! - datapoint_debug!
 //!
 //! The matric macro consists of the following three main parts:
@@ -208,7 +208,7 @@ mod test {
     #[test]
     fn test_datapoint() {
         datapoint_debug!("name", ("field name", "test", String));
-        datapoint_info!("name", ("field name", 12.34_f64, f64));
+        datapoint_trace!("name", ("field name", 12.34_f64, f64));
         datapoint_trace!("name", ("field name", true, bool));
         datapoint_warn!("name", ("field name", 1, i64));
         datapoint_error!("name", ("field name", 1, i64),);
@@ -218,7 +218,7 @@ mod test {
             ("field1 name", 2, i64),
             ("field2 name", 2, i64)
         );
-        datapoint_info!("name", ("field1 name", 2, i64), ("field2 name", 2, i64),);
+        datapoint_trace!("name", ("field1 name", 2, i64), ("field2 name", 2, i64),);
         datapoint_trace!(
             "name",
             ("field1 name", 2, i64),
@@ -254,12 +254,12 @@ mod test {
     #[test]
     fn test_optional_datapoint() {
         datapoint_debug!("name", ("field name", Some("test"), Option<String>));
-        datapoint_info!("name", ("field name", Some(12.34_f64), Option<f64>));
+        datapoint_trace!("name", ("field name", Some(12.34_f64), Option<f64>));
         datapoint_trace!("name", ("field name", Some(true), Option<bool>));
         datapoint_warn!("name", ("field name", Some(1), Option<i64>));
         datapoint_error!("name", ("field name", Some(1), Option<i64>),);
         datapoint_debug!("name", ("field name", None::<String>, Option<String>));
-        datapoint_info!("name", ("field name", None::<f64>, Option<f64>));
+        datapoint_trace!("name", ("field name", None::<f64>, Option<f64>));
         datapoint_trace!("name", ("field name", None::<bool>, Option<bool>));
         datapoint_warn!("name", ("field name", None::<i64>, Option<i64>));
         datapoint_error!("name", ("field name", None::<i64>, Option<i64>),);
@@ -290,7 +290,7 @@ mod test {
     #[test]
     fn test_datapoint_with_tags() {
         datapoint_debug!("name", "tag" => "tag-value", ("field name", "test", String));
-        datapoint_info!(
+        datapoint_trace!(
             "name",
             "tag" => "tag-value",
             "tag2" => "tag-value-2",
@@ -312,7 +312,7 @@ mod test {
             ("field1 name", 2, i64),
             ("field2 name", 2, i64)
         );
-        datapoint_info!("name", ("field1 name", 2, i64), ("field2 name", 2, i64),);
+        datapoint_trace!("name", ("field1 name", 2, i64), ("field2 name", 2, i64),);
         datapoint_trace!(
             "name",
             "tag" => "tag-value",

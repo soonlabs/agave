@@ -386,7 +386,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
             );
             num_consecutive_failures += 1;
             if num_consecutive_failures > config.unhealthy_threshold {
-                datapoint_info!("watchtower-sanity", ("ok", false, bool));
+                datapoint_trace!("watchtower-sanity", ("ok", false, bool));
                 if last_notification_msg != notification_msg {
                     notifier.send(&notification_msg, &NotificationType::Trigger { incident });
                 }
@@ -403,7 +403,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
                 );
             }
         } else {
-            datapoint_info!("watchtower-sanity", ("ok", true, bool));
+            datapoint_trace!("watchtower-sanity", ("ok", true, bool));
             if !last_notification_msg.is_empty() {
                 let alarm_duration = Instant::now().duration_since(last_success);
                 let alarm_duration = alarm_duration - config.interval; // Subtract the period before the first error

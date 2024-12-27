@@ -462,7 +462,7 @@ impl LimitByTime for IpAddr {
     }
 
     fn datapoint_info(&self, request_amount: u64, new_total: u64) {
-        datapoint_info!(
+        datapoint_trace!(
             "faucet-airdrop",
             ("request_amount", request_amount, i64),
             ("ip", self.to_string(), String),
@@ -481,7 +481,7 @@ impl LimitByTime for Pubkey {
     }
 
     fn datapoint_info(&self, request_amount: u64, new_total: u64) {
-        datapoint_info!(
+        datapoint_trace!(
             "faucet-airdrop",
             ("request_amount", request_amount, i64),
             ("address", self.to_string(), String),
