@@ -237,6 +237,11 @@ fn run_shred_sigverify<const K: usize>(
         .map(<[u8]>::to_vec)
         .collect();
     stats.num_retransmit_shreds += shreds.len();
+    info!(
+        "sigverify_shreds: retransmit {} shreds, verified {} packets",
+        shreds.len(),
+        packets.len()
+    );
     retransmit_sender.send(shreds)?;
     verified_sender.send(packets)?;
     stats.elapsed_micros += now.elapsed().as_micros() as u64;

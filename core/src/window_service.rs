@@ -346,6 +346,15 @@ where
         *ws_metrics.addrs.entry(addr).or_default() += 1;
     }
 
+    info!(
+        "window service received {} shreds from {} packets, for slots: {:?}",
+        shreds.len(),
+        packets.len(),
+        shreds
+            .iter()
+            .map(|shred| shred.slot())
+            .collect::<HashSet<_>>()
+    );
     let mut prune_shreds_elapsed = Measure::start("prune_shreds_elapsed");
     let num_shreds = shreds.len();
     prune_shreds_by_repair_status(
@@ -372,6 +381,15 @@ where
         reed_solomon_cache,
         metrics,
     )?;
+    if !completed_data_sets.is_empty() {
+        info!(
+            "complete slots in block store: {:?}",
+            completed_data_sets
+                .iter()
+                .map(|c| c.slot)
+                .collect::<Vec<_>>()
+        );
+    }
 
     if let Some(sender) = completed_data_sets_sender {
         sender.try_send(completed_data_sets)?;

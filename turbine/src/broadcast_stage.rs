@@ -472,6 +472,12 @@ pub fn broadcast_shreds(
     shred_select.stop();
     transmit_stats.shred_select += shred_select.as_us();
 
+    info!(
+        "broadcast_shreds: {} packets, addresses are: {:?}",
+        packets.len(),
+        packets.iter().map(|p| p.1).collect::<HashSet<_>>()
+    );
+
     let mut send_mmsg_time = Measure::start("send_mmsg");
     match batch_send(s, &packets[..]) {
         Ok(()) => (),
