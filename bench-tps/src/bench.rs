@@ -12,7 +12,7 @@ use {
     rand::distributions::{Distribution, Uniform},
     rayon::prelude::*,
     solana_client::{nonce_utils, rpc_request::MAX_MULTIPLE_ACCOUNTS},
-    solana_metrics::{self, datapoint_info},
+    solana_metrics::{self, datapoint_trace},
     solana_sdk::{
         account::Account,
         clock::{DEFAULT_MS_PER_SLOT, DEFAULT_S_PER_SLOT, MAX_PROCESSING_AGE},

@@ -12,7 +12,7 @@ use {
         crds_value,
         gossip_service::GossipService,
     },
-    solana_metrics::datapoint_info,
+    solana_metrics::datapoint_trace,
     solana_rpc_client::rpc_client::RpcClient,
     solana_runtime::{
         snapshot_archive_info::SnapshotArchiveInfoGetter, snapshot_package::SnapshotKind,
