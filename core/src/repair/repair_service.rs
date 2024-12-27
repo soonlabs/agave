@@ -458,8 +458,11 @@ impl RepairService {
 
                 repairs
             };
+
+            let mut repairs_not_empty = false;
             if !repairs.is_empty() {
                 info!("{} repair requests: {:?}", repairs.len(), repairs);
+                repairs_not_empty = true;
             }
 
             let identity_keypair: &Keypair = &repair_info.cluster_info.keypair().clone();
@@ -488,6 +491,13 @@ impl RepairService {
                     })
                     .collect()
             };
+            if repairs_not_empty {
+                info!(
+                    "{} repair requests targets: {:?}",
+                    batch.len(),
+                    batch.iter().map(|(_, to)| to).collect::<Vec<_>>()
+                );
+            }
             build_repairs_batch_elapsed.stop();
 
             let mut batch_send_repairs_elapsed = Measure::start("batch_send_repairs_elapsed");

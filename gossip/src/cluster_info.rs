@@ -1440,6 +1440,22 @@ impl ClusterInfo {
             .collect()
     }
 
+    pub fn peers_slots(&self) -> Vec<String> {
+        let gossip_crds = self.gossip.crds.read().unwrap();
+        gossip_crds
+            .get_nodes_contact_info()
+            .map(|node| {
+                let pk = *node.pubkey();
+
+                format!(
+                    "{:?} {:?}",
+                    node.gossip().ok(),
+                    gossip_crds.get::<&LowestSlot>(pk).map(|s| s.lowest),
+                )
+            })
+            .collect()
+    }
+
     fn is_spy_node(node: &ContactInfo, socket_addr_space: &SocketAddrSpace) -> bool {
         ![
             node.tpu(contact_info::Protocol::UDP),
@@ -1889,7 +1905,8 @@ impl ClusterInfo {
                     {
                         // Log contact info
                         info!(
-                            "\n{}\n\n{}",
+                            "Cluster info summary: {:?}\n{}\n\n{}",
+                            self.peers_slots(),
                             self.contact_info_trace(),
                             self.rpc_info_trace()
                         );

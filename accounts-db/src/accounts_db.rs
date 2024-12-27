@@ -7872,7 +7872,7 @@ impl AccountsDb {
         let num_skipped_rewrites = skipped_rewrites.len();
         hashes.extend(skipped_rewrites);
 
-        info!("skipped rewrite hashes {} {}", slot, num_skipped_rewrites);
+        trace!("skipped rewrite hashes {} {}", slot, num_skipped_rewrites);
 
         if let Some(ignore) = ignore {
             hashes.retain(|k| k.0 != ignore);
