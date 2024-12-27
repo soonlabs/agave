@@ -157,7 +157,7 @@ pub fn spawn_server(
     wait_for_chunk_timeout: Duration,
     coalesce: Duration,
 ) -> Result<SpawnNonBlockingServerResult, QuicServerError> {
-    info!("Start {name} quic server on {sock:?}");
+    trace!("Start {name} quic server on {sock:?}");
     let concurrent_connections = max_staked_connections + max_unstaked_connections;
     let max_concurrent_connections = concurrent_connections + concurrent_connections / 4;
     let (config, _cert) = configure_server(keypair, max_concurrent_connections)?;
@@ -263,9 +263,9 @@ async fn run_server(
             stats
                 .connection_rate_limiter_length
                 .store(rate_limiter.len(), Ordering::Relaxed);
-            info!("Got a connection {remote_address:?}");
+            trace!("Got a connection {remote_address:?}");
             if !rate_limiter.is_allowed(&remote_address.ip()) {
-                info!(
+                trace!(
                     "Reject connection from {:?} -- rate limiting exceeded",
                     remote_address
                 );
@@ -1455,14 +1455,14 @@ pub mod test {
             let mut s1 = conn1.open_uni().await.unwrap();
             s1.write_all(&[0u8]).await.unwrap();
             s1.finish().await.unwrap();
-            info!("done {}", i);
+            trace!("done {}", i);
             sleep(Duration::from_millis(1000)).await;
         }
         let mut received = 0;
         loop {
             if let Ok(_x) = receiver.try_recv() {
                 received += 1;
-                info!("got {}", received);
+                trace!("got {}", received);
             } else {
                 sleep(Duration::from_millis(500)).await;
             }
@@ -1506,7 +1506,7 @@ pub mod test {
         let conn2 = Arc::new(make_client_endpoint(&server_address, None).await);
         let mut num_expected_packets = 0;
         for i in 0..10 {
-            info!("sending: {}", i);
+            trace!("sending: {}", i);
             let c1 = conn1.clone();
             let c2 = conn2.clone();
             let mut s1 = c1.open_uni().await.unwrap();

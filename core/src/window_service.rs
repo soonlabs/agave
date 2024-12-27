@@ -122,7 +122,7 @@ impl WindowServiceMetrics {
             addrs.truncate(MAX_NUM_ADDRS);
         }
         addrs.sort_unstable_by_key(reverse_count);
-        info!(
+        trace!(
             "num addresses: {}, top packets by source: {:?}",
             self.addrs.len(),
             addrs

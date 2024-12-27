@@ -447,7 +447,7 @@ impl RepairService {
                 repairs
             };
             if !repairs.is_empty() {
-                info!("{} repair requests: {:#?}", repairs.len(), repairs);
+                info!("{} repair requests: {:?}", repairs.len(), repairs);
             }
 
             let identity_keypair: &Keypair = &repair_info.cluster_info.keypair().clone();
@@ -518,7 +518,7 @@ impl RepairService {
                         (slot, slot_repairs.pubkey_repairs.values().sum::<u64>())
                     })
                     .collect();
-                info!("repair_stats: {:?}", slot_to_count);
+                debug!("repair_stats: {:?}", slot_to_count);
                 if repair_total > 0 {
                     let nonzero_num = |x| if x == 0 { None } else { Some(x) };
                     datapoint_trace!(

@@ -267,9 +267,11 @@ impl StreamerSendStats {
             });
             entries.truncate(MAX_REPORT_ENTRIES);
         }
-        info!(
+        trace!(
             "streamer send {} hosts: count:{} {:?}",
-            name, num_entries, entries,
+            name,
+            num_entries,
+            entries,
         );
     }
 
@@ -420,7 +422,7 @@ pub fn responder(
                 let now = timestamp();
                 if now - last_print > 1000 && errors != 0 {
                     datapoint_trace!(name, ("errors", errors, i64),);
-                    info!("{} last-error: {:?} count: {}", name, last_error, errors);
+                    trace!("{} last-error: {:?} count: {}", name, last_error, errors);
                     last_print = now;
                     errors = 0;
                 }
