@@ -226,7 +226,7 @@ impl BroadcastRun for BroadcastDuplicatesRun {
                     .iter()
                     .map(|s| (s.signature(), s.index()))
                     .collect();
-                info!(
+                trace!(
                     "duplicate signatures for slot {}, sigs: {:?}",
                     bank.slot(),
                     sigs,
@@ -244,7 +244,7 @@ impl BroadcastRun for BroadcastDuplicatesRun {
         blockstore_sender.send((data_shreds.clone(), None))?;
 
         // 3) Start broadcast step
-        info!(
+        trace!(
             "{} Sending good shreds for slot {} to network",
             keypair.pubkey(),
             data_shreds.first().unwrap().slot()
@@ -263,7 +263,7 @@ impl BroadcastRun for BroadcastDuplicatesRun {
             );
             self.partition_last_data_shreds.lock().unwrap().extend(
                 partition_last_data_shred.iter().map(|shred| {
-                    info!("adding {} to partition set", shred.signature());
+                    trace!("adding {} to partition set", shred.signature());
                     assert!(shred.verify(&pubkey));
                     shred.signature()
                 }),
@@ -351,7 +351,7 @@ impl BroadcastRun for BroadcastDuplicatesRun {
                     .remove(shred.signature())
                 {
                     if cluster_partition.contains(node.pubkey()) {
-                        info!(
+                        trace!(
                             "Not broadcasting original shred index {}, slot {} to partition node {}",
                             shred.index(),
                             shred.slot(),
@@ -373,7 +373,7 @@ impl BroadcastRun for BroadcastDuplicatesRun {
                         cluster_partition
                             .iter()
                             .filter_map(|pubkey| {
-                                info!(
+                                trace!(
                                     "Broadcasting partition shred index {}, slot {} to partition node {}",
                                     shred.index(),
                                     shred.slot(),

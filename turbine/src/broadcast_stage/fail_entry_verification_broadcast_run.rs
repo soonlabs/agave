@@ -70,7 +70,7 @@ impl BroadcastRun for FailEntryVerificationBroadcastRun {
         // 2) If we're past SLOT_TO_RESOLVE, insert the correct shreds so validators can repair
         // and make progress
         if bank.slot() > SLOT_TO_RESOLVE && !self.good_shreds.is_empty() {
-            info!("Resolving bad shreds");
+            trace!("Resolving bad shreds");
             let shreds = std::mem::take(&mut self.good_shreds);
             blockstore_sender.send((Arc::new(shreds), None))?;
         }
