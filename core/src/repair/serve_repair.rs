@@ -264,7 +264,18 @@ fn discard_malformed_repair_requests(
     stats: &mut ServeRepairStats,
 ) -> usize {
     let num_requests = requests.len();
-    requests.retain(|request| request.bytes.len() >= REPAIR_REQUEST_MIN_BYTES);
+    requests.retain(|request| {
+        if request.bytes.len() >= REPAIR_REQUEST_MIN_BYTES {
+            true
+        } else {
+            info!(
+                "dropped short repair request from {}, pubkey: {:?}",
+                request.remote_address,
+                request.remote_pubkey.map(|p| p.to_string())
+            );
+            false
+        }
+    });
     stats.err_malformed += num_requests - requests.len();
     requests.len()
 }
@@ -1344,6 +1355,10 @@ impl ServeRepair {
         max_responses: usize,
         nonce: Nonce,
     ) -> Option<PacketBatch> {
+        info!(
+            "received orphan request for slot {} from {}",
+            slot, from_addr
+        );
         let mut res =
             PacketBatch::new_unpinned_with_recycler(recycler, max_responses, "run_orphan");
         // Try to find the next "n" parent slots of the input slot

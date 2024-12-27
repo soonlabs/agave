@@ -446,6 +446,9 @@ impl RepairService {
 
                 repairs
             };
+            if !repairs.is_empty() {
+                info!("{} repair requests: {:#?}", repairs.len(), repairs);
+            }
 
             let identity_keypair: &Keypair = &repair_info.cluster_info.keypair().clone();
 
