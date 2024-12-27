@@ -315,7 +315,11 @@ impl RepairService {
         dumped_slots_receiver: DumpedSlotsReceiver,
         popular_pruned_forks_sender: PopularPrunedForksSender,
     ) {
-        let mut repair_weight = RepairWeight::new(repair_info.bank_forks.read().unwrap().root());
+        let mut repair_weight = {
+            let bank_forks = repair_info.bank_forks.read().unwrap();
+            let root = bank_forks.root();
+            RepairWeight::new(bank_forks.frozen_banks().into_keys().max().unwrap_or(root))
+        };
         let serve_repair = ServeRepair::new(
             repair_info.cluster_info.clone(),
             repair_info.bank_forks.clone(),
@@ -335,7 +339,15 @@ impl RepairService {
             let mut get_votes_elapsed;
             let mut add_votes_elapsed;
 
-            let root_bank = repair_info.bank_forks.read().unwrap().root_bank();
+            let root_bank = {
+                let bank_forks = repair_info.bank_forks.read().unwrap();
+                let root_bank = bank_forks.root_bank();
+                bank_forks
+                    .frozen_banks()
+                    .into_values()
+                    .max_by_key(|bank| bank.slot())
+                    .unwrap_or(root_bank)
+            };
             let repair_protocol = serve_repair::get_repair_protocol(root_bank.cluster_type());
             let repairs = {
                 let new_root = root_bank.slot();
