@@ -10,7 +10,7 @@ use {
     crossbeam_channel::{unbounded, Sender},
     log::*,
     serde_derive::{Deserialize, Serialize},
-    solana_metrics::datapoint_info,
+    solana_metrics::datapoint_trace,
     solana_sdk::{
         hash::Hash,
         instruction::Instruction,
