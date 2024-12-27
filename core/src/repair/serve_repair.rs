@@ -519,7 +519,7 @@ impl ServeRepair {
     fn report_time_spent(label: &str, time: &Duration, extra: &str) {
         let count = duration_as_ms(time);
         if count > 5 {
-            info!("{} took: {} ms {}", label, count, extra);
+            trace!("{} took: {} ms {}", label, count, extra);
         }
     }
 

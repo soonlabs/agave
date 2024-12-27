@@ -418,7 +418,7 @@ const INTERESTING_LIMITS: &[(&str, InterestingLimit)] = &[
 
 impl SystemMonitorService {
     pub fn new(exit: Arc<AtomicBool>, config: SystemMonitorStatsReportConfig) -> Self {
-        info!("Starting SystemMonitorService");
+        trace!("Starting SystemMonitorService");
         let thread_hdl = Builder::new()
             .name("solSystemMonitr".to_string())
             .spawn(move || {

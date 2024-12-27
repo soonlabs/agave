@@ -942,7 +942,7 @@ mod tests {
         );
 
         use bincode::serialized_size;
-        info!("max vote size {}", serialized_size(&vote_tx).unwrap());
+        trace!("max vote size {}", serialized_size(&vote_tx).unwrap());
 
         let packet_batches = packet::to_packet_batches(&[vote_tx], 1); // panics if won't fit
 

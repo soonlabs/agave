@@ -399,7 +399,7 @@ impl ProgressMap {
 
     pub fn log_propagated_stats(&self, slot: Slot, bank_forks: &RwLock<BankForks>) {
         if let Some(stats) = self.get_propagated_stats(slot) {
-            info!(
+            trace!(
                 "Propagated stats:
                 total staked: {},
                 observed staked: {},

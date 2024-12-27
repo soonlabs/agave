@@ -850,9 +850,11 @@ pub fn check_slot_agrees_with_cluster(
     purge_repair_slot_counter: &mut PurgeRepairSlotCounter,
     slot_state_update: SlotStateUpdate,
 ) {
-    info!(
+    trace!(
         "check_slot_agrees_with_cluster() slot: {}, root: {}, slot_state_update: {:?}",
-        slot, root, slot_state_update
+        slot,
+        root,
+        slot_state_update
     );
 
     if slot <= root {

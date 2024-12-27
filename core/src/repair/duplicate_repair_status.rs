@@ -240,7 +240,7 @@ impl AncestorRequestStatus {
         if self.num_responses
             == get_ancestor_hash_repair_sample_size().min(self.sampled_validators.len())
         {
-            info!(
+            trace!(
                 "{} return invalid sample no agreement",
                 self.requested_mismatched_slot
             );
@@ -260,7 +260,7 @@ impl AncestorRequestStatus {
         agreed_response: Vec<(Slot, Hash)>,
     ) -> DuplicateAncestorDecision {
         if agreed_response.is_empty() {
-            info!(
+            trace!(
                 "{} return invalid sample not duplicate confirmed",
                 self.requested_mismatched_slot
             );
@@ -287,7 +287,7 @@ impl AncestorRequestStatus {
         // Iterate from smallest to largest ancestor, performing integrity checks.
         for (i, (ancestor_slot, agreed_upon_hash)) in agreed_response.iter().rev().enumerate() {
             if i != 0 && *ancestor_slot <= last_ancestor {
-                info!(
+                trace!(
                     "{} return invalid sample out of order",
                     self.requested_mismatched_slot
                 );
@@ -297,7 +297,7 @@ impl AncestorRequestStatus {
             if *ancestor_slot > self.requested_mismatched_slot {
                 // We should only get ancestors of `self.requested_mismatched_slot`
                 // in valid responses
-                info!(
+                trace!(
                     "{} return invalid sample big ancestor",
                     self.requested_mismatched_slot
                 );

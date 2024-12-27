@@ -48,7 +48,7 @@ impl AccountsHashVerifier {
         let t_accounts_hash_verifier = Builder::new()
             .name("solAcctHashVer".to_string())
             .spawn(move || {
-                info!("AccountsHashVerifier has started");
+                trace!("AccountsHashVerifier has started");
                 loop {
                     if exit.load(Ordering::Relaxed) {
                         break;
@@ -66,7 +66,7 @@ impl AccountsHashVerifier {
                         std::thread::sleep(LOOP_LIMITER);
                         continue;
                     };
-                    info!("handling accounts package: {accounts_package:?}");
+                    trace!("handling accounts package: {accounts_package:?}");
                     let enqueued_time = accounts_package.enqueued.elapsed();
 
                     let (result, handling_time_us) = measure_us!(Self::process_accounts_package(
@@ -97,7 +97,7 @@ impl AccountsHashVerifier {
                         ("handling_time_us", handling_time_us, i64),
                     );
                 }
-                info!("AccountsHashVerifier has stopped");
+                trace!("AccountsHashVerifier has stopped");
             })
             .unwrap();
         Self {
@@ -339,7 +339,7 @@ impl AccountsHashVerifier {
                 .accounts
                 .accounts_db
                 .calculate_accounts_hash_from_index(slot, &calculate_accounts_hash_config);
-            info!("hash calc with index: {slot}, {result_with_index:?}",);
+            trace!("hash calc with index: {slot}, {result_with_index:?}",);
             let calculate_accounts_hash_config = CalcAccountsHashConfig {
                 // now that we've failed, store off the failing contents that produced a bad capitalization
                 store_detailed_debug_info_on_failure: true,
@@ -423,9 +423,10 @@ impl AccountsHashVerifier {
             let AccountsHashKind::Full(accounts_hash) = accounts_hash else {
                 panic!("EAH requires a full accounts hash!");
             };
-            info!(
+            trace!(
                 "saving epoch accounts hash, slot: {}, hash: {}",
-                accounts_package.slot, accounts_hash.0,
+                accounts_package.slot,
+                accounts_hash.0,
             );
             accounts_package
                 .accounts

@@ -1004,7 +1004,7 @@ impl Tower {
                 // where checks may panic. We allow a freebie vote here that may violate switching
                 // thresholds
                 // TODO: Properly handle this case
-                info!(
+                trace!(
                     "Allowing switch vote on {:?} because last vote {:?} was rolled back",
                     (switch_slot, switch_hash),
                     (last_voted_slot, last_voted_hash)
@@ -1391,7 +1391,7 @@ impl Tower {
     ) -> Result<Self> {
         // sanity assertions for roots
         let tower_root = self.root();
-        info!(
+        trace!(
             "adjusting lockouts (after replay up to {}): {:?} tower root: {} replayed root: {}",
             replayed_root,
             self.voted_slots(),
