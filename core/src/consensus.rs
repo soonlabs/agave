@@ -413,7 +413,7 @@ impl Tower {
                         .unwrap_or(0) as i64
                 );
                 debug!("observed root {}", vote_state.root_slot.unwrap_or(0) as i64);
-                datapoint_info!(
+                datapoint_trace!(
                     "tower-observed",
                     (
                         "slot",
@@ -551,7 +551,7 @@ impl Tower {
         } else {
             // If the previous vote did not send a timestamp due to clock error,
             // use the last good timestamp + 1
-            datapoint_info!(
+            datapoint_trace!(
                 "refresh-timestamp-missing",
                 ("heaviest-slot", heaviest_slot_on_same_fork, i64),
                 ("last-timestamp", self.last_timestamp.timestamp, i64),
@@ -665,10 +665,10 @@ impl Tower {
 
         let new_root = self.root();
 
-        datapoint_info!(
+        datapoint_trace!(
             "tower-vote",
             ("latest", vote_slot, i64),
-            ("root", new_root, i64)
+            ("root", new_root, i64),
         );
         if old_root != new_root {
             Some(new_root)
@@ -722,7 +722,7 @@ impl Tower {
                 };
                 return Some(timestamp);
             } else {
-                datapoint_info!(
+                datapoint_trace!(
                     "backwards-timestamp",
                     ("slot", current_slot, i64),
                     ("timestamp", timestamp, i64),

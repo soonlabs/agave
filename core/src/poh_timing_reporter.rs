@@ -56,7 +56,7 @@ impl SlotPohTimestamp {
 
     /// Report PohTiming for a slot
     pub fn report(&self, slot: Slot) {
-        datapoint_info!(
+        datapoint_trace!(
             "poh_slot_timing",
             ("slot", slot as i64, i64),
             ("start_time", self.start_time as i64, i64),

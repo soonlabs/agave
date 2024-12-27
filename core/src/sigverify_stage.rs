@@ -102,7 +102,7 @@ impl SigVerifierStats {
             return;
         }
 
-        datapoint_info!(
+        datapoint_trace!(
             name,
             (
                 "recv_batches_us_90pct",

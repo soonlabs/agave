@@ -24,10 +24,10 @@ impl DropBankService {
                     drop(banks);
                     dropped_banks_time.stop();
                     if dropped_banks_time.as_ms() > 10 {
-                        datapoint_info!(
+                        datapoint_trace!(
                             "handle_new_root-dropped_banks",
                             ("elapsed_ms", dropped_banks_time.as_ms(), i64),
-                            ("len", len, i64)
+                            ("len", len, i64),
                         );
                     }
                 }

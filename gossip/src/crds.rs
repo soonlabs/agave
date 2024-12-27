@@ -706,7 +706,7 @@ impl CrdsDataStats {
         };
 
         if should_report_message_signature(&entry.value.signature) {
-            datapoint_info!(
+            datapoint_trace!(
                 "gossip_crds_sample",
                 (
                     "origin",

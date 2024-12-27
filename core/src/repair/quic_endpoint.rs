@@ -883,7 +883,7 @@ fn report_metrics(name: &'static str, stats: &RepairQuicStats) {
             $metric.swap(0, Ordering::Relaxed)
         };
     }
-    datapoint_info!(
+    datapoint_trace!(
         name,
         (
             "connect_error_invalid_remote_address",

@@ -2,7 +2,6 @@ use {
     crate::consensus::Stake,
     crossbeam_channel::{unbounded, Receiver, RecvTimeoutError, Sender},
     solana_measure::measure::Measure,
-    solana_metrics::datapoint_info,
     solana_rpc::rpc_subscriptions::RpcSubscriptions,
     solana_runtime::{
         bank::Bank,
@@ -117,7 +116,7 @@ impl AggregateCommitmentService {
             let update_commitment_slots =
                 Self::update_commitment_cache(block_commitment_cache, aggregation_data, ancestors);
             aggregate_commitment_time.stop();
-            datapoint_info!(
+            datapoint_trace!(
                 "block-commitment-cache",
                 (
                     "aggregate-commitment-ms",

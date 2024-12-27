@@ -74,7 +74,7 @@ struct WindowServiceMetrics {
 impl WindowServiceMetrics {
     fn report_metrics(&self, metric_name: &'static str) {
         const MAX_NUM_ADDRS: usize = 5;
-        datapoint_info!(
+        datapoint_trace!(
             metric_name,
             (
                 "handle_packets_elapsed_us",

@@ -241,7 +241,7 @@ impl PartitionInfo {
                 last_voted_slot,
                 reset_bank_slot,
             );
-            datapoint_info!(
+            datapoint_trace!(
                 "replay_stage-partition-start",
                 ("heaviest_slot", heaviest_slot as i64, i64),
                 ("last_vote_slot", last_voted_slot as i64, i64),
@@ -263,7 +263,7 @@ impl PartitionInfo {
                 "PARTITION resolved heaviest fork: {} last vote: {:?}, reset slot: {}",
                 heaviest_slot, last_voted_slot, reset_bank_slot
             );
-            datapoint_info!(
+            datapoint_trace!(
                 "replay_stage-partition-resolved",
                 ("heaviest_slot", heaviest_slot as i64, i64),
                 ("last_vote_slot", last_voted_slot as i64, i64),
@@ -394,7 +394,7 @@ impl ReplayLoopTiming {
         let elapsed_ms = now - self.last_submit;
 
         if elapsed_ms > 1000 {
-            datapoint_info!(
+            datapoint_trace!(
                 "replay-loop-voting-stats",
                 ("generate_vote_us", self.generate_vote_us, i64),
                 (
@@ -403,7 +403,7 @@ impl ReplayLoopTiming {
                     i64
                 ),
             );
-            datapoint_info!(
+            datapoint_trace!(
                 "replay-loop-timing-stats",
                 ("loop_count", self.loop_count as i64, i64),
                 ("total_elapsed_us", elapsed_ms * 1000, i64),
@@ -1043,7 +1043,7 @@ impl ReplayStage {
                         let fork_progress = progress
                             .get(&reset_bank.slot())
                             .expect("bank to reset to must exist in progress map");
-                        datapoint_info!(
+                        datapoint_trace!(
                             "blocks_produced",
                             ("num_blocks_on_fork", fork_progress.num_blocks_on_fork, i64),
                             (
@@ -1320,7 +1320,7 @@ impl ReplayStage {
                             slot,
                             &retransmit_info,
                         );
-                        datapoint_info!(
+                        datapoint_trace!(
                             metric_name,
                             ("latest_leader_slot", latest_leader_slot, i64),
                             ("slot", slot, i64),
@@ -2129,7 +2129,7 @@ impl ReplayStage {
                 return false;
             }
 
-            datapoint_info!(
+            datapoint_trace!(
                 "replay_stage-new_leader",
                 ("slot", poh_slot, i64),
                 ("leader", next_leader.to_string(), String),
@@ -2139,7 +2139,7 @@ impl ReplayStage {
                 let latest_unconfirmed_leader_slot = progress_map.get_latest_leader_slot_must_exist(parent_slot)
                     .expect("In order for propagated check to fail, latest leader must exist in progress map");
                 if poh_slot != skipped_slots_info.last_skipped_slot {
-                    datapoint_info!(
+                    datapoint_trace!(
                         "replay_stage-skip_leader_slot",
                         ("slot", poh_slot, i64),
                         ("parent_slot", parent_slot, i64),
@@ -2164,7 +2164,7 @@ impl ReplayStage {
             }
 
             let root_slot = bank_forks.read().unwrap().root();
-            datapoint_info!("replay_stage-my_leader_slot", ("slot", poh_slot, i64),);
+            datapoint_trace!("replay_stage-my_leader_slot", ("slot", poh_slot, i64),);
             info!(
                 "new fork:{} parent:{} (leader) root:{}",
                 poh_slot, parent_slot, root_slot
@@ -2172,7 +2172,7 @@ impl ReplayStage {
 
             let root_distance = poh_slot - root_slot;
             let vote_only_bank = if root_distance > MAX_ROOT_DISTANCE_FOR_VOTE_ONLY {
-                datapoint_info!("vote-only-bank", ("slot", poh_slot, i64));
+                datapoint_trace!("vote-only-bank", ("slot", poh_slot, i64));
                 true
             } else {
                 false
@@ -2276,7 +2276,7 @@ impl ReplayStage {
                 ("slot", slot, i64)
             );
         } else {
-            datapoint_info!(
+            datapoint_trace!(
                 "replay-stage-mark_dead_slot",
                 ("error", format!("error: {err:?}"), String),
                 ("slot", slot, i64)
@@ -2369,7 +2369,7 @@ impl ReplayStage {
         wait_to_vote_slot: Option<Slot>,
     ) -> Result<(), SetRootError> {
         if bank.is_empty() {
-            datapoint_info!("replay_stage-voted_empty_bank", ("slot", bank.slot(), i64));
+            datapoint_trace!("replay_stage-voted_empty_bank", ("slot", bank.slot(), i64));
         }
         trace!("handle votable bank {}", bank.slot());
         let new_root = tower.record_bank_vote(bank);
@@ -2685,7 +2685,7 @@ impl ReplayStage {
 
             // Send the votes to the TPU and gossip for network propagation
             let hash_string = format!("{recent_blockhash}");
-            datapoint_info!(
+            datapoint_trace!(
                 "refresh_vote",
                 ("last_voted_slot", last_voted_slot, i64),
                 ("target_bank_slot", heaviest_bank_on_same_fork.slot(), i64),
@@ -3159,7 +3159,7 @@ impl ReplayStage {
                     transaction_status_sender.send_transaction_status_freeze_message(bank);
                 }
                 bank.freeze();
-                datapoint_info!(
+                datapoint_trace!(
                     "bank_frozen",
                     ("slot", bank_slot, i64),
                     ("hash", bank.hash().to_string(), String),
@@ -3472,7 +3472,7 @@ impl ReplayStage {
                     stats.my_latest_landed_vote = my_latest_landed_vote;
                     stats.computed = true;
                     new_stats.push(bank_slot);
-                    datapoint_info!(
+                    datapoint_trace!(
                         "bank_weight",
                         ("slot", bank_slot, i64),
                         ("fork_stake", stats.fork_stake, i64),
@@ -4256,7 +4256,7 @@ impl ReplayStage {
                     .as_millis();
                 if bank.is_frozen() && tower.is_slot_confirmed(*slot, voted_stakes, total_stake) {
                     info!("validator fork confirmed {} {}ms", *slot, duration);
-                    datapoint_info!("validator-confirmation", ("duration_ms", duration, i64));
+                    datapoint_trace!("validator-confirmation", ("duration_ms", duration, i64));
                     confirmed_forks
                         .push(ConfirmedSlot::new_supermajority_voted(*slot, bank.hash()));
                 } else if bank.is_frozen()
@@ -4266,7 +4266,7 @@ impl ReplayStage {
                         "validator fork duplicate confirmed {} {}ms",
                         *slot, duration
                     );
-                    datapoint_info!(
+                    datapoint_trace!(
                         "validator-duplicate-confirmation",
                         ("duration_ms", duration, i64)
                     );
@@ -4524,7 +4524,7 @@ impl ReplayStage {
                         } else {
                             false
                         };
-                        datapoint_info!(
+                        datapoint_trace!(
                             "replay_stage-threshold-failure",
                             ("slot", slot as i64, i64),
                             ("depth", depth as i64, i64),

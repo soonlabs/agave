@@ -173,7 +173,7 @@ struct BankSendVotesStats {
 
 impl BankSendVotesStats {
     fn report_metrics(&self, slot: Slot) {
-        datapoint_info!(
+        datapoint_trace!(
             "cluster_info_vote_listener-bank-send-vote-stats",
             ("slot", slot, i64),
             ("num_votes_sent", self.num_votes_sent, i64),
@@ -206,7 +206,7 @@ impl VoteProcessingTiming {
             .last_report
             .should_update(VOTE_PROCESSING_REPORT_INTERVAL_MS)
         {
-            datapoint_info!(
+            datapoint_trace!(
                 "vote-processing-timing",
                 (
                     "vote_txn_processing_us",

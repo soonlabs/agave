@@ -738,7 +738,7 @@ impl ServeRepair {
             );
         }
 
-        datapoint_info!(
+        datapoint_trace!(
             "serve_repair-requests_received",
             ("total_requests", stats.total_requests, i64),
             (

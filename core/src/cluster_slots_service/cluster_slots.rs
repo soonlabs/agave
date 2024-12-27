@@ -123,7 +123,7 @@ impl ClusterSlots {
                     .sum::<usize>();
                 (validator_stakes.capacity(), validator_len)
             };
-            datapoint_info!(
+            datapoint_trace!(
                 "cluster-slots-size",
                 ("cluster_slots_capacity", cluster_slots_cap, i64),
                 ("pubkeys_capacity", pubkeys_capacity, i64),

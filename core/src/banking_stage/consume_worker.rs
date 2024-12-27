@@ -433,7 +433,7 @@ impl Default for ConsumeWorkerCountMetrics {
 
 impl ConsumeWorkerCountMetrics {
     fn report_and_reset(&self, id: &str) {
-        datapoint_info!(
+        datapoint_trace!(
             "banking_stage_worker_counts",
             "id" => id,
             (
@@ -500,7 +500,7 @@ struct ConsumeWorkerTimingMetrics {
 
 impl ConsumeWorkerTimingMetrics {
     fn report_and_reset(&self, id: &str) {
-        datapoint_info!(
+        datapoint_trace!(
             "banking_stage_worker_timing",
             "id" => id,
             (
@@ -579,7 +579,7 @@ struct ConsumeWorkerTransactionErrorMetrics {
 
 impl ConsumeWorkerTransactionErrorMetrics {
     fn report_and_reset(&self, id: &str) {
-        datapoint_info!(
+        datapoint_trace!(
             "banking_stage_worker_error_metrics",
             "id" => id,
             ("total", self.total.swap(0, Ordering::Relaxed), i64),

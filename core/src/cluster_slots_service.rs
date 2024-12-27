@@ -117,7 +117,7 @@ impl ClusterSlotsService {
             );
 
             if last_stats.elapsed().as_secs() > 2 {
-                datapoint_info!(
+                datapoint_trace!(
                     "cluster_slots_service-timing",
                     (
                         "lowest_slot_elapsed",

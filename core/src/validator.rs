@@ -1439,7 +1439,7 @@ impl Validator {
             config.generator_config.clone(),
         );
 
-        datapoint_info!(
+        datapoint_trace!(
             "validator-new",
             ("id", id.to_string(), String),
             ("version", solana_version::version!(), String),

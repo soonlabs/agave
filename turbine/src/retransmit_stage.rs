@@ -93,7 +93,7 @@ impl RetransmitStats {
         cluster_nodes_cache
             .get(root_bank.slot(), root_bank, working_bank, cluster_info)
             .submit_metrics("cluster_nodes_retransmit", timestamp());
-        datapoint_info!(
+        datapoint_trace!(
             "retransmit-stage",
             ("total_time", self.total_time, i64),
             ("epoch_fetch", self.epoch_fetch, i64),
@@ -517,7 +517,7 @@ impl RetransmitStats {
                                 timestamp: slot_stats.outset,
                             };
                             rpc_subscriptions.notify_slot_update(slot_update);
-                            datapoint_info!("retransmit-first-shred", ("slot", slot, i64));
+                            datapoint_trace!("retransmit-first-shred", ("slot", slot, i64));
                         }
                     }
                     self.slot_stats.put(slot, slot_stats);
@@ -565,7 +565,7 @@ impl RetransmitSlotStats {
         let num_shreds: usize = self.num_shreds_received.iter().sum();
         let num_nodes: usize = self.num_shreds_sent.iter().sum();
         let elapsed_millis = self.asof.saturating_sub(self.outset);
-        datapoint_info!(
+        datapoint_trace!(
             "retransmit-stage-slot-stats",
             ("slot", slot, i64),
             ("outset_timestamp", self.outset, i64),

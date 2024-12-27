@@ -1256,7 +1256,7 @@ impl ForkChoice for HeaviestSubtreeForkChoice {
         );
         start.stop();
 
-        datapoint_info!(
+        datapoint_trace!(
             "compute_bank_stats-best_slot",
             ("computed_slot", bank.slot(), i64),
             ("overall_best_slot", best_overall_slot, i64),

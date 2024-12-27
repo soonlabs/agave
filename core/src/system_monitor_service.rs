@@ -485,13 +485,13 @@ impl SystemMonitorService {
 
     #[cfg(not(target_os = "linux"))]
     pub fn check_os_network_limits() -> bool {
-        datapoint_info!("os-config", ("platform", platform_id(), String));
+        datapoint_trace!("os-config", ("platform", platform_id(), String));
         true
     }
 
     #[cfg(target_os = "linux")]
     pub fn check_os_network_limits() -> bool {
-        datapoint_info!("os-config", ("platform", platform_id(), String));
+        datapoint_trace!("os-config", ("platform", platform_id(), String));
         let current_limits = Self::linux_get_current_network_limits();
         Self::linux_report_network_limits(&current_limits)
     }
@@ -514,7 +514,7 @@ impl SystemMonitorService {
 
     #[cfg(target_os = "linux")]
     fn report_net_stats(old_stats: &NetStats, new_stats: &NetStats) {
-        datapoint_info!(
+        datapoint_trace!(
             "net-stats-validator",
             (
                 "in_datagrams_delta",
@@ -670,7 +670,7 @@ impl SystemMonitorService {
         // get mem info (in kb)
         if let Ok(info) = sys_info::mem_info() {
             const KB: u64 = 1_024;
-            datapoint_info!(
+            datapoint_trace!(
                 "memory-stats",
                 ("total", info.total * KB, i64),
                 ("swap_total", info.swap_total * KB, i64),
@@ -792,7 +792,7 @@ impl SystemMonitorService {
                 cpuid_empty
             };
 
-            datapoint_info!(
+            datapoint_trace!(
                 "cpuid-values",
                 ("manufacturer_id", i64::from(mfr_id), i64),
                 ("cpuid_processor_eax", i64::from(cpuid_processor.eax), i64),
@@ -817,7 +817,7 @@ impl SystemMonitorService {
 
     fn report_cpu_stats() {
         if let Ok(info) = Self::cpu_info() {
-            datapoint_info!(
+            datapoint_trace!(
                 "cpu-stats",
                 ("cpu_num", info.cpu_num as i64, i64),
                 ("cpu0_freq_mhz", info.cpu_freq_mhz as i64, i64),
@@ -847,7 +847,7 @@ impl SystemMonitorService {
 
     #[cfg(target_os = "linux")]
     fn report_disk_stats(old_stats: &DiskStats, new_stats: &DiskStats) {
-        datapoint_info!(
+        datapoint_trace!(
             "disk-stats",
             (
                 "reads_completed",

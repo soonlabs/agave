@@ -95,7 +95,7 @@ struct AncestorHashesResponsesStats {
 
 impl AncestorHashesResponsesStats {
     fn report(&mut self) {
-        datapoint_info!(
+        datapoint_trace!(
             "ancestor_hashes_responses",
             ("total_packets", self.total_packets, i64),
             ("processed", self.processed, i64),
@@ -134,7 +134,7 @@ impl AncestorRepairRequestsStats {
         let repair_total = self.ancestor_requests.count;
         if self.last_report.elapsed().as_secs() > 2 && repair_total > 0 {
             trace!("ancestor_repair_requests_stats: {:?}", slot_to_count);
-            datapoint_info!(
+            datapoint_trace!(
                 "ancestor-repair",
                 ("ancestor-repair-count", self.ancestor_requests.count, i64)
             );
@@ -661,7 +661,7 @@ impl AncestorHashesService {
         let root_bank = repair_info.bank_forks.read().unwrap().root_bank();
         let cluster_type = root_bank.cluster_type();
         for (slot, request_type) in retryable_slots_receiver.try_iter() {
-            datapoint_info!("ancestor-repair-retry", ("slot", slot, i64));
+            datapoint_trace!("ancestor-repair-retry", ("slot", slot, i64));
             if request_type.is_pruned() {
                 popular_pruned_slot_pool.insert(slot);
             } else {

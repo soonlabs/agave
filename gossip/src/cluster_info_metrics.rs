@@ -201,7 +201,7 @@ pub(crate) fn submit_gossip_stats(
         )
     };
     let num_nodes_staked = stakes.values().filter(|stake| **stake > 0).count();
-    datapoint_info!(
+    datapoint_trace!(
         "cluster_info_stats",
         ("entrypoint", stats.entrypoint.clear(), i64),
         ("entrypoint2", stats.entrypoint2.clear(), i64),
@@ -223,7 +223,7 @@ pub(crate) fn submit_gossip_stats(
         ("num_nodes_staked", num_nodes_staked as i64, i64),
         ("num_pubkeys", num_pubkeys, i64),
     );
-    datapoint_info!(
+    datapoint_trace!(
         "cluster_info_stats2",
         (
             "gossip_packets_dropped_count",
@@ -327,7 +327,7 @@ pub(crate) fn submit_gossip_stats(
             i64
         ),
     );
-    datapoint_info!(
+    datapoint_trace!(
         "cluster_info_stats3",
         (
             "process_pull_resp_len",
@@ -417,7 +417,7 @@ pub(crate) fn submit_gossip_stats(
             i64
         ),
     );
-    datapoint_info!(
+    datapoint_trace!(
         "cluster_info_stats4",
         (
             "skip_push_message_shred_version",
@@ -488,7 +488,7 @@ pub(crate) fn submit_gossip_stats(
             i64
         ),
     );
-    datapoint_info!(
+    datapoint_trace!(
         "cluster_info_stats5",
         (
             "pull_requests_count",
@@ -617,7 +617,7 @@ pub(crate) fn submit_gossip_stats(
             i64
         ),
     );
-    datapoint_info!(
+    datapoint_trace!(
         "cluster_info_crds_stats",
         ("LegacyContactInfo-push", crds_stats.push.counts[0], i64),
         ("LegacyContactInfo-pull", crds_stats.pull.counts[0], i64),
@@ -666,7 +666,7 @@ pub(crate) fn submit_gossip_stats(
             i64
         ),
     );
-    datapoint_info!(
+    datapoint_trace!(
         "cluster_info_crds_stats_fails",
         ("LegacyContactInfo-push", crds_stats.push.fails[0], i64),
         ("LegacyContactInfo-pull", crds_stats.pull.fails[0], i64),

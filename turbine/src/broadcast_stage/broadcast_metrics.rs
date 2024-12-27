@@ -38,7 +38,7 @@ impl BroadcastStats for TransmitShredsStats {
     }
     fn report_stats(&mut self, slot: Slot, slot_start: Instant, was_interrupted: bool) {
         if was_interrupted {
-            datapoint_info!(
+            datapoint_trace!(
                 "broadcast-transmit-shreds-interrupted-stats",
                 ("slot", slot as i64, i64),
                 ("transmit_elapsed", self.transmit_elapsed as i64, i64),
@@ -55,7 +55,7 @@ impl BroadcastStats for TransmitShredsStats {
                 ),
             );
         } else {
-            datapoint_info!(
+            datapoint_trace!(
                 "broadcast-transmit-shreds-stats",
                 ("slot", slot as i64, i64),
                 (
@@ -94,7 +94,7 @@ impl BroadcastStats for InsertShredsStats {
     }
     fn report_stats(&mut self, slot: Slot, slot_start: Instant, was_interrupted: bool) {
         if was_interrupted {
-            datapoint_info!(
+            datapoint_trace!(
                 "broadcast-insert-shreds-interrupted-stats",
                 ("slot", slot as i64, i64),
                 (
@@ -105,7 +105,7 @@ impl BroadcastStats for InsertShredsStats {
                 ("num_shreds", self.num_shreds as i64, i64),
             );
         } else {
-            datapoint_info!(
+            datapoint_trace!(
                 "broadcast-insert-shreds-stats",
                 ("slot", slot as i64, i64),
                 (

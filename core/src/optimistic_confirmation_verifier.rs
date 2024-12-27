@@ -61,7 +61,7 @@ impl OptimisticConfirmationVerifier {
             return;
         }
 
-        datapoint_info!(
+        datapoint_trace!(
             "optimistic_slot_elapsed",
             (
                 "average_elapsed_ms",
@@ -84,7 +84,7 @@ impl OptimisticConfirmationVerifier {
                         new_optimistic_slot, &e
                     );
                 }
-                datapoint_info!("optimistic_slot", ("slot", new_optimistic_slot, i64),);
+                datapoint_trace!("optimistic_slot", ("slot", new_optimistic_slot, i64),);
                 self.unchecked_slots.insert((new_optimistic_slot, hash));
             }
         }

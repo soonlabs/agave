@@ -869,7 +869,7 @@ pub fn check_slot_agrees_with_cluster(
             return;
         }
 
-        datapoint_info!(
+        datapoint_trace!(
             "duplicate_slot",
             ("slot", slot, i64),
             (
@@ -901,7 +901,7 @@ pub fn check_slot_agrees_with_cluster(
             }
         }
 
-        datapoint_info!(
+        datapoint_trace!(
             "duplicate_confirmed_slot",
             ("slot", slot, i64),
             (

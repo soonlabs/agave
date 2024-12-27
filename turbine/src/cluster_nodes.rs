@@ -137,7 +137,7 @@ impl<T> ClusterNodes<T> {
         }
         num_nodes_stale += num_nodes_dead;
         stake_stale += stake_dead;
-        datapoint_info!(
+        datapoint_trace!(
             name,
             ("epoch_stakes", epoch_stakes / LAMPORTS_PER_SOL, i64),
             ("num_nodes", self.nodes.len(), i64),

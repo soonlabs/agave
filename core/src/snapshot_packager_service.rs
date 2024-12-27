@@ -106,7 +106,7 @@ impl SnapshotPackagerService {
                     ));
 
                     let handling_time_us = measure_handling.end_as_us();
-                    datapoint_info!(
+                    datapoint_trace!(
                         "snapshot_packager_service",
                         (
                             "num_outstanding_snapshot_packages",

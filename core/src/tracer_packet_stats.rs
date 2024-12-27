@@ -121,7 +121,7 @@ impl TracerPacketStats {
             // to prevent noisy metrics
             if let Some(modifiable_tracer_packet_stats) = self.modifiable_tracer_packet_stats.take()
             {
-                datapoint_info!(
+                datapoint_trace!(
                     "tracer-packet-stats",
                     "id" => &self.id,
                     (

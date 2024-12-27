@@ -415,7 +415,7 @@ impl ShredSigVerifyStats {
         if self.since.elapsed() <= Self::METRICS_SUBMIT_CADENCE {
             return;
         }
-        datapoint_info!(
+        datapoint_trace!(
             "shred_sigverify",
             ("num_iters", self.num_iters, i64),
             ("num_batches", self.num_batches, i64),

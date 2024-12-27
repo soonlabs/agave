@@ -521,7 +521,7 @@ impl RepairService {
                 info!("repair_stats: {:?}", slot_to_count);
                 if repair_total > 0 {
                     let nonzero_num = |x| if x == 0 { None } else { Some(x) };
-                    datapoint_info!(
+                    datapoint_trace!(
                         "repair_service-my_requests",
                         ("repair-total", repair_total, i64),
                         ("shred-count", repair_stats.shred.count, i64),
@@ -537,7 +537,7 @@ impl RepairService {
                         ("orphan-slot-min", nonzero_num(repair_stats.orphan.min), Option<i64>),
                     );
                 }
-                datapoint_info!(
+                datapoint_trace!(
                     "repair_service-repair_timing",
                     ("set-root-elapsed", repair_timing.set_root_elapsed, i64),
                     ("dump-slots-elapsed", repair_timing.dump_slots_elapsed, i64),
@@ -579,7 +579,7 @@ impl RepairService {
                         i64
                     ),
                 );
-                datapoint_info!(
+                datapoint_trace!(
                     "serve_repair-best-repairs",
                     ("call-count", best_repairs_stats.call_count, i64),
                     ("orphan-slots", best_repairs_stats.num_orphan_slots, i64),

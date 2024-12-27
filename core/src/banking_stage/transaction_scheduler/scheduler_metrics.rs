@@ -394,7 +394,7 @@ impl SchedulerLeaderDetectionMetrics {
             .as_micros()
             .try_into()
             .unwrap_or(i64::MAX);
-        datapoint_info!(
+        datapoint_trace!(
             "banking_stage_scheduler_leader_detection",
             ("slot", slot, i64),
             ("bank_detected_delay_us", bank_detected_delay_us, i64),

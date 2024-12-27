@@ -81,7 +81,7 @@ impl AccountsHashVerifier {
                         break;
                     }
 
-                    datapoint_info!(
+                    datapoint_trace!(
                         "accounts_hash_verifier",
                         (
                             "num_outstanding_accounts_packages",
@@ -363,7 +363,7 @@ impl AccountsHashVerifier {
             assert_eq!(expected_hash, accounts_hash);
         };
 
-        datapoint_info!(
+        datapoint_trace!(
             "accounts_hash_verifier",
             ("calculate_hash", measure_hash_us, i64),
         );
@@ -403,7 +403,7 @@ impl AccountsHashVerifier {
                 HashStats::default(),
             ));
 
-        datapoint_info!(
+        datapoint_trace!(
             "accounts_hash_verifier",
             (
                 "calculate_incremental_accounts_hash_us",

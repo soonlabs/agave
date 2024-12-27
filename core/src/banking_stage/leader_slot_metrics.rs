@@ -86,7 +86,7 @@ impl LeaderPrioritizationFeesMetrics {
     }
 
     fn report(&self, id: &str, slot: Slot) {
-        datapoint_info!(
+        datapoint_trace!(
             "banking_stage-leader_prioritization_fees_info",
             "id" => id,
             ("slot", slot, i64),
@@ -216,7 +216,7 @@ impl LeaderSlotPacketCountMetrics {
     }
 
     fn report(&self, id: &str, slot: Slot) {
-        datapoint_info!(
+        datapoint_trace!(
             "banking_stage-leader_slot_packet_counts",
             "id" => id,
             ("slot", slot, i64),
@@ -450,7 +450,7 @@ impl VotePacketCountMetrics {
     }
 
     fn report(&self, id: &str, slot: Slot) {
-        datapoint_info!(
+        datapoint_trace!(
             "banking_stage-vote_packet_counts",
             "id" => id,
             ("slot", slot, i64),
