@@ -8279,7 +8279,7 @@ impl AccountsDb {
         measure.stop();
         accounts_index_root_stats.clean_dead_slot_us += measure.as_us();
         if self.log_dead_slots.load(Ordering::Relaxed) {
-            info!(
+            debug!(
                 "remove_dead_slots_metadata: {} dead slots",
                 dead_slots.len()
             );
