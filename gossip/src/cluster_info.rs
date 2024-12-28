@@ -1458,7 +1458,16 @@ impl ClusterInfo {
                 .collect(),
             self.get_epoch_slots(&mut Cursor::default())
                 .iter()
-                .map(|s| format!("{}:{:?}", s.from, s.slots))
+                .map(|s| {
+                    format!(
+                        "{}({:?})",
+                        s.from,
+                        s.slots
+                            .iter()
+                            .map(|s| format!("{}#{}s", s.first_slot(), s.num_slots()))
+                            .collect::<Vec<_>>()
+                    )
+                })
                 .collect(),
         )
     }
@@ -1664,6 +1673,7 @@ impl ClusterInfo {
         let entries: Vec<CrdsValue> =
             std::mem::take(&mut *self.local_message_pending_push_queue.lock().unwrap());
         if !entries.is_empty() {
+            info!("flushing {} entries to gossip", entries.len());
             let mut gossip_crds = self.gossip.crds.write().unwrap();
             let now = timestamp();
             for entry in entries {

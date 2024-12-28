@@ -161,10 +161,6 @@ impl ClusterSlotsService {
     }
 
     fn update_lowest_slot(lowest_slot: Slot, cluster_info: &ClusterInfo) {
-        info!(
-            "cluser slots service - updating lowest slot to {}",
-            lowest_slot
-        );
         cluster_info.push_lowest_slot(lowest_slot);
     }
 
