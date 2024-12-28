@@ -197,10 +197,6 @@ impl CrdsGossipPush {
                 stakes,
             );
             for node in nodes.take(self.push_fanout) {
-                info!(
-                    "new push message: {:?} to: {} from: {}",
-                    value, node, origin
-                );
                 push_messages.entry(*node).or_default().push(value.clone());
                 num_pushes += 1;
                 if num_pushes >= MAX_NUM_PUSHES {

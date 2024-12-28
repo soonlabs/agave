@@ -1687,6 +1687,7 @@ impl ClusterInfo {
             self.flush_push_queue();
             self.gossip.new_push_messages(&self_id, timestamp(), stakes)
         };
+        let origin_count = push_messages.len();
         self.stats
             .push_fanout_num_entries
             .add_relaxed(num_entries as u64);
@@ -1699,6 +1700,7 @@ impl ClusterInfo {
                 !data.is_empty()
             })
         }
+        let after_retain_count = push_messages.len();
         let push_messages: Vec<_> = {
             let gossip_crds =
                 self.time_gossip_read_lock("push_req_lookup", &self.stats.new_push_requests2);
@@ -1710,6 +1712,7 @@ impl ClusterInfo {
                 })
                 .collect()
         };
+        let converted_count = push_messages.len();
         let messages: Vec<_> = push_messages
             .into_iter()
             .flat_map(|(peer, msgs)| {
@@ -1717,6 +1720,15 @@ impl ClusterInfo {
                     .map(move |payload| (peer, Protocol::PushMessage(self_id, payload)))
             })
             .collect();
+        if origin_count > 0 {
+            info!(
+                "new push requests from {} origins, after retain {}, converted to {}, target addresses {:?}",
+                origin_count,
+                num_nodes,
+                converted_count,
+                messages.iter().map(|(addr, _)| addr).collect::<HashSet<_>>(),
+            );
+        }
         self.stats
             .new_push_requests_num
             .add_relaxed(messages.len() as u64);
@@ -1749,6 +1761,11 @@ impl ClusterInfo {
             let pings = pings
                 .into_iter()
                 .map(|(addr, ping)| (addr, Protocol::PingMessage(ping)));
+            info!(
+                "generate new pull requests count, {} pulls, {} pings",
+                pull_requests.len(),
+                pings.len()
+            );
             out.extend(pull_requests);
             out.extend(pings);
         }
