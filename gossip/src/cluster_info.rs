@@ -924,6 +924,7 @@ impl ClusterInfo {
                 CrdsData::LowestSlot(0, LowestSlot::new(self_pubkey, min, now)),
                 &self.keypair(),
             );
+            info!("updated lowest slot to {} from {}", min, last);
             self.push_message(entry);
         }
     }

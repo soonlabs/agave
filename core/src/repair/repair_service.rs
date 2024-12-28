@@ -459,11 +459,11 @@ impl RepairService {
                 repairs
             };
 
-            let mut repairs_not_empty = false;
-            if !repairs.is_empty() {
-                info!("{} repair requests: {:?}", repairs.len(), repairs);
-                repairs_not_empty = true;
-            }
+            let repairs_log = if !repairs.is_empty() {
+                Some(format!("{} repair requests: {:?}", repairs.len(), repairs))
+            } else {
+                None
+            };
 
             let identity_keypair: &Keypair = &repair_info.cluster_info.keypair().clone();
 
@@ -491,9 +491,10 @@ impl RepairService {
                     })
                     .collect()
             };
-            if repairs_not_empty {
+            if let Some(log) = repairs_log {
                 info!(
-                    "{} repair requests targets: {:?}",
+                    "{}, {} targets: {:?}",
+                    log,
                     batch.len(),
                     batch.iter().map(|(_, to)| to).collect::<Vec<_>>()
                 );
