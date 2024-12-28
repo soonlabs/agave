@@ -1441,20 +1441,26 @@ impl ClusterInfo {
             .collect()
     }
 
-    pub fn peers_slots(&self) -> Vec<String> {
+    pub fn peers_slots(&self) -> (Vec<String>, Vec<String>) {
         let gossip_crds = self.gossip.crds.read().unwrap();
-        gossip_crds
-            .get_nodes_contact_info()
-            .map(|node| {
-                let pk = *node.pubkey();
+        (
+            gossip_crds
+                .get_nodes_contact_info()
+                .map(|node| {
+                    let pk = *node.pubkey();
 
-                format!(
-                    "{:?} {:?}",
-                    node.gossip().ok(),
-                    gossip_crds.get::<&LowestSlot>(pk).map(|s| s.lowest),
-                )
-            })
-            .collect()
+                    format!(
+                        "{:?} {:?}",
+                        node.gossip().ok(),
+                        gossip_crds.get::<&LowestSlot>(pk).map(|s| s.lowest),
+                    )
+                })
+                .collect(),
+            self.get_epoch_slots(&mut Cursor::default())
+                .iter()
+                .map(|s| format!("{}:{:?}", s.from, s.slots))
+                .collect(),
+        )
     }
 
     fn is_spy_node(node: &ContactInfo, socket_addr_space: &SocketAddrSpace) -> bool {
@@ -1905,9 +1911,11 @@ impl ClusterInfo {
                         && start - last_contact_info_trace > self.contact_debug_interval
                     {
                         // Log contact info
+                        let (lowest, epoch) = self.peers_slots();
                         info!(
-                            "Cluster info summary: {:?}\n{}\n\n{}",
-                            self.peers_slots(),
+                            "Cluster info summary: slots info(lowest: {:?}, epoch: {:?})\n{}\n\n{}",
+                            lowest,
+                            epoch,
                             self.contact_info_trace(),
                             self.rpc_info_trace()
                         );
