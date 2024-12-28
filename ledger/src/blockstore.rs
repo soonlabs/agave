@@ -812,7 +812,7 @@ impl Blockstore {
         let mut data_shreds_indices = erasure_meta.data_shreds_indices();
         let start_index = data_shreds_indices.next().unwrap_or_default();
         let end_index = data_shreds_indices.last().unwrap_or(start_index);
-        datapoint_debug!(
+        datapoint_trace!(
             "blockstore-erasure",
             ("slot", slot as i64, i64),
             ("start_index", start_index, i64),
@@ -2009,7 +2009,7 @@ impl Blockstore {
         let shred_index = u64::from(shred.index());
         let slot = shred.slot();
         let last_in_slot = if shred.last_in_slot() {
-            debug!("got last in slot");
+            trace!("got last in slot");
             true
         } else {
             false
@@ -2152,14 +2152,14 @@ impl Blockstore {
         let index = u64::from(shred.index());
 
         let last_in_slot = if shred.last_in_slot() {
-            debug!("got last in slot");
+            trace!("got last in slot");
             true
         } else {
             false
         };
 
         let last_in_data = if shred.data_complete() {
-            debug!("got last in data");
+            trace!("got last in data");
             true
         } else {
             false
@@ -4195,7 +4195,7 @@ impl Blockstore {
                 self.set_roots(chunk.iter())?;
             }
         } else {
-            debug!("No missing roots found in range {start_root} to {end_slot}");
+            trace!("No missing roots found in range {start_root} to {end_slot}");
         }
         fix_roots.stop();
         datapoint_trace!(

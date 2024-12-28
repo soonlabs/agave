@@ -1095,7 +1095,7 @@ impl ServeRepair {
             nonce,
             identity_keypair,
         )?;
-        debug!(
+        trace!(
             "Sending repair request from {} for {:#?}",
             identity_keypair.pubkey(),
             repair_request

@@ -1946,7 +1946,7 @@ fn main() {
 
                         account.set_lamports(0);
                         bank.store_account(&address, &account);
-                        debug!("Account removed: {address}");
+                        trace!("Account removed: {address}");
                     }
 
                     for address in feature_gates_to_deactivate {
@@ -1972,7 +1972,7 @@ fn main() {
 
                         account.set_lamports(0);
                         bank.store_account(&address, &account);
-                        debug!("Feature gate deactivated: {address}");
+                        trace!("Feature gate deactivated: {address}");
                     }
 
                     if !vote_accounts_to_destake.is_empty() {

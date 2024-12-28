@@ -205,7 +205,7 @@ where
         let mut make_txs = Measure::start("make_txs");
         let txs: Vec<(T, Transaction)> = chunk.par_iter().map(create_transaction).collect();
         make_txs.stop();
-        debug!("make {} unsigned txs: {}us", txs.len(), make_txs.as_us());
+        trace!("make {} unsigned txs: {}us", txs.len(), make_txs.as_us());
         self.extend(txs);
     }
 
@@ -242,7 +242,7 @@ where
             tx.sign(&k.as_slice(), blockhash);
         });
         sign_txs.stop();
-        debug!("sign {} txs: {}us", self.len(), sign_txs.as_us());
+        trace!("sign {} txs: {}us", self.len(), sign_txs.as_us());
     }
 
     fn send<C: TpsClient + ?Sized>(&self, client: &Arc<C>) {
@@ -251,9 +251,9 @@ where
         let result = client.send_batch(batch);
         send_txs.stop();
         if result.is_err() {
-            debug!("Failed to send batch {result:?}");
+            trace!("Failed to send batch {result:?}");
         } else {
-            debug!("send {} {}", self.len(), send_txs);
+            trace!("send {} {}", self.len(), send_txs);
         }
     }
 

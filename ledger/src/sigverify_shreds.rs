@@ -80,7 +80,7 @@ fn verify_shreds_cpu(
     cache: &RwLock<LruCache>,
 ) -> Vec<Vec<u8>> {
     let packet_count = count_packets_in_batches(batches);
-    debug!("CPU SHRED ECDSA for {}", packet_count);
+    trace!("CPU SHRED ECDSA for {}", packet_count);
     let rv = thread_pool.install(|| {
         batches
             .into_par_iter()
@@ -349,7 +349,7 @@ fn sign_shred_cpu(keypair: &Keypair, packet: &mut Packet) {
 
 pub fn sign_shreds_cpu(thread_pool: &ThreadPool, keypair: &Keypair, batches: &mut [PacketBatch]) {
     let packet_count = count_packets_in_batches(batches);
-    debug!("CPU SHRED ECDSA for {}", packet_count);
+    trace!("CPU SHRED ECDSA for {}", packet_count);
     thread_pool.install(|| {
         batches.par_iter_mut().for_each(|batch| {
             batch[..]

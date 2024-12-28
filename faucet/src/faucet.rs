@@ -397,7 +397,7 @@ pub async fn run_faucet(
                     }
                 });
             }
-            Err(e) => debug!("failed to accept socket; error = {:?}", e),
+            Err(e) => trace!("failed to accept socket; error = {:?}", e),
         }
     }
 }

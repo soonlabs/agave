@@ -803,7 +803,7 @@ impl RpcSubscriptions {
                                 .node_progress_watchers()
                                 .get(&SubscriptionParams::Slot)
                             {
-                                debug!("slot notify: {:?}", slot_info);
+                                trace!("slot notify: {:?}", slot_info);
                                 inc_new_counter_info!("rpc-subscription-notify-slot", 1);
                                 notifier.notify(slot_info, sub, false);
                             }
@@ -832,7 +832,7 @@ impl RpcSubscriptions {
                                     timestamp: vote_info.timestamp(),
                                     signature: signature.to_string(),
                                 };
-                                debug!("vote notify: {:?}", vote_info);
+                                trace!("vote notify: {:?}", vote_info);
                                 inc_new_counter_info!("rpc-subscription-notify-vote", 1);
                                 notifier.notify(&rpc_vote, sub, false);
                             }
@@ -842,7 +842,7 @@ impl RpcSubscriptions {
                                 .node_progress_watchers()
                                 .get(&SubscriptionParams::Root)
                             {
-                                debug!("root notify: {:?}", root);
+                                trace!("root notify: {:?}", root);
                                 inc_new_counter_info!("rpc-subscription-notify-root", 1);
                                 notifier.notify(root, sub, false);
                             }
@@ -1142,7 +1142,7 @@ impl RpcSubscriptions {
             + num_signatures_notified.load(Ordering::Relaxed);
         let total_ms = total_time.as_ms();
         if total_notified > 0 || total_ms > 10 {
-            debug!(
+            trace!(
                 "notified({}): accounts: {} / {} logs: {} / {} programs: {} / {} signatures: {} / {}",
                 source,
                 num_accounts_found.load(Ordering::Relaxed),

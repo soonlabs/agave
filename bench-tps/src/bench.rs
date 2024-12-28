@@ -738,7 +738,7 @@ fn get_nonce_blockhashes<T: 'static + TpsClient + Send + Sync + ?Sized>(
             }
         }
         let num_unprocessed_after = unprocessed.len();
-        debug!(
+        trace!(
             "Received {} durable nonce accounts",
             num_unprocessed_before - num_unprocessed_after
         );
@@ -883,7 +883,7 @@ fn get_new_latest_blockhash<T: TpsClient + ?Sized>(
                 return Some(new_blockhash);
             }
         }
-        debug!("Got same blockhash ({:?}), will retry...", blockhash);
+        trace!("Got same blockhash ({:?}), will retry...", blockhash);
 
         // Retry ~twice during a slot
         sleep(Duration::from_millis(DEFAULT_MS_PER_SLOT / 2));

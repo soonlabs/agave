@@ -17,7 +17,7 @@ pub struct NonCirculatingSupply {
 }
 
 pub fn calculate_non_circulating_supply(bank: &Bank) -> ScanResult<NonCirculatingSupply> {
-    debug!("Updating Bank supply, epoch: {}", bank.epoch());
+    trace!("Updating Bank supply, epoch: {}", bank.epoch());
     let mut non_circulating_accounts_set: HashSet<Pubkey> = HashSet::new();
 
     for key in non_circulating_accounts() {

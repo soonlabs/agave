@@ -130,7 +130,7 @@ impl Consumer {
         }
 
         proc_start.stop();
-        debug!(
+        trace!(
             "@{:?} done processing buffered batches: {} time: {:?}ms tx count: {} tx/s: {}",
             timestamp(),
             num_packets_to_process,
@@ -538,7 +538,7 @@ impl Consumer {
         // reports qos service stats for this batch
         self.qos_service.report_metrics(bank.slot());
 
-        debug!(
+        trace!(
             "bank: {} lock: {}us unlock: {}us txs_len: {}",
             bank.slot(),
             lock_us,
@@ -703,7 +703,7 @@ impl Consumer {
 
         drop(freeze_lock);
 
-        debug!(
+        trace!(
             "bank: {} process_and_record_locked: {}us record: {}us commit: {}us txs_len: {}",
             bank.slot(),
             load_execute_us,
@@ -712,7 +712,7 @@ impl Consumer {
             batch.sanitized_transactions().len(),
         );
 
-        debug!(
+        trace!(
             "execute_and_commit_transactions_locked: {:?}",
             execute_and_commit_timings.execute_timings,
         );

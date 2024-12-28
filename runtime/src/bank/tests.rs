@@ -5400,11 +5400,11 @@ fn test_nonce_authority() {
     let bad_nonce_authority = bad_nonce_authority_keypair.pubkey();
     let custodian_account = bank.get_account(&custodian_pubkey).unwrap();
 
-    debug!("alice: {}", alice_pubkey);
-    debug!("custodian: {}", custodian_pubkey);
-    debug!("nonce: {}", nonce_pubkey);
-    debug!("nonce account: {:?}", bank.get_account(&nonce_pubkey));
-    debug!("cust: {:?}", custodian_account);
+    trace!("alice: {}", alice_pubkey);
+    trace!("custodian: {}", custodian_pubkey);
+    trace!("nonce: {}", nonce_pubkey);
+    trace!("nonce account: {:?}", bank.get_account(&nonce_pubkey));
+    trace!("cust: {:?}", custodian_account);
     let nonce_hash = get_nonce_blockhash(&bank, &nonce_pubkey).unwrap();
 
     for _ in 0..MAX_RECENT_BLOCKHASHES + 1 {
@@ -5421,7 +5421,7 @@ fn test_nonce_authority() {
         &[&custodian_keypair, &bad_nonce_authority_keypair],
         nonce_hash,
     );
-    debug!("{:?}", nonce_tx);
+    trace!("{:?}", nonce_tx);
     let initial_custodian_balance = custodian_account.lamports();
     assert_eq!(
         bank.process_transaction(&nonce_tx),
@@ -5459,11 +5459,11 @@ fn test_nonce_payer() {
     let custodian_pubkey = custodian_keypair.pubkey();
     let nonce_pubkey = nonce_keypair.pubkey();
 
-    debug!("alice: {}", alice_pubkey);
-    debug!("custodian: {}", custodian_pubkey);
-    debug!("nonce: {}", nonce_pubkey);
-    debug!("nonce account: {:?}", bank.get_account(&nonce_pubkey));
-    debug!("cust: {:?}", bank.get_account(&custodian_pubkey));
+    trace!("alice: {}", alice_pubkey);
+    trace!("custodian: {}", custodian_pubkey);
+    trace!("nonce: {}", nonce_pubkey);
+    trace!("nonce account: {:?}", bank.get_account(&nonce_pubkey));
+    trace!("cust: {:?}", bank.get_account(&custodian_pubkey));
     let nonce_hash = get_nonce_blockhash(&bank, &nonce_pubkey).unwrap();
 
     for _ in 0..MAX_RECENT_BLOCKHASHES + 1 {
@@ -5480,7 +5480,7 @@ fn test_nonce_payer() {
         &[&custodian_keypair, &nonce_keypair],
         nonce_hash,
     );
-    debug!("{:?}", nonce_tx);
+    trace!("{:?}", nonce_tx);
     assert_eq!(
         bank.process_transaction(&nonce_tx),
         Err(TransactionError::InstructionError(
@@ -5525,11 +5525,11 @@ fn test_nonce_payer_tx_wide_cap() {
     let custodian_pubkey = custodian_keypair.pubkey();
     let nonce_pubkey = nonce_keypair.pubkey();
 
-    debug!("alice: {}", alice_pubkey);
-    debug!("custodian: {}", custodian_pubkey);
-    debug!("nonce: {}", nonce_pubkey);
-    debug!("nonce account: {:?}", bank.get_account(&nonce_pubkey));
-    debug!("cust: {:?}", bank.get_account(&custodian_pubkey));
+    trace!("alice: {}", alice_pubkey);
+    trace!("custodian: {}", custodian_pubkey);
+    trace!("nonce: {}", nonce_pubkey);
+    trace!("nonce account: {:?}", bank.get_account(&nonce_pubkey));
+    trace!("cust: {:?}", bank.get_account(&custodian_pubkey));
     let nonce_hash = get_nonce_blockhash(&bank, &nonce_pubkey).unwrap();
 
     for _ in 0..MAX_RECENT_BLOCKHASHES + 1 {
@@ -5546,7 +5546,7 @@ fn test_nonce_payer_tx_wide_cap() {
         &[&custodian_keypair, &nonce_keypair],
         nonce_hash,
     );
-    debug!("{:?}", nonce_tx);
+    trace!("{:?}", nonce_tx);
 
     assert_eq!(
         bank.process_transaction(&nonce_tx),

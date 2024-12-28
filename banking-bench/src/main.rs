@@ -564,7 +564,7 @@ fn main() {
                 .unwrap()
                 .set_bank_for_test(bank.clone());
             assert!(poh_recorder.read().unwrap().bank().is_some());
-            debug!(
+            trace!(
                 "new_bank_time: {}us insert_time: {}us poh_time: {}us",
                 new_bank_time.as_us(),
                 insert_time.as_us(),
@@ -600,7 +600,7 @@ fn main() {
         .unwrap()
         .working_bank()
         .transaction_count();
-    debug!("processed: {} base: {}", txs_processed, base_tx_count);
+    trace!("processed: {} base: {}", txs_processed, base_tx_count);
 
     eprintln!("[total_sent: {}, base_tx_count: {}, txs_processed: {}, txs_landed: {}, total_us: {}, tx_total_us: {}]",
             total_sent, base_tx_count, txs_processed, (txs_processed - base_tx_count), total_us, tx_total_us);
@@ -623,10 +623,10 @@ fn main() {
     drop(gossip_vote_sender);
     exit.store(true, Ordering::Relaxed);
     banking_stage.join().unwrap();
-    debug!("waited for banking_stage");
+    trace!("waited for banking_stage");
     poh_service.join().unwrap();
     sleep(Duration::from_secs(1));
-    debug!("waited for poh_service");
+    trace!("waited for poh_service");
     if let Some(tracer_thread) = tracer_thread {
         tracer_thread.join().unwrap().unwrap();
     }

@@ -15,7 +15,7 @@ use {
     },
     crossbeam_channel::unbounded,
     futures::stream::FuturesUnordered,
-    log::{debug, error, info, warn},
+    log::{error, info, trace, warn},
     serde_json::json,
     solana_clap_utils::{
         input_parsers::pubkey_of,
@@ -608,7 +608,7 @@ impl CopyArgs {
 async fn copy(args: CopyArgs) -> Result<(), Box<dyn std::error::Error>> {
     let from_slot = args.from_slot;
     let to_slot = args.to_slot.unwrap_or(from_slot);
-    debug!("from_slot: {}, to_slot: {}", from_slot, to_slot);
+    trace!("from_slot: {}, to_slot: {}", from_slot, to_slot);
 
     if from_slot > to_slot {
         return Err("starting slot should be less than or equal to ending slot")?;
@@ -640,7 +640,7 @@ async fn copy(args: CopyArgs) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let workers = min(to_slot - from_slot + 1, num_cpus::get().try_into().unwrap());
-    debug!("worker num: {}", workers);
+    trace!("worker num: {}", workers);
 
     let success_slots = Arc::new(Mutex::new(vec![]));
     let skip_slots = Arc::new(Mutex::new(vec![]));
@@ -659,7 +659,7 @@ async fn copy(args: CopyArgs) -> Result<(), Box<dyn std::error::Error>> {
             let failed_slots_clone = Arc::clone(&failed_slots);
             tokio::spawn(async move {
                 while let Ok(slot) = r.try_recv() {
-                    debug!("worker {}: received slot {}", i, slot);
+                    trace!("worker {}: received slot {}", i, slot);
 
                     if !args.force {
                         match destination_bigtable_clone
@@ -688,10 +688,10 @@ async fn copy(args: CopyArgs) -> Result<(), Box<dyn std::error::Error>> {
                         match source_bigtable_clone.confirmed_block_exists(slot).await {
                             Ok(exist) => {
                                 if exist {
-                                    debug!("will write block: {}", slot);
+                                    trace!("will write block: {}", slot);
                                     success_slots_clone.lock().unwrap().push(slot);
                                 } else {
-                                    debug!("block not found, slot: {}", slot);
+                                    trace!("block not found, slot: {}", slot);
                                     block_not_found_slots_clone.lock().unwrap().push(slot);
                                     continue;
                                 }
@@ -722,7 +722,7 @@ async fn copy(args: CopyArgs) -> Result<(), Box<dyn std::error::Error>> {
                                     }
                                 },
                                 Err(solana_storage_bigtable::Error::BlockNotFound(slot)) => {
-                                    debug!("block not found, slot: {}", slot);
+                                    trace!("block not found, slot: {}", slot);
                                     block_not_found_slots_clone.lock().unwrap().push(slot);
                                     continue;
                                 }
@@ -741,7 +741,7 @@ async fn copy(args: CopyArgs) -> Result<(), Box<dyn std::error::Error>> {
                             .await
                         {
                             Ok(()) => {
-                                debug!("wrote block: {}", slot);
+                                trace!("wrote block: {}", slot);
                                 success_slots_clone.lock().unwrap().push(slot);
                             }
                             Err(err) => {
@@ -753,7 +753,7 @@ async fn copy(args: CopyArgs) -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
 
-                debug!("worker {}: exit", i);
+                trace!("worker {}: exit", i);
             })
         })
         .collect::<FuturesUnordered<_>>();
@@ -769,10 +769,10 @@ async fn copy(args: CopyArgs) -> Result<(), Box<dyn std::error::Error>> {
     let mut failed_slots = failed_slots.lock().unwrap();
     failed_slots.sort();
 
-    debug!("success slots: {:?}", success_slots);
-    debug!("skip slots: {:?}", skip_slots);
-    debug!("blocks not found slots: {:?}", block_not_found_slots);
-    debug!("failed slots: {:?}", failed_slots);
+    trace!("success slots: {:?}", success_slots);
+    trace!("skip slots: {:?}", skip_slots);
+    trace!("blocks not found slots: {:?}", block_not_found_slots);
+    trace!("failed slots: {:?}", failed_slots);
 
     println!(
         "success: {}, skip: {}, block not found: {}, failed: {}",

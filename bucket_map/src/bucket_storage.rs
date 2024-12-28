@@ -284,7 +284,7 @@ impl<O: BucketOccupied> BucketStorage<O> {
     pub fn occupy(&mut self, ix: u64, is_resizing: bool) -> Result<(), BucketStorageError> {
         debug_assert!(ix < self.capacity(), "occupy: bad index size");
         let mut e = Err(BucketStorageError::AlreadyOccupied);
-        //debug!("ALLOC {} {}", ix, uid);
+        //trace!("ALLOC {} {}", ix, uid);
         if self.try_lock(ix) {
             e = Ok(());
             if !is_resizing {
@@ -415,7 +415,7 @@ impl<O: BucketOccupied> BucketStorage<O> {
             // Theoretical performance optimization: write a zero to the end of
             // the file so that we won't have to resize it later, which may be
             // expensive.
-            //debug!("GROWING file {}", capacity * cell_size as u64);
+            //trace!("GROWING file {}", capacity * cell_size as u64);
             data.seek(SeekFrom::Start(create_bytes - 1)).unwrap();
             data.write_all(&[0]).unwrap();
             data.rewind().unwrap();

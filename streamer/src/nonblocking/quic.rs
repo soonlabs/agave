@@ -215,7 +215,7 @@ async fn run_server(
         TotalConnectionRateLimiter::new(TOTAL_CONNECTIONS_PER_SECOND);
 
     const WAIT_FOR_CONNECTION_TIMEOUT: Duration = Duration::from_secs(1);
-    debug!("spawn quic server");
+    trace!("spawn quic server");
     let mut last_datapoint = Instant::now();
     let unstaked_connection_table: Arc<Mutex<ConnectionTable>> =
         Arc::new(Mutex::new(ConnectionTable::new()));
@@ -247,7 +247,7 @@ async fn run_server(
 
             // first check overall connection rate limit:
             if !overall_connection_rate_limiter.is_allowed() {
-                debug!(
+                trace!(
                     "Reject connection from {:?} -- total rate limiting exceeded",
                     remote_address.ip()
                 );
@@ -289,7 +289,7 @@ async fn run_server(
                 stream_load_ema.clone(),
             ));
         } else {
-            debug!("accept(): Timed out waiting for connection");
+            trace!("accept(): Timed out waiting for connection");
         }
     }
 }
@@ -325,7 +325,7 @@ fn get_connection_stake(
     staked_nodes: &RwLock<StakedNodes>,
 ) -> Option<(Pubkey, u64, u64, u64, u64)> {
     let pubkey = get_remote_pubkey(connection)?;
-    debug!("Peer public key is {pubkey:?}");
+    trace!("Peer public key is {pubkey:?}");
     let staked_nodes = staked_nodes.read().unwrap();
     Some((
         pubkey,
@@ -421,7 +421,7 @@ fn handle_and_cache_new_connection(
         let receive_window =
             compute_recieve_window(params.max_stake, params.min_stake, params.peer_type);
 
-        debug!(
+        trace!(
             "Peer type {:?}, total stake {}, max streams {} receive_window {:?} from peer {}",
             params.peer_type,
             params.total_stake,
@@ -689,7 +689,7 @@ async fn setup_connection(
 }
 
 fn handle_connection_error(e: quinn::ConnectionError, stats: &StreamStats, from: SocketAddr) {
-    debug!("error: {:?} from: {:?}", e, from);
+    trace!("error: {:?} from: {:?}", e, from);
     stats.connection_setup_error.fetch_add(1, Ordering::Relaxed);
     match e {
         quinn::ConnectionError::TimedOut => {
@@ -832,7 +832,7 @@ fn track_streamer_fetch_packet_performance(
     let now = Instant::now();
     for (signature, start_time) in packet_perf_measure {
         let duration = now.duration_since(*start_time);
-        debug!(
+        trace!(
             "QUIC streamer fetch stage took {duration:?} for transaction {:?}",
             Signature::from(*signature)
         );
@@ -860,7 +860,7 @@ async fn handle_connection(
     stream_counter: Arc<ConnectionStreamCounter>,
 ) {
     let stats = params.stats;
-    debug!(
+    trace!(
         "quic new connection {} streams: {} connections: {}",
         remote_addr,
         stats.total_streams.load(Ordering::Relaxed),
@@ -891,7 +891,7 @@ async fn handle_connection(
                             .saturating_sub(throttle_interval_start.elapsed());
 
                         if !throttle_duration.is_zero() {
-                            debug!("Throttling stream from {remote_addr:?}, peer type: {:?}, total stake: {}, \
+                            trace!("Throttling stream from {remote_addr:?}, peer type: {:?}, total stake: {}, \
                                     max_streams_per_interval: {max_streams_per_throttling_interval}, read_interval_streams: {streams_read_in_throttle_interval} \
                                     throttle_duration: {throttle_duration:?}",
                                     params.peer_type, params.total_stake);
@@ -952,7 +952,7 @@ async fn handle_connection(
                                 }
                                 start = Instant::now();
                             } else if start.elapsed() > wait_for_chunk_timeout {
-                                debug!("Timeout in receiving on stream");
+                                trace!("Timeout in receiving on stream");
                                 stats
                                     .total_stream_read_timeouts
                                     .fetch_add(1, Ordering::Relaxed);
@@ -964,7 +964,7 @@ async fn handle_connection(
                     });
                 }
                 Err(e) => {
-                    debug!("stream error: {:?}", e);
+                    trace!("stream error: {:?}", e);
                     break;
                 }
             }
@@ -1101,7 +1101,7 @@ async fn handle_chunk(
             }
         }
         Err(e) => {
-            debug!("Received stream error: {:?}", e);
+            trace!("Received stream error: {:?}", e);
             stats
                 .total_stream_read_errors
                 .fetch_add(1, Ordering::Relaxed);

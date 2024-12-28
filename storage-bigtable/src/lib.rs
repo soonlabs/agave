@@ -430,7 +430,7 @@ impl LedgerStorageStats {
 
     fn maybe_report(&self) {
         if self.last_report.should_update(METRICS_REPORT_INTERVAL_MS) {
-            datapoint_debug!(
+            datapoint_trace!(
                 "storage-bigtable-query",
                 (
                     "num_queries",

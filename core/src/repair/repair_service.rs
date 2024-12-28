@@ -541,7 +541,7 @@ impl RepairService {
                         (slot, slot_repairs.pubkey_repairs.values().sum::<u64>())
                     })
                     .collect();
-                debug!("repair_stats: {:?}", slot_to_count);
+                trace!("repair_stats: {:?}", slot_to_count);
                 if repair_total > 0 {
                     let nonzero_num = |x| if x == 0 { None } else { Some(x) };
                     datapoint_trace!(
@@ -849,7 +849,7 @@ impl RepairService {
 
         // Select weighted sample of valid peers if no valid peer was passed in.
         if repair_peers.is_empty() {
-            debug!(
+            trace!(
                 "No pubkey was provided or no valid repair socket was found. \
                 Sampling a set of repair peers instead."
             );
@@ -903,7 +903,7 @@ impl RepairService {
         // Send packet batch
         match batch_send(repair_socket, &reqs[..]) {
             Ok(()) => {
-                debug!("successfully sent repair request to {pubkey} / {address}!");
+                trace!("successfully sent repair request to {pubkey} / {address}!");
             }
             Err(SendPktsError::IoError(err, _num_failed)) => {
                 error!("batch_send failed to send packet - error = {:?}", err);

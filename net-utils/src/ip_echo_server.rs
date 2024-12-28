@@ -116,7 +116,7 @@ async fn process_connection(
             for udp_port in &msg.udp_ports {
                 if *udp_port != 0 {
                     match udp_socket.send_to(&[0], SocketAddr::from((peer_addr.ip(), *udp_port))) {
-                        Ok(_) => debug!("Successful send_to udp/{}", udp_port),
+                        Ok(_) => trace!("Successful send_to udp/{}", udp_port),
                         Err(err) => info!("Failed to send_to udp/{}: {}", udp_port, err),
                     }
                 }
@@ -130,7 +130,7 @@ async fn process_connection(
     // Try to connect to each non-zero TCP port
     for tcp_port in &msg.tcp_ports {
         if *tcp_port != 0 {
-            debug!("Connecting to tcp/{}", tcp_port);
+            trace!("Connecting to tcp/{}", tcp_port);
 
             let mut tcp_stream = timeout(
                 IO_TIMEOUT,
@@ -138,7 +138,7 @@ async fn process_connection(
             )
             .await??;
 
-            debug!("Connection established to tcp/{}", *tcp_port);
+            trace!("Connection established to tcp/{}", *tcp_port);
             tcp_stream.shutdown().await?;
         }
     }

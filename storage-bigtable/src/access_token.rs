@@ -109,7 +109,7 @@ impl AccessToken {
         // Check if it's time to try a token refresh
         let token_r = self.token.read().unwrap();
         if token_r.1.elapsed().as_secs() < token_r.0.expires_in() as u64 / 2 {
-            debug!("Token is not expired yet");
+            trace!("Token is not expired yet");
             return;
         }
         drop(token_r);
@@ -119,7 +119,7 @@ impl AccessToken {
             self.refresh_active
                 .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed);
         if refresh_progress.is_err() {
-            debug!("Token update is already in progress");
+            trace!("Token update is already in progress");
             return;
         }
 

@@ -137,7 +137,7 @@ pub fn serialize_points(points: &Vec<DataPoint>, host_id: &str) -> String {
 impl MetricsWriter for InfluxDbMetricsWriter {
     fn write(&self, points: Vec<DataPoint>) {
         if let Some(ref write_url) = self.write_url {
-            debug!("submitting {} points", points.len());
+            trace!("submitting {} points", points.len());
 
             let host_id = HOST_ID.read().unwrap();
 
@@ -226,7 +226,7 @@ impl MetricsAgent {
         let fit_counters = max_points.saturating_sub(points.len());
         let points_written = cmp::min(num_points, max_points);
 
-        debug!("run: attempting to write {} points", num_points);
+        trace!("run: attempting to write {} points", num_points);
 
         if num_points > max_points {
             warn!(
@@ -316,7 +316,7 @@ impl MetricsAgent {
             match receiver.recv_timeout(write_frequency / 2) {
                 Ok(cmd) => match cmd {
                     MetricsCommand::Flush(barrier) => {
-                        debug!("metrics_thread: flush");
+                        trace!("metrics_thread: flush");
                         last_write_time = write(last_write_time, &mut points, &mut counters);
                         barrier.wait();
                     }
@@ -325,7 +325,7 @@ impl MetricsAgent {
                         points.push(point);
                     }
                     MetricsCommand::SubmitCounter(counter, _level, bucket) => {
-                        debug!("{:?}", counter);
+                        trace!("{:?}", counter);
                         let key = (counter.name, bucket);
                         if let Some(value) = counters.get_mut(&key) {
                             value.count += counter.count;
@@ -336,7 +336,7 @@ impl MetricsAgent {
                 },
                 Err(RecvTimeoutError::Timeout) => (),
                 Err(RecvTimeoutError::Disconnected) => {
-                    debug!("run: sender disconnected");
+                    trace!("run: sender disconnected");
                     break;
                 }
             }
@@ -372,7 +372,7 @@ impl MetricsAgent {
     }
 
     pub fn flush(&self) {
-        debug!("Flush");
+        trace!("Flush");
         let barrier = Arc::new(Barrier::new(2));
         self.sender
             .send(MetricsCommand::Flush(Arc::clone(&barrier)))

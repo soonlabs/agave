@@ -297,7 +297,7 @@ impl<'b, T: Clone + Copy + PartialEq + std::fmt::Debug + 'static> Bucket<T> {
             // These fields will be overwritten after allocation by callers.
             // Since this part of the mmapped file could have previously been used by someone else, there can be garbage here.
             IndexEntryPlaceInBucket::new(ii).init(index, key);
-            //debug!(                "INDEX ALLOC {:?} {} {} {}",                key, ii, index.capacity, elem_uid            );
+            //trace!(                "INDEX ALLOC {:?} {} {} {}",                key, ii, index.capacity, elem_uid            );
             m.stop();
             index
                 .stats
@@ -314,7 +314,7 @@ impl<'b, T: Clone + Copy + PartialEq + std::fmt::Debug + 'static> Bucket<T> {
     }
 
     pub(crate) fn read_value(&self, key: &Pubkey) -> Option<(&[T], RefCount)> {
-        //debug!("READ_VALUE: {:?}", key);
+        //trace!("READ_VALUE: {:?}", key);
         let (elem, _) = self.find_index_entry(key)?;
         Some(elem.read_value(&self.index, &self.data))
     }
@@ -621,7 +621,7 @@ impl<'b, T: Clone + Copy + PartialEq + std::fmt::Debug + 'static> Bucket<T> {
                 multiple_slots.set_num_slots(num_slots);
                 MultipleSlots::set_ref_count(best_bucket, ix, ref_count);
 
-                //debug!(                        "DATA ALLOC {:?} {} {} {}",                        key, elem.data_location, best_bucket.capacity, elem_uid                    );
+                //trace!(                        "DATA ALLOC {:?} {} {} {}",                        key, elem.data_location, best_bucket.capacity, elem_uid                    );
                 let best_bucket = &mut self.data[best_fit_bucket as usize];
                 best_bucket.occupy(ix, false).unwrap();
                 if num_slots > 0 {
@@ -665,10 +665,10 @@ impl<'b, T: Clone + Copy + PartialEq + std::fmt::Debug + 'static> Bucket<T> {
                 let data_bucket = &self.data[ix];
                 let loc = multiple_slots.data_loc(data_bucket);
                 let data_bucket = &mut self.data[ix];
-                //debug!(                    "DATA FREE {:?} {} {} {}",                    key, elem.data_location, data_bucket.capacity, elem_uid                );
+                //trace!(                    "DATA FREE {:?} {} {} {}",                    key, elem.data_location, data_bucket.capacity, elem_uid                );
                 data_bucket.free(loc);
             }
-            //debug!("INDEX FREE {:?} {}", key, elem_uid);
+            //trace!("INDEX FREE {:?} {}", key, elem_uid);
             self.index.free(elem_ix);
         }
     }
@@ -683,7 +683,7 @@ impl<'b, T: Clone + Copy + PartialEq + std::fmt::Debug + 'static> Bucket<T> {
             // The indexing algorithm expects to require some over-allocation.
             let anticipated_size = self.anticipated_size * 140 / 100;
             let mut m = Measure::start("grow_index");
-            //debug!("GROW_INDEX: {}", current_capacity_pow2);
+            //trace!("GROW_INDEX: {}", current_capacity_pow2);
             let mut count = 0;
             loop {
                 count += 1;
@@ -822,7 +822,7 @@ impl<'b, T: Clone + Copy + PartialEq + std::fmt::Debug + 'static> Bucket<T> {
         //location in any bucket on all validators
         random.hash(&mut s);
         s.finish()
-        //debug!(            "INDEX_IX: {:?} uid:{} loc: {} cap:{}",            key,            uid,            location,            index.capacity()        );
+        //trace!(            "INDEX_IX: {:?} uid:{} loc: {} cap:{}",            key,            uid,            location,            index.capacity()        );
     }
 
     /// grow the appropriate piece. Note this takes an immutable ref.
@@ -830,11 +830,11 @@ impl<'b, T: Clone + Copy + PartialEq + std::fmt::Debug + 'static> Bucket<T> {
     pub(crate) fn grow(&self, err: BucketMapError) {
         match err {
             BucketMapError::DataNoSpace((data_index, current_capacity_pow2)) => {
-                //debug!("GROWING SPACE {:?}", (data_index, current_capacity_pow2));
+                //trace!("GROWING SPACE {:?}", (data_index, current_capacity_pow2));
                 self.grow_data(data_index, current_capacity_pow2);
             }
             BucketMapError::IndexNoSpace(current_capacity) => {
-                //debug!("GROWING INDEX {}", sz);
+                //trace!("GROWING INDEX {}", sz);
                 self.grow_index(current_capacity);
             }
         }

@@ -244,7 +244,7 @@ impl JsonRpcRequestProcessor {
 
     #[allow(deprecated)]
     fn bank(&self, commitment: Option<CommitmentConfig>) -> Arc<Bank> {
-        debug!("RPC commitment_config: {:?}", commitment);
+        trace!("RPC commitment_config: {:?}", commitment);
 
         let commitment = commitment.unwrap_or_default();
         if commitment.is_confirmed() {
@@ -254,7 +254,7 @@ impl JsonRpcRequestProcessor {
                 .unwrap()
                 .bank
                 .clone();
-            debug!("RPC using optimistically confirmed slot: {:?}", bank.slot());
+            trace!("RPC using optimistically confirmed slot: {:?}", bank.slot());
             return bank;
         }
 
@@ -266,10 +266,10 @@ impl JsonRpcRequestProcessor {
 
         match commitment.commitment {
             CommitmentLevel::Processed => {
-                debug!("RPC using the heaviest slot: {:?}", slot);
+                trace!("RPC using the heaviest slot: {:?}", slot);
             }
             CommitmentLevel::Finalized => {
-                debug!("RPC using block: {:?}", slot);
+                trace!("RPC using block: {:?}", slot);
             }
             CommitmentLevel::Confirmed => unreachable!(), // SingleGossip variant is deprecated
         };
@@ -1088,7 +1088,7 @@ impl JsonRpcRequestProcessor {
         slot: Slot,
     ) -> Result<()> {
         if let Err(err) = result {
-            debug!(
+            trace!(
                 "check_blockstore_root, slot: {:?}, max root: {:?}, err: {:?}",
                 slot,
                 self.blockstore.max_root(),
@@ -2428,7 +2428,7 @@ fn get_spl_token_owner_filter(program_id: &Pubkey, filters: &[RpcFilterType]) ->
         }
         owner_key
     } else {
-        debug!("spl_token program filters do not match by-owner index requisites");
+        trace!("spl_token program filters do not match by-owner index requisites");
         None
     }
 }
@@ -2479,7 +2479,7 @@ fn get_spl_token_mint_filter(program_id: &Pubkey, filters: &[RpcFilterType]) -> 
         }
         mint
     } else {
-        debug!("spl_token program filters do not match by-mint index requisites");
+        trace!("spl_token program filters do not match by-mint index requisites");
         None
     }
 }
@@ -2621,7 +2621,7 @@ pub mod rpc_minimal {
             pubkey_str: String,
             config: Option<RpcContextConfig>,
         ) -> Result<RpcResponse<u64>> {
-            debug!("get_balance rpc request received: {:?}", pubkey_str);
+            trace!("get_balance rpc request received: {:?}", pubkey_str);
             let pubkey = verify_pubkey(&pubkey_str)?;
             meta.get_balance(&pubkey, config.unwrap_or_default())
         }
@@ -2631,13 +2631,13 @@ pub mod rpc_minimal {
             meta: Self::Metadata,
             config: Option<RpcContextConfig>,
         ) -> Result<EpochInfo> {
-            debug!("get_epoch_info rpc request received");
+            trace!("get_epoch_info rpc request received");
             let bank = meta.get_bank_with_config(config.unwrap_or_default())?;
             Ok(bank.get_epoch_info())
         }
 
         fn get_genesis_hash(&self, meta: Self::Metadata) -> Result<String> {
-            debug!("get_genesis_hash rpc request received");
+            trace!("get_genesis_hash rpc request received");
             Ok(meta.genesis_hash.to_string())
         }
 
@@ -2656,14 +2656,14 @@ pub mod rpc_minimal {
         }
 
         fn get_identity(&self, meta: Self::Metadata) -> Result<RpcIdentity> {
-            debug!("get_identity rpc request received");
+            trace!("get_identity rpc request received");
             Ok(RpcIdentity {
                 identity: meta.cluster_info.id().to_string(),
             })
         }
 
         fn get_slot(&self, meta: Self::Metadata, config: Option<RpcContextConfig>) -> Result<Slot> {
-            debug!("get_slot rpc request received");
+            trace!("get_slot rpc request received");
             meta.get_slot(config.unwrap_or_default())
         }
 
@@ -2672,12 +2672,12 @@ pub mod rpc_minimal {
             meta: Self::Metadata,
             config: Option<RpcContextConfig>,
         ) -> Result<u64> {
-            debug!("get_block_height rpc request received");
+            trace!("get_block_height rpc request received");
             meta.get_block_height(config.unwrap_or_default())
         }
 
         fn get_highest_snapshot_slot(&self, meta: Self::Metadata) -> Result<RpcSnapshotSlotInfo> {
-            debug!("get_highest_snapshot_slot rpc request received");
+            trace!("get_highest_snapshot_slot rpc request received");
 
             if meta.snapshot_config.is_none() {
                 return Err(RpcCustomError::NoSnapshot.into());
@@ -2713,12 +2713,12 @@ pub mod rpc_minimal {
             meta: Self::Metadata,
             config: Option<RpcContextConfig>,
         ) -> Result<u64> {
-            debug!("get_transaction_count rpc request received");
+            trace!("get_transaction_count rpc request received");
             meta.get_transaction_count(config.unwrap_or_default())
         }
 
         fn get_version(&self, _: Self::Metadata) -> Result<RpcVersionInfo> {
-            debug!("get_version rpc request received");
+            trace!("get_version rpc request received");
             let version = solana_version::Version::default();
             Ok(RpcVersionInfo {
                 solana_core: version.to_string(),
@@ -2733,7 +2733,7 @@ pub mod rpc_minimal {
             meta: Self::Metadata,
             config: Option<RpcGetVoteAccountsConfig>,
         ) -> Result<RpcVoteAccountStatus> {
-            debug!("get_vote_accounts rpc request received");
+            trace!("get_vote_accounts rpc request received");
             meta.get_vote_accounts(config)
         }
 
@@ -2756,7 +2756,7 @@ pub mod rpc_minimal {
             let slot = slot.unwrap_or_else(|| bank.slot());
             let epoch = bank.epoch_schedule().get_epoch(slot);
 
-            debug!("get_leader_schedule rpc request received: {:?}", slot);
+            trace!("get_leader_schedule rpc request received: {:?}", slot);
 
             Ok(meta
                 .leader_schedule_cache
@@ -2837,7 +2837,7 @@ pub mod rpc_bank {
             data_len: usize,
             commitment: Option<CommitmentConfig>,
         ) -> Result<u64> {
-            debug!(
+            trace!(
                 "get_minimum_balance_for_rent_exemption rpc request received: {:?}",
                 data_len
             );
@@ -2852,17 +2852,17 @@ pub mod rpc_bank {
             meta: Self::Metadata,
             commitment: Option<CommitmentConfig>,
         ) -> Result<RpcInflationGovernor> {
-            debug!("get_inflation_governor rpc request received");
+            trace!("get_inflation_governor rpc request received");
             Ok(meta.get_inflation_governor(commitment))
         }
 
         fn get_inflation_rate(&self, meta: Self::Metadata) -> Result<RpcInflationRate> {
-            debug!("get_inflation_rate rpc request received");
+            trace!("get_inflation_rate rpc request received");
             Ok(meta.get_inflation_rate())
         }
 
         fn get_epoch_schedule(&self, meta: Self::Metadata) -> Result<EpochSchedule> {
-            debug!("get_epoch_schedule rpc request received");
+            trace!("get_epoch_schedule rpc request received");
             Ok(meta.get_epoch_schedule())
         }
 
@@ -2871,7 +2871,7 @@ pub mod rpc_bank {
             meta: Self::Metadata,
             config: Option<RpcContextConfig>,
         ) -> Result<String> {
-            debug!("get_slot_leader rpc request received");
+            trace!("get_slot_leader rpc request received");
             meta.get_slot_leader(config.unwrap_or_default())
         }
 
@@ -2881,7 +2881,7 @@ pub mod rpc_bank {
             start_slot: Slot,
             limit: u64,
         ) -> Result<Vec<String>> {
-            debug!(
+            trace!(
                 "get_slot_leaders rpc request received (start: {} limit: {})",
                 start_slot, limit
             );
@@ -2905,7 +2905,7 @@ pub mod rpc_bank {
             meta: Self::Metadata,
             config: Option<RpcBlockProductionConfig>,
         ) -> Result<RpcResponse<RpcBlockProduction>> {
-            debug!("get_block_production rpc request received");
+            trace!("get_block_production rpc request received");
 
             let config = config.unwrap_or_default();
             let filter_by_identity = if let Some(ref identity) = config.identity {
@@ -3052,7 +3052,7 @@ pub mod rpc_accounts {
             pubkey_str: String,
             config: Option<RpcAccountInfoConfig>,
         ) -> Result<RpcResponse<Option<UiAccount>>> {
-            debug!("get_account_info rpc request received: {:?}", pubkey_str);
+            trace!("get_account_info rpc request received: {:?}", pubkey_str);
             let pubkey = verify_pubkey(&pubkey_str)?;
             meta.get_account_info(&pubkey, config)
         }
@@ -3063,7 +3063,7 @@ pub mod rpc_accounts {
             pubkey_strs: Vec<String>,
             config: Option<RpcAccountInfoConfig>,
         ) -> Result<RpcResponse<Vec<Option<UiAccount>>>> {
-            debug!(
+            trace!(
                 "get_multiple_accounts rpc request received: {:?}",
                 pubkey_strs.len()
             );
@@ -3089,7 +3089,7 @@ pub mod rpc_accounts {
             meta: Self::Metadata,
             block: Slot,
         ) -> Result<RpcBlockCommitment<BlockCommitmentArray>> {
-            debug!("get_block_commitment rpc request received");
+            trace!("get_block_commitment rpc request received");
             Ok(meta.get_block_commitment(block))
         }
 
@@ -3099,7 +3099,7 @@ pub mod rpc_accounts {
             pubkey_str: String,
             commitment: Option<CommitmentConfig>,
         ) -> Result<RpcResponse<UiTokenAmount>> {
-            debug!(
+            trace!(
                 "get_token_account_balance rpc request received: {:?}",
                 pubkey_str
             );
@@ -3113,7 +3113,7 @@ pub mod rpc_accounts {
             mint_str: String,
             commitment: Option<CommitmentConfig>,
         ) -> Result<RpcResponse<UiTokenAmount>> {
-            debug!("get_token_supply rpc request received: {:?}", mint_str);
+            trace!("get_token_supply rpc request received: {:?}", mint_str);
             let mint = verify_pubkey(&mint_str)?;
             meta.get_token_supply(&mint, commitment)
         }
@@ -3192,7 +3192,7 @@ pub mod rpc_accounts_scan {
             program_id_str: String,
             config: Option<RpcProgramAccountsConfig>,
         ) -> Result<OptionalContext<Vec<RpcKeyedAccount>>> {
-            debug!(
+            trace!(
                 "get_program_accounts rpc request received: {:?}",
                 program_id_str
             );
@@ -3223,7 +3223,7 @@ pub mod rpc_accounts_scan {
             meta: Self::Metadata,
             config: Option<RpcLargestAccountsConfig>,
         ) -> Result<RpcResponse<Vec<RpcAccountBalance>>> {
-            debug!("get_largest_accounts rpc request received");
+            trace!("get_largest_accounts rpc request received");
             Ok(meta.get_largest_accounts(config)?)
         }
 
@@ -3232,7 +3232,7 @@ pub mod rpc_accounts_scan {
             meta: Self::Metadata,
             config: Option<RpcSupplyConfig>,
         ) -> Result<RpcResponse<RpcSupply>> {
-            debug!("get_supply rpc request received");
+            trace!("get_supply rpc request received");
             Ok(meta.get_supply(config)?)
         }
 
@@ -3242,7 +3242,7 @@ pub mod rpc_accounts_scan {
             mint_str: String,
             commitment: Option<CommitmentConfig>,
         ) -> Result<RpcResponse<Vec<RpcTokenAccountBalance>>> {
-            debug!(
+            trace!(
                 "get_token_largest_accounts rpc request received: {:?}",
                 mint_str
             );
@@ -3257,7 +3257,7 @@ pub mod rpc_accounts_scan {
             token_account_filter: RpcTokenAccountsFilter,
             config: Option<RpcAccountInfoConfig>,
         ) -> Result<RpcResponse<Vec<RpcKeyedAccount>>> {
-            debug!(
+            trace!(
                 "get_token_accounts_by_owner rpc request received: {:?}",
                 owner_str
             );
@@ -3273,7 +3273,7 @@ pub mod rpc_accounts_scan {
             token_account_filter: RpcTokenAccountsFilter,
             config: Option<RpcAccountInfoConfig>,
         ) -> Result<RpcResponse<Vec<RpcKeyedAccount>>> {
-            debug!(
+            trace!(
                 "get_token_accounts_by_delegate rpc request received: {:?}",
                 delegate_str
             );
@@ -3455,7 +3455,7 @@ pub mod rpc_full {
             meta: Self::Metadata,
             limit: Option<usize>,
         ) -> Result<Vec<RpcPerfSample>> {
-            debug!("get_recent_performance_samples request received");
+            trace!("get_recent_performance_samples request received");
 
             let limit = limit.unwrap_or(PERFORMANCE_SAMPLES_LIMIT);
 
@@ -3478,7 +3478,7 @@ pub mod rpc_full {
         }
 
         fn get_cluster_nodes(&self, meta: Self::Metadata) -> Result<Vec<RpcContactInfo>> {
-            debug!("get_cluster_nodes rpc request received");
+            trace!("get_cluster_nodes rpc request received");
             let cluster_info = &meta.cluster_info;
             let socket_addr_space = cluster_info.socket_addr_space();
             let my_shred_version = cluster_info.my_shred_version();
@@ -3555,7 +3555,7 @@ pub mod rpc_full {
             signature_strs: Vec<String>,
             config: Option<RpcSignatureStatusConfig>,
         ) -> BoxFuture<Result<RpcResponse<Vec<Option<TransactionStatus>>>>> {
-            debug!(
+            trace!(
                 "get_signature_statuses rpc request received: {:?}",
                 signature_strs.len()
             );
@@ -3577,12 +3577,12 @@ pub mod rpc_full {
         }
 
         fn get_max_retransmit_slot(&self, meta: Self::Metadata) -> Result<Slot> {
-            debug!("get_max_retransmit_slot rpc request received");
+            trace!("get_max_retransmit_slot rpc request received");
             Ok(meta.get_max_retransmit_slot())
         }
 
         fn get_max_shred_insert_slot(&self, meta: Self::Metadata) -> Result<Slot> {
-            debug!("get_max_shred_insert_slot rpc request received");
+            trace!("get_max_shred_insert_slot rpc request received");
             Ok(meta.get_max_shred_insert_slot())
         }
 
@@ -3593,7 +3593,7 @@ pub mod rpc_full {
             lamports: u64,
             config: Option<RpcRequestAirdropConfig>,
         ) -> Result<String> {
-            debug!("request_airdrop rpc request received");
+            trace!("request_airdrop rpc request received");
             trace!(
                 "request_airdrop id={} lamports={} config: {:?}",
                 pubkey_str,
@@ -3651,7 +3651,7 @@ pub mod rpc_full {
             data: String,
             config: Option<RpcSendTransactionConfig>,
         ) -> Result<String> {
-            debug!("send_transaction rpc request received");
+            trace!("send_transaction rpc request received");
             let RpcSendTransactionConfig {
                 skip_preflight,
                 preflight_commitment,
@@ -3770,7 +3770,7 @@ pub mod rpc_full {
             data: String,
             config: Option<RpcSimulateTransactionConfig>,
         ) -> Result<RpcResponse<RpcSimulateTransactionResult>> {
-            debug!("simulate_transaction rpc request received");
+            trace!("simulate_transaction rpc request received");
             let RpcSimulateTransactionConfig {
                 sig_verify,
                 replace_recent_blockhash,
@@ -3898,7 +3898,7 @@ pub mod rpc_full {
         }
 
         fn minimum_ledger_slot(&self, meta: Self::Metadata) -> Result<Slot> {
-            debug!("minimum_ledger_slot rpc request received");
+            trace!("minimum_ledger_slot rpc request received");
             meta.minimum_ledger_slot()
         }
 
@@ -3908,7 +3908,7 @@ pub mod rpc_full {
             slot: Slot,
             config: Option<RpcEncodingConfigWrapper<RpcBlockConfig>>,
         ) -> BoxFuture<Result<Option<UiConfirmedBlock>>> {
-            debug!("get_block rpc request received: {:?}", slot);
+            trace!("get_block rpc request received: {:?}", slot);
             Box::pin(async move { meta.get_block(slot, config).await })
         }
 
@@ -3921,7 +3921,7 @@ pub mod rpc_full {
         ) -> BoxFuture<Result<Vec<Slot>>> {
             let (end_slot, maybe_config) =
                 wrapper.map(|wrapper| wrapper.unzip()).unwrap_or_default();
-            debug!(
+            trace!(
                 "get_blocks rpc request received: {}-{:?}",
                 start_slot, end_slot
             );
@@ -3938,7 +3938,7 @@ pub mod rpc_full {
             limit: usize,
             config: Option<RpcContextConfig>,
         ) -> BoxFuture<Result<Vec<Slot>>> {
-            debug!(
+            trace!(
                 "get_blocks_with_limit rpc request received: {}-{}",
                 start_slot, limit,
             );
@@ -3959,7 +3959,7 @@ pub mod rpc_full {
             signature_str: String,
             config: Option<RpcEncodingConfigWrapper<RpcTransactionConfig>>,
         ) -> BoxFuture<Result<Option<EncodedConfirmedTransactionWithStatusMeta>>> {
-            debug!("get_transaction rpc request received: {:?}", signature_str);
+            trace!("get_transaction rpc request received: {:?}", signature_str);
             let signature = verify_signature(&signature_str);
             if let Err(err) = signature {
                 return Box::pin(future::err(err));
@@ -4002,7 +4002,7 @@ pub mod rpc_full {
         }
 
         fn get_first_available_block(&self, meta: Self::Metadata) -> BoxFuture<Result<Slot>> {
-            debug!("get_first_available_block rpc request received");
+            trace!("get_first_available_block rpc request received");
             Box::pin(async move { Ok(meta.get_first_available_block().await) })
         }
 
@@ -4012,7 +4012,7 @@ pub mod rpc_full {
             address_strs: Vec<String>,
             config: Option<RpcEpochConfig>,
         ) -> BoxFuture<Result<Vec<Option<RpcInflationReward>>>> {
-            debug!(
+            trace!(
                 "get_inflation_reward rpc request received: {:?}",
                 address_strs.len()
             );
@@ -4035,7 +4035,7 @@ pub mod rpc_full {
             meta: Self::Metadata,
             config: Option<RpcContextConfig>,
         ) -> Result<RpcResponse<RpcBlockhash>> {
-            debug!("get_latest_blockhash rpc request received");
+            trace!("get_latest_blockhash rpc request received");
             meta.get_latest_blockhash(config.unwrap_or_default())
         }
 
@@ -4056,7 +4056,7 @@ pub mod rpc_full {
             data: String,
             config: Option<RpcContextConfig>,
         ) -> Result<RpcResponse<Option<u64>>> {
-            debug!("get_fee_for_message rpc request received");
+            trace!("get_fee_for_message rpc request received");
             let (_, message) = decode_and_deserialize::<VersionedMessage>(
                 data,
                 TransactionBinaryEncoding::Base64,
@@ -4081,7 +4081,7 @@ pub mod rpc_full {
             meta: Self::Metadata,
             config: Option<RpcContextConfig>,
         ) -> Result<RpcResponse<u64>> {
-            debug!("get_stake_minimum_delegation rpc request received");
+            trace!("get_stake_minimum_delegation rpc request received");
             meta.get_stake_minimum_delegation(config.unwrap_or_default())
         }
 
@@ -4091,7 +4091,7 @@ pub mod rpc_full {
             pubkey_strs: Option<Vec<String>>,
         ) -> Result<Vec<RpcPrioritizationFee>> {
             let pubkey_strs = pubkey_strs.unwrap_or_default();
-            debug!(
+            trace!(
                 "get_recent_prioritization_fees rpc request received: {:?} pubkeys",
                 pubkey_strs.len()
             );

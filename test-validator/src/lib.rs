@@ -485,7 +485,7 @@ impl TestValidatorGenesis {
             json_files.extend(matched_files);
         }
 
-        debug!("account files found: {:?}", json_files);
+        trace!("account files found: {:?}", json_files);
 
         let accounts: Vec<_> = json_files
             .iter()

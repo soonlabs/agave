@@ -226,7 +226,7 @@ fn bench_banking(bencher: &mut Bencher, tx_type: TransactionType) {
         .unwrap()
         .set_limits(u64::MAX, u64::MAX, u64::MAX);
 
-    debug!("threads: {} txs: {}", num_threads, txes);
+    trace!("threads: {} txs: {}", num_threads, txes);
 
     let transactions = match tx_type {
         TransactionType::Accounts | TransactionType::AccountsAndVotes => {
@@ -332,7 +332,7 @@ fn bench_banking(bencher: &mut Bencher, tx_type: TransactionType) {
                 .unwrap();
         }
         for v in verified[start..start + chunk_len].chunks(chunk_len / num_threads) {
-            debug!(
+            trace!(
                 "sending... {}..{} {} v.len: {}",
                 start,
                 start + chunk_len,

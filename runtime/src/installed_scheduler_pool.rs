@@ -620,7 +620,7 @@ impl BankWithSchedulerInner {
         scheduler: &InstalledSchedulerRwLock,
         reason: WaitReason,
     ) -> Option<ResultWithTimings> {
-        debug!(
+        trace!(
             "wait_for_scheduler_termination(slot: {}, reason: {:?}): started at {:?}...",
             bank.slot(),
             reason,
@@ -651,7 +651,7 @@ impl BankWithSchedulerInner {
             }
             SchedulerStatus::Unavailable => (true, None),
         };
-        debug!(
+        trace!(
             "wait_for_scheduler_termination(slot: {}, reason: {:?}): noop: {:?}, result: {:?} at {:?}...",
             bank.slot(),
             reason,

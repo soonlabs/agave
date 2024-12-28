@@ -250,7 +250,7 @@ impl AdminRpc for AdminRpcImpl {
     type Metadata = AdminRpcRequestMetadata;
 
     fn exit(&self, meta: Self::Metadata) -> Result<()> {
-        debug!("exit admin rpc request received");
+        trace!("exit admin rpc request received");
 
         thread::Builder::new()
             .name("solProcessExit".into())
@@ -390,28 +390,28 @@ impl AdminRpc for AdminRpcImpl {
     }
 
     fn rpc_addr(&self, meta: Self::Metadata) -> Result<Option<SocketAddr>> {
-        debug!("rpc_addr admin rpc request received");
+        trace!("rpc_addr admin rpc request received");
         Ok(meta.rpc_addr)
     }
 
     fn set_log_filter(&self, filter: String) -> Result<()> {
-        debug!("set_log_filter admin rpc request received");
+        trace!("set_log_filter admin rpc request received");
         solana_logger::setup_with(&filter);
         Ok(())
     }
 
     fn start_time(&self, meta: Self::Metadata) -> Result<SystemTime> {
-        debug!("start_time admin rpc request received");
+        trace!("start_time admin rpc request received");
         Ok(meta.start_time)
     }
 
     fn start_progress(&self, meta: Self::Metadata) -> Result<ValidatorStartProgress> {
-        debug!("start_progress admin rpc request received");
+        trace!("start_progress admin rpc request received");
         Ok(*meta.start_progress.read().unwrap())
     }
 
     fn add_authorized_voter(&self, meta: Self::Metadata, keypair_file: String) -> Result<()> {
-        debug!("add_authorized_voter request received");
+        trace!("add_authorized_voter request received");
 
         let authorized_voter = read_keypair_file(keypair_file)
             .map_err(|err| jsonrpc_core::error::Error::invalid_params(format!("{err}")))?;
@@ -424,7 +424,7 @@ impl AdminRpc for AdminRpcImpl {
         meta: Self::Metadata,
         keypair: Vec<u8>,
     ) -> Result<()> {
-        debug!("add_authorized_voter_from_bytes request received");
+        trace!("add_authorized_voter_from_bytes request received");
 
         let authorized_voter = Keypair::from_bytes(&keypair).map_err(|err| {
             jsonrpc_core::error::Error::invalid_params(format!(
@@ -436,7 +436,7 @@ impl AdminRpc for AdminRpcImpl {
     }
 
     fn remove_all_authorized_voters(&self, meta: Self::Metadata) -> Result<()> {
-        debug!("remove_all_authorized_voters received");
+        trace!("remove_all_authorized_voters received");
         meta.authorized_voter_keypairs.write().unwrap().clear();
         Ok(())
     }
@@ -447,7 +447,7 @@ impl AdminRpc for AdminRpcImpl {
         keypair_file: String,
         require_tower: bool,
     ) -> Result<()> {
-        debug!("set_identity request received");
+        trace!("set_identity request received");
 
         let identity_keypair = read_keypair_file(&keypair_file).map_err(|err| {
             jsonrpc_core::error::Error::invalid_params(format!(
@@ -464,7 +464,7 @@ impl AdminRpc for AdminRpcImpl {
         identity_keypair: Vec<u8>,
         require_tower: bool,
     ) -> Result<()> {
-        debug!("set_identity_from_bytes request received");
+        trace!("set_identity_from_bytes request received");
 
         let identity_keypair = Keypair::from_bytes(&identity_keypair).map_err(|err| {
             jsonrpc_core::error::Error::invalid_params(format!(
@@ -489,7 +489,7 @@ impl AdminRpc for AdminRpcImpl {
         write_staked_nodes.clear();
         write_staked_nodes.extend(loaded_config);
         info!("Staked nodes overrides loaded from {}", path);
-        debug!("overrides map: {:?}", write_staked_nodes);
+        trace!("overrides map: {:?}", write_staked_nodes);
         Ok(())
     }
 
@@ -504,7 +504,7 @@ impl AdminRpc for AdminRpcImpl {
         slot: u64,
         shred_index: u64,
     ) -> Result<()> {
-        debug!("repair_shred_from_peer request received");
+        trace!("repair_shred_from_peer request received");
 
         meta.with_post_init(|post_init| {
             repair_service::RepairService::request_repair_for_shred_from_peer(
@@ -521,7 +521,7 @@ impl AdminRpc for AdminRpcImpl {
     }
 
     fn repair_whitelist(&self, meta: Self::Metadata) -> Result<AdminRpcRepairWhitelist> {
-        debug!("repair_whitelist request received");
+        trace!("repair_whitelist request received");
 
         meta.with_post_init(|post_init| {
             let whitelist: Vec<_> = post_init
@@ -536,7 +536,7 @@ impl AdminRpc for AdminRpcImpl {
     }
 
     fn set_repair_whitelist(&self, meta: Self::Metadata, whitelist: Vec<Pubkey>) -> Result<()> {
-        debug!("set_repair_whitelist request received");
+        trace!("set_repair_whitelist request received");
 
         let whitelist: HashSet<Pubkey> = whitelist.into_iter().collect();
         meta.with_post_init(|post_init| {
@@ -554,7 +554,7 @@ impl AdminRpc for AdminRpcImpl {
         meta: Self::Metadata,
         pubkey_str: String,
     ) -> Result<HashMap<RpcAccountIndex, usize>> {
-        debug!(
+        trace!(
             "get_secondary_index_key_size rpc request received: {:?}",
             pubkey_str
         );
@@ -567,7 +567,7 @@ impl AdminRpc for AdminRpcImpl {
 
             // Exit if secondary indexes are not enabled
             if enabled_account_indexes.is_empty() {
-                debug!("get_secondary_index_key_size: secondary index not enabled.");
+                trace!("get_secondary_index_key_size: secondary index not enabled.");
                 return Ok(HashMap::new());
             };
 
@@ -595,7 +595,7 @@ impl AdminRpc for AdminRpcImpl {
 
             // Note: Will return an empty HashMap if no keys are found.
             if found_sizes.is_empty() {
-                debug!("get_secondary_index_key_size: key not found in the secondary index.");
+                trace!("get_secondary_index_key_size: key not found in the secondary index.");
             }
             Ok(found_sizes)
         })
@@ -606,7 +606,7 @@ impl AdminRpc for AdminRpcImpl {
         meta: Self::Metadata,
         public_tpu_addr: SocketAddr,
     ) -> Result<()> {
-        debug!("set_public_tpu_address rpc request received: {public_tpu_addr}");
+        trace!("set_public_tpu_address rpc request received: {public_tpu_addr}");
 
         meta.with_post_init(|post_init| {
             post_init
@@ -643,7 +643,7 @@ impl AdminRpc for AdminRpcImpl {
         meta: Self::Metadata,
         public_tpu_forwards_addr: SocketAddr,
     ) -> Result<()> {
-        debug!("set_public_tpu_forwards_address rpc request received: {public_tpu_forwards_addr}");
+        trace!("set_public_tpu_forwards_address rpc request received: {public_tpu_forwards_addr}");
 
         meta.with_post_init(|post_init| {
             post_init
@@ -846,7 +846,7 @@ where
 pub fn load_staked_nodes_overrides(
     path: &String,
 ) -> std::result::Result<StakedNodesOverrides, Box<dyn error::Error>> {
-    debug!("Loading staked nodes overrides configuration from {}", path);
+    trace!("Loading staked nodes overrides configuration from {}", path);
     if Path::new(&path).exists() {
         let file = std::fs::File::open(path)?;
         Ok(serde_yaml::from_reader(file)?)

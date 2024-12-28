@@ -208,7 +208,7 @@ mod tests {
                 to_packet_batches(&(0..1024).map(|_| test_tx()).collect::<Vec<_>>(), 128);
             discard +=
                 dedup_packets_and_count_discards(&filter, &mut batches, |_, _, _| ()) as usize;
-            debug!("false positive rate: {}/{}", discard, i * 1024);
+            trace!("false positive rate: {}/{}", discard, i * 1024);
         }
         //allow for 1 false positive even if extremely unlikely
         assert!(discard < 2);

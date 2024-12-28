@@ -129,7 +129,7 @@ where
                                 drop(map);
                                 let conn = conn.new_blocking_connection(addr, stats.clone());
                                 let result = conn.send_data(&[]);
-                                debug!("Create async connection result {result:?} for {addr}");
+                                trace!("Create async connection result {result:?} for {addr}");
                             }
                         }
                     }
@@ -179,7 +179,7 @@ where
 
         if matches!(pool_status, PoolStatus::PartiallyFull) {
             // trigger an async connection create
-            debug!("Triggering async connection for {addr:?}");
+            trace!("Triggering async connection for {addr:?}");
             Self::create_connection_internal(
                 &self.connection_config,
                 &self.connection_manager,
@@ -237,7 +237,7 @@ where
                 ) {
                     let idx = pool.add_connection(config, addr);
                     if let Some(sender) = async_connection_sender {
-                        debug!(
+                        trace!(
                             "Sending async connection creation {} for {addr}",
                             pool.num_connections() - 1
                         );
@@ -292,7 +292,7 @@ where
                     PoolStatus::PartiallyFull | PoolStatus::Full => {
                         let connection = pool.borrow_connection();
                         if matches!(pool_status, PoolStatus::PartiallyFull) {
-                            debug!("Creating connection async for {addr}");
+                            trace!("Creating connection async for {addr}");
                             drop(map);
                             let mut map = self.map.write().unwrap();
                             Self::create_connection_internal(

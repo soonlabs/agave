@@ -314,7 +314,7 @@ impl BankForks {
             eah_banks.iter().map(|bank| bank.slot()).collect::<Vec<_>>(),
         );
         if let Some(&&eah_bank) = eah_banks.first() {
-            debug!(
+            trace!(
                 "sending epoch accounts hash request, slot: {}",
                 eah_bank.slot(),
             );

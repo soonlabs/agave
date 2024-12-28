@@ -906,7 +906,7 @@ fn get_snapshot_hashes_from_known_validators(
         known_validators_to_wait_for,
         get_snapshot_hashes_for_node,
     ) {
-        debug!(
+        trace!(
             "Snapshot hashes have not been discovered from known validators. This likely means \
              the gossip tables are not fully populated. We will sleep and retry..."
         );
@@ -986,7 +986,7 @@ fn build_known_snapshot_hashes<'a>(
                  snapshot hash with this slot.\
                  \nfull snapshot hash: {full_snapshot_hash:?}"
             );
-            debug!(
+            trace!(
                 "known full snapshot hashes: {:#?}",
                 known_snapshot_hashes.keys(),
             );
@@ -1014,7 +1014,7 @@ fn build_known_snapshot_hashes<'a>(
                      \nfull snapshot hash: {full_snapshot_hash:?}\
                      \nincremental snapshot hash: {incremental_snapshot_hash:?}"
                 );
-                debug!(
+                trace!(
                     "known incremental snapshot hashes based on this slot: {:#?}",
                     known_incremental_snapshot_hashes.iter(),
                 );
@@ -1265,7 +1265,7 @@ fn download_snapshot(
         maximum_incremental_snapshot_archives_to_retain,
         use_progress_bar,
         &mut Some(Box::new(|download_progress: &DownloadProgressRecord| {
-            debug!("Download progress: {download_progress:?}");
+            trace!("Download progress: {download_progress:?}");
             if download_progress.last_throughput < minimal_snapshot_download_speed
                 && download_progress.notification_count <= 1
                 && download_progress.percentage_done <= 2_f32

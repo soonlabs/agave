@@ -354,7 +354,7 @@ mod tests {
             assert_eq!(index.read_value(key), Some((vec![i], 0)));
             for (ix, key) in keys.iter().enumerate() {
                 let i = read_be_u64(key.as_ref());
-                //debug!("READ: {:?} {}", key, i);
+                //trace!("READ: {:?} {}", key, i);
                 let expected = if ix <= k { Some((vec![i], 0)) } else { None };
                 assert_eq!(index.read_value(key), expected);
             }
@@ -373,7 +373,7 @@ mod tests {
         }
         for key in keys.iter() {
             let i = read_be_u64(key.as_ref());
-            //debug!("READ: {:?} {}", key, i);
+            //trace!("READ: {:?} {}", key, i);
             assert_eq!(index.read_value(key), Some((vec![i], 0)));
         }
         for k in 0..keys.len() {

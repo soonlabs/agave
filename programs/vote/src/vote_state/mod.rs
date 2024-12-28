@@ -495,7 +495,7 @@ fn check_slots_are_valid(
         // This means we never made it to steps 2) or 3) above, otherwise
         // `j` would have been decremented at least once. This means
         // there are not slots in `vote_slots` greater than `last_voted_slot`
-        debug!(
+        trace!(
             "{} dropped vote slots {:?}, vote hash: {:?} slot hashes:SlotHash {:?}, too old ",
             vote_state.node_pubkey, vote_slots, vote_hash, slot_hashes
         );
@@ -1032,11 +1032,11 @@ pub fn withdraw<S: std::hash::BuildHasher>(
             .unwrap_or(false);
 
         if reject_active_vote_account_close {
-            datapoint_debug!("vote-account-close", ("reject-active", 1, i64));
+            datapoint_trace!("vote-account-close", ("reject-active", 1, i64));
             return Err(VoteError::ActiveVoteAccountClose.into());
         } else {
             // Deinitialize upon zero-balance
-            datapoint_debug!("vote-account-close", ("allow", 1, i64));
+            datapoint_trace!("vote-account-close", ("allow", 1, i64));
             set_vote_account_state(&mut vote_account, VoteState::default(), feature_set)?;
         }
     } else {

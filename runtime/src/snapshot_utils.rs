@@ -1172,7 +1172,7 @@ pub fn get_bank_snapshots(bank_snapshots_dir: impl AsRef<Path>) -> Vec<BankSnaps
                     Ok(snapshot_info) => bank_snapshots.push(snapshot_info),
                     // Other threads may be modifying bank snapshots in parallel; only return
                     // snapshots that are complete as deemed by BankSnapshotInfo::new_from_dir()
-                    Err(err) => debug!("Unable to read bank snapshot for slot {slot}: {err}"),
+                    Err(err) => trace!("Unable to read bank snapshot for slot {slot}: {err}"),
                 },
             ),
     }
@@ -1427,7 +1427,7 @@ fn get_snapshot_accounts_hardlink_dir(
     // and the symlink to it at the first time of seeing the account_path.
     if !account_paths.contains(&account_path) {
         let idx = account_paths.len();
-        debug!(
+        trace!(
             "for appendvec_path {}, create hard-link path {}",
             appendvec_path.display(),
             snapshot_hardlink_dir.display()
@@ -2469,7 +2469,7 @@ pub fn purge_old_bank_snapshots_at_startup(bank_snapshots_dir: impl AsRef<Path>)
 
     let highest_bank_snapshot_post = get_highest_bank_snapshot_post(&bank_snapshots_dir);
     if let Some(highest_bank_snapshot_post) = highest_bank_snapshot_post {
-        debug!(
+        trace!(
             "Retained bank snapshot for slot {}, and purged the rest.",
             highest_bank_snapshot_post.slot
         );

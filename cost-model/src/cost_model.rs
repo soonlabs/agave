@@ -57,7 +57,7 @@ impl CostModel {
             tx_cost.allocated_accounts_data_size =
                 Self::calculate_allocated_accounts_data_size(transaction);
 
-            debug!("transaction {:?} has cost {:?}", transaction, tx_cost);
+            trace!("transaction {:?} has cost {:?}", transaction, tx_cost);
             TransactionCost::Transaction(tx_cost)
         }
     }
@@ -515,7 +515,7 @@ mod tests {
         let simple_transaction = SanitizedTransaction::from_transaction_for_tests(
             system_transaction::transfer(&mint_keypair, &keypair.pubkey(), 2, start_hash),
         );
-        debug!(
+        trace!(
             "system_transaction simple_transaction {:?}",
             simple_transaction
         );
@@ -551,7 +551,7 @@ mod tests {
             instructions,
         );
         let token_transaction = SanitizedTransaction::from_transaction_for_tests(tx);
-        debug!("token_transaction {:?}", token_transaction);
+        trace!("token_transaction {:?}", token_transaction);
 
         let mut tx_cost = UsageCostDetails::default();
         CostModel::get_transaction_cost(
@@ -686,7 +686,7 @@ mod tests {
             message,
             start_hash,
         ));
-        debug!("many transfer transaction {:?}", tx);
+        trace!("many transfer transaction {:?}", tx);
 
         // expected cost for two system transfer instructions
         let program_cost = BUILT_IN_INSTRUCTION_COSTS
@@ -722,7 +722,7 @@ mod tests {
                 instructions,
             ),
         );
-        debug!("many random transaction {:?}", tx);
+        trace!("many random transaction {:?}", tx);
 
         let expected_cost = DEFAULT_INSTRUCTION_COMPUTE_UNIT_LIMIT as u64 * 2;
         let mut tx_cost = UsageCostDetails::default();

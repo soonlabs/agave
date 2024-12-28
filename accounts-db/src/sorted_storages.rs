@@ -125,7 +125,7 @@ impl<'a> SortedStorages<'a> {
             });
         }
         time2.stop();
-        debug!("SortedStorages, times: {}, {}", time.as_us(), time2.as_us());
+        trace!("SortedStorages, times: {}, {}", time.as_us(), time2.as_us());
         Self { range, storages }
     }
 }

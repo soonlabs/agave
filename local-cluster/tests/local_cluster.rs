@@ -588,11 +588,11 @@ fn test_incremental_snapshot_download() {
         .snapshot_config
         .incremental_snapshot_archives_dir;
 
-    debug!("snapshot config:\n\tfull snapshot interval: {}\n\tincremental snapshot interval: {}\n\taccounts hash interval: {}",
+    trace!("snapshot config:\n\tfull snapshot interval: {}\n\tincremental snapshot interval: {}\n\taccounts hash interval: {}",
            full_snapshot_interval,
            incremental_snapshot_interval,
            accounts_hash_interval);
-    debug!(
+    trace!(
         "leader config:\n\tbank snapshots dir: {}\n\tfull snapshot archives dir: {}\n\tincremental snapshot archives dir: {}",
         leader_snapshot_test_config
             .bank_snapshots_dir
@@ -607,7 +607,7 @@ fn test_incremental_snapshot_download() {
             .path()
             .display(),
     );
-    debug!(
+    trace!(
         "validator config:\n\tbank snapshots dir: {}\n\tfull snapshot archives dir: {}\n\tincremental snapshot archives dir: {}",
         validator_snapshot_test_config
             .bank_snapshots_dir
@@ -761,7 +761,7 @@ fn test_incremental_snapshot_download_with_crossing_full_snapshot_interval_at_st
            full_snapshot_interval,
            incremental_snapshot_interval,
            accounts_hash_interval);
-    debug!(
+    trace!(
         "leader config:\n\tbank snapshots dir: {}\n\tfull snapshot archives dir: {}\n\tincremental snapshot archives dir: {}",
         leader_snapshot_test_config
             .bank_snapshots_dir
@@ -776,7 +776,7 @@ fn test_incremental_snapshot_download_with_crossing_full_snapshot_interval_at_st
             .path()
             .display(),
     );
-    debug!(
+    trace!(
         "validator config:\n\tbank snapshots dir: {}\n\tfull snapshot archives dir: {}\n\tincremental snapshot archives dir: {}",
         validator_snapshot_test_config
             .bank_snapshots_dir
@@ -2920,7 +2920,7 @@ fn setup_transfer_scan_threads(
                         blockhash,
                     );
                     if result.is_err() {
-                        debug!("Failed in transfer for starting keypair: {:?}", result);
+                        trace!("Failed in transfer for starting keypair: {:?}", result);
                     }
                 }
                 for i in 0..starting_keypairs_.len() {
@@ -2931,7 +2931,7 @@ fn setup_transfer_scan_threads(
                         blockhash,
                     );
                     if result.is_err() {
-                        debug!("Failed in transfer for starting keypair: {:?}", result);
+                        trace!("Failed in transfer for starting keypair: {:?}", result);
                     }
                 }
             }
@@ -4921,7 +4921,7 @@ fn test_boot_from_local_state() {
             &validator1_config.incremental_snapshot_archives_dir,
             Some(Duration::from_secs(5 * 60)),
         );
-    debug!("snapshot archives:\n\tfull: {full_snapshot_archive:?}\n\tincr: {incremental_snapshot_archive:?}");
+    trace!("snapshot archives:\n\tfull: {full_snapshot_archive:?}\n\tincr: {incremental_snapshot_archive:?}");
     info!("Waiting for validator1 to create snapshots... DONE");
 
     info!("Copying snapshots to validator2...");
@@ -4982,7 +4982,7 @@ fn test_boot_from_local_state() {
         );
         std::thread::yield_now();
     };
-    debug!("bank snapshot: {bank_snapshot:?}");
+    trace!("bank snapshot: {bank_snapshot:?}");
     info!("Waiting for validator2 to create a new bank snapshot... DONE");
 
     // restart WITH fastboot
@@ -5004,7 +5004,7 @@ fn test_boot_from_local_state() {
             &validator2_config.incremental_snapshot_archives_dir,
             Some(Duration::from_secs(5 * 60)),
         );
-    debug!("snapshot archives:\n\tfull: {full_snapshot_archive:?}\n\tincr: {incremental_snapshot_archive:?}");
+    trace!("snapshot archives:\n\tfull: {full_snapshot_archive:?}\n\tincr: {incremental_snapshot_archive:?}");
     info!("Waiting for validator2 to create snapshots... DONE");
 
     info!("Copying snapshots to validator3...");
@@ -5046,7 +5046,7 @@ fn test_boot_from_local_state() {
             &validator3_config.incremental_snapshot_archives_dir,
             Some(Duration::from_secs(5 * 60)),
         );
-    debug!("snapshot archives:\n\tfull: {full_snapshot_archive:?}\n\tincr: {incremental_snapshot_archive:?}");
+    trace!("snapshot archives:\n\tfull: {full_snapshot_archive:?}\n\tincr: {incremental_snapshot_archive:?}");
     info!("Waiting for validator3 to create snapshots... DONE");
 
     // ensure that all validators have the correct state by comparing snapshots
@@ -5086,7 +5086,7 @@ fn test_boot_from_local_state() {
         let other_full_snapshot_archives = snapshot_utils::get_full_snapshot_archives(
             &other_validator_config.full_snapshot_archives_dir,
         );
-        debug!("validator{i} full snapshot archives: {other_full_snapshot_archives:?}");
+        trace!("validator{i} full snapshot archives: {other_full_snapshot_archives:?}");
         assert!(other_full_snapshot_archives
             .iter()
             .any(
@@ -5098,7 +5098,7 @@ fn test_boot_from_local_state() {
         let other_incremental_snapshot_archives = snapshot_utils::get_incremental_snapshot_archives(
             &other_validator_config.incremental_snapshot_archives_dir,
         );
-        debug!(
+        trace!(
             "validator{i} incremental snapshot archives: {other_incremental_snapshot_archives:?}"
         );
         assert!(other_incremental_snapshot_archives.iter().any(
@@ -5162,7 +5162,7 @@ fn test_boot_from_local_state_missing_archive() {
         &validator_config.incremental_snapshot_archives_dir,
         Some(Duration::from_secs(5 * 60)),
     );
-    debug!(
+    trace!(
         "snapshot archives:\n\tfull: {:?}\n\tincr: {:?}",
         snapshot_utils::get_full_snapshot_archives(
             validator_config.full_snapshot_archives_dir.path()

@@ -15,7 +15,7 @@ use {
         stakes::Stakes,
     },
     dashmap::DashMap,
-    log::{debug, info},
+    log::{info, trace},
     rayon::{
         iter::{IntoParallelRefIterator, ParallelIterator},
         ThreadPool,
@@ -400,9 +400,12 @@ impl Bank {
                     let post_lamport = stake_account.lamports();
 
                     if let Ok((stakers_reward, voters_reward)) = redeemed {
-                        debug!(
+                        trace!(
                             "calculated reward: {} {} {} {}",
-                            stake_pubkey, pre_lamport, post_lamport, stakers_reward
+                            stake_pubkey,
+                            pre_lamport,
+                            post_lamport,
+                            stakers_reward
                         );
 
                         // track voter rewards
@@ -440,9 +443,10 @@ impl Bank {
                             stake,
                         });
                     } else {
-                        debug!(
+                        trace!(
                             "solana_stake_program::rewards::redeem_rewards() failed for {}: {:?}",
-                            stake_pubkey, redeemed
+                            stake_pubkey,
+                            redeemed
                         );
                     }
                     None

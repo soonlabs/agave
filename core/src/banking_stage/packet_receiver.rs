@@ -110,7 +110,7 @@ impl PacketReceiver {
         slot_metrics_tracker: &mut LeaderSlotMetricsTracker,
     ) {
         let packet_count = deserialized_packets.len();
-        debug!("@{:?} txs: {} id: {}", timestamp(), packet_count, self.id);
+        trace!("@{:?} txs: {} id: {}", timestamp(), packet_count, self.id);
 
         slot_metrics_tracker.increment_received_packet_counts(packet_stats);
         if let Some(new_sigverify_stats) = &new_tracer_stats_option {

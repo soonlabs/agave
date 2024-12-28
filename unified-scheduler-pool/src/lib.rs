@@ -788,7 +788,7 @@ impl<S: SpawnableScheduler<TH>, TH: TaskHandler> ThreadManager<S, TH> {
         executed_task: &mut Box<ExecutedTask>,
         handler_context: &HandlerContext,
     ) {
-        debug!("handling task at {:?}", thread::current());
+        trace!("handling task at {:?}", thread::current());
         TH::handle(
             &mut executed_task.result_with_timings.0,
             &mut executed_task.result_with_timings.1,
@@ -1222,7 +1222,7 @@ impl<S: SpawnableScheduler<TH>, TH: TaskHandler> ThreadManager<S, TH> {
     }
 
     fn send_task(&self, task: Task) -> ScheduleResult {
-        debug!("send_task()");
+        trace!("send_task()");
         self.new_task_sender
             .send(NewTaskPayload::Payload(task))
             .map_err(|_| SchedulerAborted)
@@ -1250,14 +1250,14 @@ impl<S: SpawnableScheduler<TH>, TH: TaskHandler> ThreadManager<S, TH> {
 
         if let Some(scheduler_thread) = self.scheduler_thread.take() {
             for thread in self.handler_threads.drain(..) {
-                debug!("joining...: {:?}", thread);
+                trace!("joining...: {:?}", thread);
                 () = join_with_panic_message(thread).unwrap();
             }
             () = join_with_panic_message(scheduler_thread).unwrap();
 
             if should_receive_session_result {
                 let result_with_timings = self.session_result_receiver.recv().unwrap();
-                debug!("ensure_join_threads(): err: {:?}", result_with_timings.0);
+                trace!("ensure_join_threads(): err: {:?}", result_with_timings.0);
                 self.put_session_result_with_timings(result_with_timings);
             }
         } else {
@@ -1292,13 +1292,13 @@ impl<S: SpawnableScheduler<TH>, TH: TaskHandler> ThreadManager<S, TH> {
     fn end_session(&mut self) {
         if self.are_threads_joined() {
             assert!(self.session_result_with_timings.is_some());
-            debug!("end_session(): skipping; already joined the aborted threads..");
+            trace!("end_session(): skipping; already joined the aborted threads..");
             return;
         } else if self.session_result_with_timings.is_some() {
-            debug!("end_session(): skipping; already result resides within thread manager..");
+            trace!("end_session(): skipping; already result resides within thread manager..");
             return;
         }
-        debug!(
+        trace!(
             "end_session(): will end session at {:?}...",
             thread::current(),
         );
@@ -1321,7 +1321,7 @@ impl<S: SpawnableScheduler<TH>, TH: TaskHandler> ThreadManager<S, TH> {
         if abort_detected {
             self.ensure_join_threads_after_abort(false);
         }
-        debug!("end_session(): ended session at {:?}...", thread::current());
+        trace!("end_session(): ended session at {:?}...", thread::current());
     }
 
     fn start_session(

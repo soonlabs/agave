@@ -203,7 +203,7 @@ fn validate_platform_tools_version(requested_version: &str, builtin_version: Str
         }
     }
     let latest_version = get_latest_platform_tools_version().unwrap_or_else(|err| {
-        debug!(
+        trace!(
             "Can't get the latest version of platform-tools: {}. Using built-in version {}.",
             err, &builtin_version,
         );
@@ -244,14 +244,14 @@ fn install_if_missing(
 ) -> Result<(), String> {
     if config.force_tools_install {
         if target_path.is_dir() {
-            debug!("Remove directory {:?}", target_path);
+            trace!("Remove directory {:?}", target_path);
             fs::remove_dir_all(target_path).map_err(|err| err.to_string())?;
         }
         let source_base = config.sbf_sdk.join("dependencies");
         if source_base.exists() {
             let source_path = source_base.join(package);
             if source_path.exists() {
-                debug!("Remove file {:?}", source_path);
+                trace!("Remove file {:?}", source_path);
                 fs::remove_file(source_path).map_err(|err| err.to_string())?;
             }
         }
@@ -267,7 +267,7 @@ fn install_if_missing(
             .next()
             .is_none()
     {
-        debug!("Remove directory {:?}", target_path);
+        trace!("Remove directory {:?}", target_path);
         fs::remove_dir(target_path).map_err(|err| err.to_string())?;
     }
 
@@ -280,7 +280,7 @@ fn install_if_missing(
             .unwrap_or(false)
     {
         if target_path.exists() {
-            debug!("Remove file {:?}", target_path);
+            trace!("Remove file {:?}", target_path);
             fs::remove_file(target_path).map_err(|err| err.to_string())?;
         }
         fs::create_dir_all(target_path).map_err(|err| err.to_string())?;
@@ -453,7 +453,7 @@ fn check_undefined_symbols(config: &Config, program: &Path) {
         config.generate_child_script_on_failure,
     );
     if config.verbose {
-        debug!("{}", output);
+        trace!("{}", output);
     }
     let mut unresolved_symbols: Vec<String> = Vec::new();
     for line in output.lines() {
@@ -490,7 +490,7 @@ fn link_solana_toolchain(config: &Config) {
         config.generate_child_script_on_failure,
     );
     if config.verbose {
-        debug!("{}", rustup_output);
+        trace!("{}", rustup_output);
     }
     let mut do_link = true;
     for line in rustup_output.lines() {
@@ -506,7 +506,7 @@ fn link_solana_toolchain(config: &Config) {
                     config.generate_child_script_on_failure,
                 );
                 if config.verbose {
-                    debug!("{}", output);
+                    trace!("{}", output);
                 }
             } else {
                 do_link = false;
@@ -527,7 +527,7 @@ fn link_solana_toolchain(config: &Config) {
             config.generate_child_script_on_failure,
         );
         if config.verbose {
-            debug!("{}", output);
+            trace!("{}", output);
         }
     }
 }
@@ -688,7 +688,7 @@ fn build_solana_package(
         env::set_var(cargo_target, flags);
     }
     if config.verbose {
-        debug!(
+        trace!(
             "{}=\"{}\"",
             cargo_target,
             env::var(cargo_target).ok().unwrap_or_default(),
@@ -733,7 +733,7 @@ fn build_solana_package(
         config.generate_child_script_on_failure,
     );
     if config.verbose {
-        debug!("{}", output);
+        trace!("{}", output);
     }
 
     if let Some(program_name) = program_name {
@@ -791,7 +791,7 @@ fn build_solana_package(
                 config.generate_child_script_on_failure,
             );
             if config.verbose {
-                debug!("{}", output);
+                trace!("{}", output);
             }
         }
 
@@ -814,7 +814,7 @@ fn build_solana_package(
                     config.generate_child_script_on_failure,
                 );
                 if config.verbose {
-                    debug!("{}", output);
+                    trace!("{}", output);
                 }
             }
             postprocess_dump(&program_dump);
@@ -836,7 +836,7 @@ fn build_solana_package(
                 config.generate_child_script_on_failure,
             );
             if config.verbose {
-                debug!("{}", output);
+                trace!("{}", output);
             }
         }
 
@@ -1122,8 +1122,8 @@ fn main() {
     };
     let manifest_path: Option<PathBuf> = matches.value_of_t("manifest_path").ok();
     if config.verbose {
-        debug!("{:?}", config);
-        debug!("manifest_path: {:?}", manifest_path);
+        trace!("{:?}", config);
+        trace!("manifest_path: {:?}", manifest_path);
     }
     build_solana(config, manifest_path);
 }

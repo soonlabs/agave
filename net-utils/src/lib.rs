@@ -148,7 +148,7 @@ fn do_verify_reachable_ports(
         let thread_handle = std::thread::Builder::new()
             .name(format!("solVrfyTcp{port:05}"))
             .spawn(move || {
-                debug!("Waiting for incoming connection on tcp/{}", port);
+                trace!("Waiting for incoming connection on tcp/{}", port);
                 match tcp_listener.incoming().next() {
                     Some(_) => sender
                         .send(())
@@ -244,9 +244,10 @@ fn do_verify_reachable_ports(
                                 }
 
                                 let recv_result = udp_socket.recv(&mut [0; 1]);
-                                debug!(
+                                trace!(
                                     "Waited for incoming datagram on udp/{}: {:?}",
-                                    port, recv_result
+                                    port,
+                                    recv_result
                                 );
 
                                 if recv_result.is_ok() {

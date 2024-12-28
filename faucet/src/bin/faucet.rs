@@ -95,7 +95,7 @@ async fn main() {
     thread::spawn(move || loop {
         let time = faucet1.lock().unwrap().time_slice;
         thread::sleep(time);
-        debug!("clearing ip cache");
+        trace!("clearing ip cache");
         faucet1.lock().unwrap().clear_caches();
     });
 

@@ -691,7 +691,7 @@ pub mod tests {
                                     tester.insert(slot_use);
                                     /*
                                     this is noisy on build machine
-                                    debug!(
+                                    trace!(
                                         "slot: {}, bitfield: {:?}, reverse: {}, len: {}, excess: {:?}",
                                         slot_use,
                                         tester.bitfield,

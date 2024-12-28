@@ -1863,7 +1863,7 @@ impl ClusterInfo {
                 self.stats.trim_crds_table_failed.add_relaxed(1);
                 // TODO: Stakes are coming from the root-bank. Debug why/when
                 // they are empty/zero.
-                debug!("crds table trim failed: {:?}", err);
+                trace!("crds table trim failed: {:?}", err);
             }
             Ok(num_purged) => {
                 self.stats
@@ -2238,7 +2238,7 @@ impl ClusterInfo {
         self.stats
             .gossip_pull_request_dropped_requests
             .add_relaxed(dropped_responses as u64);
-        debug!(
+        trace!(
             "handle_pull_requests: {} sent: {} total: {} total_bytes: {}",
             time,
             sent,
@@ -2823,7 +2823,7 @@ impl ClusterInfo {
                             GossipError::RecvTimeoutError(RecvTimeoutError::Disconnected) => break,
                             GossipError::RecvTimeoutError(RecvTimeoutError::Timeout) => {
                                 let table_size = self.gossip.crds.read().unwrap().len();
-                                debug!(
+                                trace!(
                                     "{}: run_listen timeout, table size: {}",
                                     self.id(),
                                     table_size,

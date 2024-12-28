@@ -291,7 +291,7 @@ fn try_route_request(
         Some(sender) => match sender.try_send(request) {
             Ok(()) => None,
             Err(TrySendError::Full(request)) => {
-                debug!("TrySendError::Full {}", request.remote_address);
+                trace!("TrySendError::Full {}", request.remote_address);
                 add_metric!(stats.router_try_send_error_full);
                 None
             }
@@ -322,7 +322,7 @@ async fn handle_connecting_task(
     )
     .await
     {
-        debug!("handle_connecting: {err:?}");
+        trace!("handle_connecting: {err:?}");
         record_error(&err, &stats);
     }
 }
@@ -404,11 +404,11 @@ async fn handle_connection(
         Err(err) => error!("handle_connection: {remote_pubkey}, {remote_address}, {err:?}"),
         Ok(out) => {
             if let (Err(ref err), _) = out {
-                debug!("send_requests_task: {remote_pubkey}, {remote_address}, {err:?}");
+                trace!("send_requests_task: {remote_pubkey}, {remote_address}, {err:?}");
                 record_error(err, &stats);
             }
             if let (_, Err(ref err)) = out {
-                debug!("recv_requests_task: {remote_pubkey}, {remote_address}, {err:?}");
+                trace!("recv_requests_task: {remote_pubkey}, {remote_address}, {err:?}");
                 record_error(err, &stats);
             }
         }
@@ -462,7 +462,7 @@ async fn handle_streams_task(
     )
     .await
     {
-        debug!("handle_stream: {remote_address}, {remote_pubkey}, {err:?}");
+        trace!("handle_stream: {remote_address}, {remote_pubkey}, {err:?}");
         record_error(&err, &stats);
     }
 }
@@ -544,7 +544,7 @@ async fn send_request_task(
     stats: Arc<RepairQuicStats>,
 ) {
     if let Err(err) = send_request(endpoint, connection, request).await {
-        debug!("send_request: {remote_address}, {err:?}");
+        trace!("send_request: {remote_address}, {err:?}");
         record_error(&err, &stats);
     }
 }
@@ -619,7 +619,7 @@ async fn make_connection_task(
     )
     .await
     {
-        debug!("make_connection: {remote_address}, {err:?}");
+        trace!("make_connection: {remote_address}, {err:?}");
         record_error(&err, &stats);
     }
 }

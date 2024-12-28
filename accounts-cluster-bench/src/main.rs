@@ -305,7 +305,7 @@ fn process_get_multiple_accounts(
                     info!("error: {:?}", e);
                     *last_error = Instant::now();
                 }
-                debug!("error: {:?}", e);
+                trace!("error: {:?}", e);
             }
         }
     }

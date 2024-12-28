@@ -306,7 +306,7 @@ impl TestBroadcastReceiver {
         loop {
             match self.inner.try_recv() {
                 Ok(notification) => {
-                    debug!(
+                    trace!(
                         "TestBroadcastReceiver: {:?}ms elapsed",
                         started.elapsed().as_millis()
                     );
@@ -445,7 +445,7 @@ async fn listen(
         select! {
             result = listener.accept() => match result {
                 Ok((socket, addr)) => {
-                    debug!("new client ({:?})", addr);
+                    trace!("new client ({:?})", addr);
                     let subscription_control = subscription_control.clone();
                     let config = config.clone();
                     let tripwire = tripwire.clone();
@@ -455,7 +455,7 @@ async fn listen(
                             socket, subscription_control, config, tripwire
                         );
                         match handle.await {
-                            Ok(()) => debug!("connection closed ({:?})", addr),
+                            Ok(()) => trace!("connection closed ({:?})", addr),
                             Err(err) => warn!("connection handler error ({:?}): {}", addr, err),
                         }
                         drop(counter_token); // Force moving token into the task.

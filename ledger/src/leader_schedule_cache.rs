@@ -117,7 +117,7 @@ impl LeaderScheduleCache {
         let (epoch, start_index) = bank.get_epoch_and_slot_index(current_slot + 1);
         let max_epoch = *self.max_epoch.read().unwrap();
         if epoch > max_epoch {
-            debug!(
+            trace!(
                 "Requested next leader in slot: {} of unconfirmed epoch: {}",
                 current_slot + 1,
                 epoch
@@ -178,9 +178,10 @@ impl LeaderScheduleCache {
         // Forbid asking for slots in an unconfirmed epoch
         let bank_epoch = self.epoch_schedule.get_epoch_and_slot_index(slot).0;
         if bank_epoch > *self.max_epoch.read().unwrap() {
-            debug!(
+            trace!(
                 "Requested leader in slot: {} of unconfirmed epoch: {}",
-                slot, bank_epoch
+                slot,
+                bank_epoch
             );
             return None;
         }

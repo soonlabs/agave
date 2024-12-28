@@ -1,7 +1,7 @@
 use {
     super::Bank,
     crate::bank::CollectorFeeDetails,
-    log::{debug, warn},
+    log::{trace, warn},
     solana_sdk::{
         account::{ReadableAccount, WritableAccount},
         feature_set::{
@@ -141,9 +141,11 @@ impl Bank {
                 ));
             }
             Err(err) => {
-                debug!(
+                trace!(
                     "Burned {} lamport tx fee instead of sending to {} due to {}",
-                    deposit, self.collector_id, err
+                    deposit,
+                    self.collector_id,
+                    err
                 );
                 datapoint_warn!(
                     "bank-burned_fee",
@@ -299,9 +301,11 @@ impl Bank {
                             ));
                         }
                         Err(err) => {
-                            debug!(
+                            trace!(
                                 "Burned {} lamport rent fee instead of sending to {} due to {}",
-                                rent_to_be_paid, pubkey, err
+                                rent_to_be_paid,
+                                pubkey,
+                                err
                             );
 
                             // overflow adding lamports or resulting account is invalid
@@ -340,9 +344,11 @@ impl Bank {
             .rent
             .calculate_burn(total_rent_collected);
 
-        debug!(
+        trace!(
             "distributed rent: {} (rounded from: {}, burned: {})",
-            rent_to_be_distributed, total_rent_collected, burned_portion
+            rent_to_be_distributed,
+            total_rent_collected,
+            burned_portion
         );
         self.capitalization.fetch_sub(burned_portion, Relaxed);
 

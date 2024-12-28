@@ -2582,7 +2582,7 @@ impl Bank {
                             stake_account,
                         });
                     } else {
-                        debug!(
+                        trace!(
                             "solana_stake_program::rewards::redeem_rewards() failed for {}: {:?}",
                             stake_pubkey, redeemed
                         );
@@ -2639,7 +2639,7 @@ impl Bank {
                     },
                 )| {
                     if let Err(err) = vote_account.checked_add_lamports(vote_rewards) {
-                        debug!("reward redemption failed for {}: {:?}", vote_pubkey, err);
+                        trace!("reward redemption failed for {}: {:?}", vote_pubkey, err);
                         return None;
                     }
 
@@ -2693,7 +2693,7 @@ impl Bank {
                 },
             )| {
                 if let Err(err) = vote_account.checked_add_lamports(vote_rewards) {
-                    debug!("reward redemption failed for {}: {:?}", vote_pubkey, err);
+                    trace!("reward redemption failed for {}: {:?}", vote_pubkey, err);
                     return;
                 }
 
@@ -3399,7 +3399,7 @@ impl Bank {
                         .saturating_add(program_timing.total_errored_units)
                 });
 
-        debug!("simulate_transaction: {:?}", timings);
+        trace!("simulate_transaction: {:?}", timings);
 
         let execution_result =
             execution_results
@@ -3624,7 +3624,7 @@ impl Bank {
         processing_config: TransactionProcessingConfig,
     ) -> LoadAndExecuteTransactionsOutput {
         let sanitized_txs = batch.sanitized_transactions();
-        debug!("processing transactions: {}", sanitized_txs.len());
+        trace!("processing transactions: {}", sanitized_txs.len());
         let mut error_counters = TransactionErrorMetrics::default();
 
         let retryable_transaction_indexes: Vec<_> = batch
@@ -3671,7 +3671,7 @@ impl Bank {
             &mut error_counters,
         );
         check_time.stop();
-        debug!("check: {}us", check_time.as_us());
+        trace!("check: {}us", check_time.as_us());
         timings.saturating_add_in_place(ExecuteTimingType::CheckUs, check_time.as_us());
 
         let (blockhash, lamports_per_signature) = self.last_blockhash_and_lamports_per_signature();
@@ -3799,7 +3799,7 @@ impl Bank {
                 }
                 Err(err) => {
                     if *err_count == 0 {
-                        debug!("tx error: {:?} {:?}", err, tx);
+                        trace!("tx error: {:?} {:?}", err, tx);
                     }
                     *err_count += 1;
                 }
@@ -3810,7 +3810,7 @@ impl Bank {
             .saturating_add_in_place(ExecuteTimingType::CollectLogsUs, collect_logs_time.as_us());
 
         if *err_count > 0 {
-            debug!(
+            trace!(
                 "{} errors of {} txs",
                 *err_count,
                 *err_count + executed_with_successful_result_count
@@ -4001,7 +4001,7 @@ impl Bank {
 
         // once committed there is no way to unroll
         write_time.stop();
-        debug!(
+        trace!(
             "store: {}us txs_len={}",
             write_time.as_us(),
             sanitized_txs.len()
@@ -5467,7 +5467,7 @@ impl Bank {
             .accounts_db
             .get_bank_hash_stats(slot)
             .expect("No bank hash stats were found for this bank, that should not be possible");
-        debug!(
+        trace!(
             "bank frozen: {slot} hash: {hash} accounts_delta: {} signature_count: {} last_blockhash: {} capitalization: {}{}, stats: {bank_hash_stats:?}",
             accounts_delta_hash.0,
             self.signature_count(),
@@ -6231,7 +6231,7 @@ impl Bank {
 
     /// Remove a built-in instruction processor
     pub fn remove_builtin(&mut self, program_id: Pubkey, name: &str) {
-        debug!("Removing program {}", program_id);
+        trace!("Removing program {}", program_id);
         // Don't remove the account since the bank expects the account state to
         // be idempotent
         self.transaction_processor.add_builtin(
@@ -6244,13 +6244,13 @@ impl Bank {
                 ProgramCacheEntryType::Closed,
             ),
         );
-        debug!("Removed program {}", program_id);
+        trace!("Removed program {}", program_id);
     }
 
     pub fn add_precompile(&mut self, program_id: &Pubkey) {
-        debug!("Adding precompiled program {}", program_id);
+        trace!("Adding precompiled program {}", program_id);
         self.add_precompiled_account(program_id);
-        debug!("Added precompiled program {:?}", program_id);
+        trace!("Added precompiled program {:?}", program_id);
     }
 
     // Call AccountsDb::clean_accounts()

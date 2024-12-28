@@ -209,7 +209,7 @@ impl SnapshotRequestHandler {
             })
             .collect();
         let requests_len = requests.len();
-        debug!("outstanding snapshot requests ({requests_len}): {requests:?}");
+        trace!("outstanding snapshot requests ({requests_len}): {requests:?}");
 
         // NOTE: This code to select the next request is mirrored in AccountsHashVerifier.
         // Please ensure they stay in sync.

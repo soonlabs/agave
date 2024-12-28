@@ -317,7 +317,7 @@ fn connect_with_retry(
                 }
 
                 connection_retries -= 1;
-                debug!(
+                trace!(
                     "Too many requests: server responded with {:?}, {} retries left, pausing for {:?}",
                     response, connection_retries, duration
                 );

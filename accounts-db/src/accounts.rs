@@ -561,13 +561,13 @@ impl Accounts {
     ) -> Result<()> {
         for k in writable_keys.iter() {
             if account_locks.is_locked_write(k) || account_locks.is_locked_readonly(k) {
-                debug!("Writable account in use: {:?}", k);
+                trace!("Writable account in use: {:?}", k);
                 return Err(TransactionError::AccountInUse);
             }
         }
         for k in readonly_keys.iter() {
             if account_locks.is_locked_write(k) {
-                debug!("Read-only account in use: {:?}", k);
+                trace!("Read-only account in use: {:?}", k);
                 return Err(TransactionError::AccountInUse);
             }
         }
@@ -663,7 +663,7 @@ impl Accounts {
         }
 
         let mut account_locks = self.account_locks.lock().unwrap();
-        debug!("bank unlock accounts");
+        trace!("bank unlock accounts");
         keys.into_iter().for_each(|keys| {
             self.unlock_account(&mut account_locks, keys.writable, keys.readonly);
         });

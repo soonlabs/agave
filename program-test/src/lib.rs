@@ -817,7 +817,7 @@ impl ProgramTest {
         for deactivate_feature_pk in &self.deactivate_feature_set {
             if FEATURE_NAMES.contains_key(deactivate_feature_pk) {
                 match genesis_config.accounts.remove(deactivate_feature_pk) {
-                    Some(_) => debug!("Feature for {:?} deactivated", deactivate_feature_pk),
+                    Some(_) => trace!("Feature for {:?} deactivated", deactivate_feature_pk),
                     None => warn!(
                         "Feature {:?} set for deactivation not found in genesis_config account list, ignored.",
                         deactivate_feature_pk
@@ -833,8 +833,8 @@ impl ProgramTest {
 
         let target_tick_duration = Duration::from_micros(100);
         genesis_config.poh_config = PohConfig::new_sleep(target_tick_duration);
-        debug!("Payer address: {}", mint_keypair.pubkey());
-        debug!("Genesis config: {}", genesis_config);
+        trace!("Payer address: {}", mint_keypair.pubkey());
+        trace!("Genesis config: {}", genesis_config);
 
         let bank = Bank::new_with_paths(
             &genesis_config,
@@ -882,7 +882,7 @@ impl ProgramTest {
             let bank = Arc::new(bank);
             bank.fill_bank_with_ticks_for_tests();
             let bank = Bank::new_from_parent(bank.clone(), bank.collector_id(), bank.slot() + 1);
-            debug!("Bank slot: {}", bank.slot());
+            trace!("Bank slot: {}", bank.slot());
             bank
         };
         let slot = bank.slot();
@@ -979,7 +979,7 @@ impl ProgramTestBanksClientExt for BanksClient {
             if new_blockhash != *blockhash {
                 return Ok(new_blockhash);
             }
-            debug!("Got same blockhash ({:?}), will retry...", blockhash);
+            trace!("Got same blockhash ({:?}), will retry...", blockhash);
 
             tokio::time::sleep(Duration::from_millis(200)).await;
             num_retries += 1;

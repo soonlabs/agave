@@ -107,13 +107,13 @@ impl QosService {
                     Ok(cost) => {
                         match cost_tracker.try_add(&cost) {
                             Ok(UpdatedCosts{updated_block_cost, updated_costliest_account_cost}) => {
-                                debug!("slot {:?}, transaction {:?}, cost {:?}, fit into current block, current block cost {}, updated costliest account cost {}", bank.slot(), tx, cost, updated_block_cost, updated_costliest_account_cost);
+                                trace!("slot {:?}, transaction {:?}, cost {:?}, fit into current block, current block cost {}, updated costliest account cost {}", bank.slot(), tx, cost, updated_block_cost, updated_costliest_account_cost);
                                 self.metrics.stats.selected_txs_count.fetch_add(1, Ordering::Relaxed);
                                 num_included += 1;
                                 Ok(cost)
                             },
                             Err(e) => {
-                                debug!("slot {:?}, transaction {:?}, cost {:?}, not fit into current block, '{:?}'", bank.slot(), tx, cost, e);
+                                trace!("slot {:?}, transaction {:?}, cost {:?}, not fit into current block, '{:?}'", bank.slot(), tx, cost, e);
                                 Err(TransactionError::from(e))
                             }
                         }

@@ -124,7 +124,7 @@ impl AccountsHashVerifier {
     )> {
         let mut accounts_packages: Vec<_> = accounts_package_receiver.try_iter().collect();
         let accounts_packages_len = accounts_packages.len();
-        debug!("outstanding accounts packages ({accounts_packages_len}): {accounts_packages:?}");
+        trace!("outstanding accounts packages ({accounts_packages_len}): {accounts_packages:?}");
 
         // NOTE: This code to select the next request is mirrored in AccountsBackgroundService.
         // Please ensure they stay in sync.

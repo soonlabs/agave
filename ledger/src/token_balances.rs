@@ -74,7 +74,7 @@ pub fn collect_token_balances(
         balances.push(transaction_balances);
     }
     collect_time.stop();
-    datapoint_debug!(
+    datapoint_trace!(
         "collect_token_balances",
         ("collect_time_us", collect_time.as_us(), i64),
     );

@@ -309,7 +309,7 @@ impl<T: Clone + Default + Sized> Clone for PinnedVec<T> {
         } else {
             false
         };
-        debug!(
+        trace!(
             "clone PinnedVec: size: {} pinned?: {} pinnable?: {}",
             self.x.capacity(),
             self.pinned,

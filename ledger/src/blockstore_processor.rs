@@ -404,7 +404,7 @@ fn process_batches(
     prioritization_fee_cache: &PrioritizationFeeCache,
 ) -> Result<()> {
     if bank.has_installed_scheduler() {
-        debug!(
+        trace!(
             "process_batches()/schedule_batches_for_execution({} batches)",
             batches.len()
         );
@@ -432,7 +432,7 @@ fn process_batches(
         // `BankWithScheduler::schedule_transaction_executions()`.
         schedule_batches_for_execution(bank, batches)
     } else {
-        debug!(
+        trace!(
             "process_batches()/rebatch_and_execute_batches({} batches)",
             batches.len()
         );
@@ -626,7 +626,7 @@ pub fn process_entries_for_tests(
         &ignored_prioritization_fee_cache,
     );
 
-    debug!("process_entries: {:?}", batch_timing);
+    trace!("process_entries: {:?}", batch_timing);
     result
 }
 
@@ -1573,7 +1573,7 @@ fn confirm_slot_entries(
 
     let last_entry_hash = entries.last().map(|e| e.hash);
     let verifier = if !skip_verification {
-        datapoint_debug!("verify-batch-size", ("size", num_entries as i64, i64));
+        datapoint_trace!("verify-batch-size", ("size", num_entries as i64, i64));
         let entry_state = entries.start_verify(
             &progress.last_entry,
             replay_tx_thread_pool,
@@ -1851,7 +1851,7 @@ fn load_frozen_forks(
                     "processing ledger: slot={slot}, root_slot={root} slots={slots_processed}, \
                      slots/s={slots_per_sec}, txs/s={txs_per_sec}"
                 );
-                debug!(
+                trace!(
                     "processing ledger timing: set_root_us={set_root_us}, \
                      root_retain_us={root_retain_us}, \
                      process_single_slot_us:{process_single_slot_us}, voting_us: {voting_us}"
@@ -2535,7 +2535,7 @@ pub mod tests {
 
         // Create a new ledger with slot 0 full of ticks
         let (ledger_path, mut blockhash) = create_new_tmp_ledger_auto_delete!(&genesis_config);
-        debug!("ledger_path: {:?}", ledger_path);
+        trace!("ledger_path: {:?}", ledger_path);
 
         let blockstore = Blockstore::open(ledger_path.path()).unwrap();
 
@@ -2610,7 +2610,7 @@ pub mod tests {
 
         // Create a new ledger with slot 0 full of ticks
         let (ledger_path, blockhash) = create_new_tmp_ledger_auto_delete!(&genesis_config);
-        debug!("ledger_path: {:?}", ledger_path);
+        trace!("ledger_path: {:?}", ledger_path);
         let mut last_entry_hash = blockhash;
 
         /*
@@ -2690,7 +2690,7 @@ pub mod tests {
 
         // Create a new ledger with slot 0 full of ticks
         let (ledger_path, blockhash) = create_new_tmp_ledger_auto_delete!(&genesis_config);
-        debug!("ledger_path: {:?}", ledger_path);
+        trace!("ledger_path: {:?}", ledger_path);
         let mut last_entry_hash = blockhash;
 
         /*
@@ -2779,7 +2779,7 @@ pub mod tests {
         let GenesisConfigInfo { genesis_config, .. } = create_genesis_config(10_000);
         let ticks_per_slot = genesis_config.ticks_per_slot;
         let (ledger_path, blockhash) = create_new_tmp_ledger_auto_delete!(&genesis_config);
-        debug!("ledger_path: {:?}", ledger_path);
+        trace!("ledger_path: {:?}", ledger_path);
 
         /*
                    slot 0
@@ -2826,7 +2826,7 @@ pub mod tests {
         let GenesisConfigInfo { genesis_config, .. } = create_genesis_config(10_000);
         let ticks_per_slot = genesis_config.ticks_per_slot;
         let (ledger_path, blockhash) = create_new_tmp_ledger_auto_delete!(&genesis_config);
-        debug!("ledger_path: {:?}", ledger_path);
+        trace!("ledger_path: {:?}", ledger_path);
 
         /*
                    slot 0
@@ -2886,7 +2886,7 @@ pub mod tests {
         let GenesisConfigInfo { genesis_config, .. } = create_genesis_config(10_000);
         let ticks_per_slot = genesis_config.ticks_per_slot;
         let (ledger_path, blockhash) = create_new_tmp_ledger_auto_delete!(&genesis_config);
-        debug!("ledger_path: {:?}", ledger_path);
+        trace!("ledger_path: {:?}", ledger_path);
 
         /*
                    slot 0
@@ -3048,7 +3048,7 @@ pub mod tests {
         genesis_config.poh_config.hashes_per_tick = Some(hashes_per_tick);
         let (ledger_path, mut last_entry_hash) =
             create_new_tmp_ledger_auto_delete!(&genesis_config);
-        debug!("ledger_path: {:?}", ledger_path);
+        trace!("ledger_path: {:?}", ledger_path);
 
         let deducted_from_mint = 3;
         let mut entries = vec![];

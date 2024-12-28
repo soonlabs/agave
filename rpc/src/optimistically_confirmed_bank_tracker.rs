@@ -185,7 +185,7 @@ impl OptimisticallyConfirmedBankTracker {
     ) {
         if bank.is_frozen() {
             if bank.slot() > *last_notified_confirmed_slot {
-                debug!(
+                trace!(
                     "notify_or_defer notifying via notify_gossip_subscribers for slot {:?}",
                     bank.slot()
                 );
@@ -201,7 +201,7 @@ impl OptimisticallyConfirmedBankTracker {
             }
         } else if bank.slot() > bank_forks.read().unwrap().root() {
             pending_optimistically_confirmed_banks.insert(bank.slot());
-            debug!("notify_or_defer defer notifying for slot {:?}", bank.slot());
+            trace!("notify_or_defer defer notifying for slot {:?}", bank.slot());
         }
     }
 
@@ -217,7 +217,7 @@ impl OptimisticallyConfirmedBankTracker {
     ) {
         for confirmed_bank in bank.parents_inclusive().iter().rev() {
             if confirmed_bank.slot() > slot_threshold {
-                debug!(
+                trace!(
                     "Calling notify_or_defer for confirmed_bank {:?}",
                     confirmed_bank.slot()
                 );
@@ -249,7 +249,7 @@ impl OptimisticallyConfirmedBankTracker {
             let root = roots[i];
             if root > *newest_root_slot {
                 let parent = roots[i - 1];
-                debug!(
+                trace!(
                     "Doing SlotNotification::Root for root {}, parent: {}",
                     root, parent
                 );
@@ -275,7 +275,7 @@ impl OptimisticallyConfirmedBankTracker {
         slot_notification_subscribers: &Option<Arc<RwLock<Vec<SlotNotificationSender>>>>,
         prioritization_fee_cache: &PrioritizationFeeCache,
     ) {
-        debug!("received bank notification: {:?}", notification);
+        trace!("received bank notification: {:?}", notification);
         match notification {
             BankNotification::OptimisticallyConfirmed(slot) => {
                 let bank = bank_forks.read().unwrap().get(slot);
@@ -342,7 +342,7 @@ impl OptimisticallyConfirmedBankTracker {
                 }
 
                 if pending_optimistically_confirmed_banks.remove(&bank.slot()) {
-                    debug!(
+                    trace!(
                         "Calling notify_gossip_subscribers to send deferred notification {:?}",
                         frozen_slot
                     );

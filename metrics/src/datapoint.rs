@@ -7,7 +7,7 @@
 //! - datapoint_warn!
 //! - datapoint_trace!
 //! - datapoint_trace!
-//! - datapoint_debug!
+//! - datapoint_trace!
 //!
 //! The matric macro consists of the following three main parts:
 //!  - name: the name of the metric.
@@ -29,7 +29,7 @@
 //!
 //! Example:
 //!
-//! datapoint_debug!(
+//! datapoint_trace!(
 //!     "name-of-the-metric",
 //!     "tag" => "tag-value",
 //!     "tag2" => "tag-value2",
@@ -207,7 +207,7 @@ macro_rules! datapoint_trace {
 mod test {
     #[test]
     fn test_datapoint() {
-        datapoint_debug!("name", ("field name", "test", String));
+        datapoint_trace!("name", ("field name", "test", String));
         datapoint_trace!("name", ("field name", 12.34_f64, f64));
         datapoint_trace!("name", ("field name", true, bool));
         datapoint_warn!("name", ("field name", 1, i64));
@@ -253,12 +253,12 @@ mod test {
 
     #[test]
     fn test_optional_datapoint() {
-        datapoint_debug!("name", ("field name", Some("test"), Option<String>));
+        datapoint_trace!("name", ("field name", Some("test"), Option<String>));
         datapoint_trace!("name", ("field name", Some(12.34_f64), Option<f64>));
         datapoint_trace!("name", ("field name", Some(true), Option<bool>));
         datapoint_warn!("name", ("field name", Some(1), Option<i64>));
         datapoint_error!("name", ("field name", Some(1), Option<i64>),);
-        datapoint_debug!("name", ("field name", None::<String>, Option<String>));
+        datapoint_trace!("name", ("field name", None::<String>, Option<String>));
         datapoint_trace!("name", ("field name", None::<f64>, Option<f64>));
         datapoint_trace!("name", ("field name", None::<bool>, Option<bool>));
         datapoint_warn!("name", ("field name", None::<i64>, Option<i64>));
@@ -289,7 +289,7 @@ mod test {
 
     #[test]
     fn test_datapoint_with_tags() {
-        datapoint_debug!("name", "tag" => "tag-value", ("field name", "test", String));
+        datapoint_trace!("name", "tag" => "tag-value", ("field name", "test", String));
         datapoint_trace!(
             "name",
             "tag" => "tag-value",

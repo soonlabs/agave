@@ -1,5 +1,5 @@
 use {
-    log::debug,
+    log::trace,
     solana_rpc_client_api::{client_error::Error as ClientError, config::RpcBlockConfig},
     solana_sdk::{
         account::Account,
@@ -65,7 +65,7 @@ pub trait TpsClient {
                     return Ok(new_blockhash);
                 }
             }
-            debug!("Got same blockhash ({:?}), will retry...", blockhash);
+            trace!("Got same blockhash ({:?}), will retry...", blockhash);
 
             // Retry ~twice during a slot
             sleep(Duration::from_millis(DEFAULT_MS_PER_SLOT / 2));

@@ -887,7 +887,7 @@ impl RpcClient {
                     data,
                 }) = &err.kind
                 {
-                    debug!("{} {}", code, message);
+                    trace!("{} {}", code, message);
                     if let RpcResponseErrorData::SendTransactionPreflightFailure(
                         RpcSimulateTransactionResult {
                             logs: Some(logs), ..
@@ -895,9 +895,9 @@ impl RpcClient {
                     ) = data
                     {
                         for (i, log) in logs.iter().enumerate() {
-                            debug!("{:>3}: {}", i + 1, log);
+                            trace!("{:>3}: {}", i + 1, log);
                         }
-                        debug!("");
+                        trace!("");
                     }
                 }
                 return Err(err);
@@ -4501,7 +4501,7 @@ impl RpcClient {
                     }
                 }
                 Err(err) => {
-                    debug!("check_confirmations request failed: {:?}", err);
+                    trace!("check_confirmations request failed: {:?}", err);
                 }
             };
             if now.elapsed().as_secs() > 20 {
@@ -4617,7 +4617,7 @@ impl RpcClient {
                     return Ok(new_blockhash);
                 }
             }
-            debug!("Got same blockhash ({:?}), will retry...", blockhash);
+            trace!("Got same blockhash ({:?}), will retry...", blockhash);
 
             // Retry ~twice during a slot
             sleep(Duration::from_millis(DEFAULT_MS_PER_SLOT / 2)).await;

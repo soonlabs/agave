@@ -231,7 +231,7 @@ fn test_solana(config: Config, manifest_path: Option<PathBuf>) {
                     .iter()
                     .any(|p| root_package.id.repr.contains(p)))
         {
-            debug!("test root package {:?}", root_package.id);
+            trace!("test root package {:?}", root_package.id);
             test_solana_package(&config, metadata.target_directory.as_ref(), root_package);
             return;
         }
@@ -255,7 +255,7 @@ fn test_solana(config: Config, manifest_path: Option<PathBuf>) {
     for package in all_sbf_packages {
         if config.packages.is_empty() || config.packages.iter().any(|p| package.id.repr.contains(p))
         {
-            debug!("test package {:?}", package.id);
+            trace!("test package {:?}", package.id);
             test_solana_package(&config, metadata.target_directory.as_ref(), package);
         }
     }

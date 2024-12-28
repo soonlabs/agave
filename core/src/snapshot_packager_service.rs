@@ -169,7 +169,7 @@ impl SnapshotPackagerService {
             return None;
         }
         let snapshot_packages_len = snapshot_packages.len();
-        debug!("outstanding snapshot packages ({snapshot_packages_len}): {snapshot_packages:?}");
+        trace!("outstanding snapshot packages ({snapshot_packages_len}): {snapshot_packages:?}");
 
         snapshot_packages.select_nth_unstable_by(
             snapshot_packages_len - 1,

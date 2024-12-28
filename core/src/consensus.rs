@@ -404,15 +404,15 @@ impl Tower {
 
             if key == *vote_account_pubkey {
                 my_latest_landed_vote = vote_state.nth_recent_lockout(0).map(|l| l.slot());
-                debug!("vote state {:?}", vote_state);
-                debug!(
+                trace!("vote state {:?}", vote_state);
+                trace!(
                     "observed slot {}",
                     vote_state
                         .nth_recent_lockout(0)
                         .map(|l| l.slot())
                         .unwrap_or(0) as i64
                 );
-                debug!("observed root {}", vote_state.root_slot.unwrap_or(0) as i64);
+                trace!("observed root {}", vote_state.root_slot.unwrap_or(0) as i64);
                 datapoint_trace!(
                     "tower-observed",
                     (

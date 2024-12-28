@@ -136,7 +136,7 @@ impl TransactionExecutor {
                             let mut retain = true;
                             let sent_ts = sigs_w[i].1;
                             if let Some(e) = &statuses[j] {
-                                debug!("error: {:?}", e);
+                                trace!("error: {:?}", e);
                                 if e.status.is_ok() {
                                     success += 1;
                                 } else {
@@ -159,7 +159,7 @@ impl TransactionExecutor {
                         drop(sigs_w);
                         cleared.write().unwrap().extend(new_ids);
                         start.stop();
-                        debug!(
+                        trace!(
                             "sigs len: {:?} success: {} took: {}ms cleared: {}/{}",
                             final_sigs_len,
                             success,

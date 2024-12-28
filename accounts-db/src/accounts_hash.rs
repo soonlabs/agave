@@ -555,7 +555,7 @@ impl<'a> AccountsHasher<'a> {
             })
             .collect();
         time.stop();
-        debug!("hashing {} {}", total_hashes, time);
+        trace!("hashing {} {}", total_hashes, time);
 
         if result.len() == 1 {
             result[0]
@@ -729,7 +729,7 @@ impl<'a> AccountsHasher<'a> {
             })
             .collect();
         time.stop();
-        debug!("hashing {} {}", total_hashes, time);
+        trace!("hashing {} {}", total_hashes, time);
 
         if let Some(mut specific_level_count_value) = specific_level_count {
             specific_level_count_value -= levels_hashed;

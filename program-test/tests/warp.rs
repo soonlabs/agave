@@ -4,7 +4,7 @@ mod setup;
 
 use {
     bincode::deserialize,
-    log::debug,
+    log::trace,
     setup::{setup_stake, setup_vote},
     solana_banks_client::BanksClient,
     solana_program_test::{processor, ProgramTest, ProgramTestBanksClientExt, ProgramTestError},
@@ -241,7 +241,7 @@ async fn stake_rewards_filter_bench_core(num_stake_accounts: u64) {
         program_test.add_account(stake_pubkey, stake_account);
         to_filter.push(stake_pubkey);
         if i % 100 == 0 {
-            debug!("create stake account {} {}", i, stake_pubkey);
+            trace!("create stake account {} {}", i, stake_pubkey);
         }
     }
 

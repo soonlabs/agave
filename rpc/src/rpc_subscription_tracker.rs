@@ -210,7 +210,7 @@ impl SubscriptionControl {
     }
 
     pub fn subscribe(&self, params: SubscriptionParams) -> Result<SubscriptionToken, Error> {
-        debug!(
+        trace!(
             "Total existing subscriptions: {}",
             self.0.subscriptions.len()
         );

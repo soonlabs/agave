@@ -1718,7 +1718,7 @@ pub mod tests {
                                 assert!(slots[i] < slots[i + 1]);
                             });
 
-                        log::debug!("output slots: {:?}, num_slots: {num_slots}, two_refs: {two_refs}, many_refs: {many_ref_slots:?}, expected accounts to combine: {expected_accounts_to_combine}, target slots: {:?}, accounts_to_combine: {}", accounts_to_combine.target_slots_sorted,
+                        log::trace!("output slots: {:?}, num_slots: {num_slots}, two_refs: {two_refs}, many_refs: {many_ref_slots:?}, expected accounts to combine: {expected_accounts_to_combine}, target slots: {:?}, accounts_to_combine: {}", accounts_to_combine.target_slots_sorted,
                         accounts_to_combine.target_slots_sorted,
                         accounts_to_combine.accounts_to_combine.len(),);
                         assert_eq!(

@@ -96,7 +96,7 @@ impl RentState {
         if !solana_sdk::incinerator::check_id(address)
             && !post_rent_state.transition_allowed_from(pre_rent_state)
         {
-            debug!(
+            trace!(
                 "Account {} not rent exempt, state {:?}",
                 address, account_state,
             );

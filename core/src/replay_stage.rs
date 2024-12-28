@@ -1329,7 +1329,7 @@ impl ReplayStage {
                         let _ = retransmit_slots_sender.send(slot);
                         retransmit_info.increment_retry_iteration();
                     } else {
-                        debug!(
+                        trace!(
                             "Bypass retransmit of slot={} retransmit_info={:?}",
                             slot, &retransmit_info
                         );
@@ -1356,7 +1356,7 @@ impl ReplayStage {
         if let (false, Some(latest_leader_slot)) =
             progress.get_leader_propagation_slot_must_exist(start_slot)
         {
-            debug!(
+            trace!(
                 "Slot not propagated: start_slot={} latest_leader_slot={}",
                 start_slot, latest_leader_slot
             );
@@ -2847,7 +2847,7 @@ impl ReplayStage {
                         .unwrap_or(false)
                     {
                         // If the fork was marked as dead, don't replay it
-                        debug!("bank_slot {:?} is marked dead", bank_slot);
+                        trace!("bank_slot {:?} is marked dead", bank_slot);
                         replay_result.is_slot_dead = true;
                         return replay_result;
                     }
@@ -2943,7 +2943,7 @@ impl ReplayStage {
         trace!("Replay active bank: slot {}", bank_slot);
         if progress.get(&bank_slot).map(|p| p.is_dead).unwrap_or(false) {
             // If the fork was marked as dead, don't replay it
-            debug!("bank_slot {:?} is marked dead", bank_slot);
+            trace!("bank_slot {:?} is marked dead", bank_slot);
             replay_result.is_slot_dead = true;
         } else {
             let bank = bank_forks
@@ -3147,7 +3147,7 @@ impl ReplayStage {
                 let r_replay_stats = replay_stats.read().unwrap();
                 let replay_progress = bank_progress.replay_progress.clone();
                 let r_replay_progress = replay_progress.read().unwrap();
-                debug!(
+                trace!(
                     "bank {} has completed replay from blockstore, \
                      contribute to update cost with {:?}",
                     bank.slot(),
@@ -4275,7 +4275,7 @@ impl ReplayStage {
                         bank.hash(),
                     ));
                 } else {
-                    debug!(
+                    trace!(
                         "validator fork not confirmed {} {}ms {:?}",
                         *slot,
                         duration,

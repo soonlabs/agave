@@ -134,7 +134,7 @@ impl FeeRateGovernor {
             me.min_lamports_per_signature = me.target_lamports_per_signature;
             me.max_lamports_per_signature = me.target_lamports_per_signature;
         }
-        debug!(
+        trace!(
             "new_derived(): lamports_per_signature: {}",
             me.lamports_per_signature
         );

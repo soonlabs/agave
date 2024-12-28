@@ -16,7 +16,7 @@ use {
         transaction_processing_callback::TransactionProcessingCallback,
         transaction_results::{TransactionExecutionDetails, TransactionExecutionResult},
     },
-    log::debug,
+    log::trace,
     percentage::Percentage,
     solana_bpf_loader_program::syscalls::create_program_runtime_environment_v1,
     solana_compute_budget::{
@@ -351,7 +351,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                 );
         }
 
-        debug!(
+        trace!(
             "load: {}us execute: {}us txs_len={}",
             load_time.as_us(),
             execution_time.as_us(),
@@ -978,14 +978,14 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
         name: &str,
         builtin: ProgramCacheEntry,
     ) {
-        debug!("Adding program {} under {:?}", name, program_id);
+        trace!("Adding program {} under {:?}", name, program_id);
         callbacks.add_builtin_account(name, &program_id);
         self.builtin_program_ids.write().unwrap().insert(program_id);
         self.program_cache
             .write()
             .unwrap()
             .assign_program(program_id, Arc::new(builtin));
-        debug!("Added program {} under {:?}", name, program_id);
+        trace!("Added program {} under {:?}", name, program_id);
     }
 }
 

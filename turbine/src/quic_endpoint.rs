@@ -272,7 +272,7 @@ fn try_route_bytes(
         Some(sender) => match sender.try_send(bytes) {
             Ok(()) => None,
             Err(TrySendError::Full(_)) => {
-                debug!("TrySendError::Full {remote_address}");
+                trace!("TrySendError::Full {remote_address}");
                 add_metric!(stats.router_try_send_error_full);
                 None
             }
@@ -303,7 +303,7 @@ async fn handle_connecting_task(
     )
     .await
     {
-        debug!("handle_connecting: {err:?}");
+        trace!("handle_connecting: {err:?}");
         record_error(&err, &stats);
     }
 }
@@ -379,11 +379,11 @@ async fn handle_connection(
         Err(err) => error!("handle_connection: {remote_pubkey}, {remote_address}, {err:?}"),
         Ok(out) => {
             if let (Err(ref err), _) = out {
-                debug!("send_datagram_task: {remote_pubkey}, {remote_address}, {err:?}");
+                trace!("send_datagram_task: {remote_pubkey}, {remote_address}, {err:?}");
                 record_error(err, &stats);
             }
             if let (_, Err(ref err)) = out {
-                debug!("read_datagram_task: {remote_pubkey}, {remote_address}, {err:?}");
+                trace!("read_datagram_task: {remote_pubkey}, {remote_address}, {err:?}");
                 record_error(err, &stats);
             }
         }
@@ -418,7 +418,7 @@ async fn read_datagram_task(
                 if let Some(err) = connection.close_reason() {
                     return Err(Error::from(err));
                 }
-                debug!("connection.read_datagram: {remote_pubkey}, {remote_address}, {err:?}");
+                trace!("connection.read_datagram: {remote_pubkey}, {remote_address}, {err:?}");
                 record_error(&Error::from(err), &stats);
             }
         };
@@ -470,7 +470,7 @@ async fn make_connection_task(
     )
     .await
     {
-        debug!("make_connection: {remote_address}, {err:?}");
+        trace!("make_connection: {remote_address}, {err:?}");
         record_error(&err, &stats);
     }
 }

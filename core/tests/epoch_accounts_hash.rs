@@ -327,7 +327,7 @@ fn test_epoch_accounts_hash_basic(test_environment: TestEnvironment) {
                     },
                 );
             expected_epoch_accounts_hash = Some(EpochAccountsHash::from(accounts_hash));
-            debug!(
+            trace!(
                 "slot {}, expected epoch accounts hash: {:?}",
                 bank.slot(),
                 expected_epoch_accounts_hash
@@ -340,7 +340,7 @@ fn test_epoch_accounts_hash_basic(test_environment: TestEnvironment) {
             // spuriously.  Sleep a bit here to ensure AHV gets a chance to run.
             std::thread::sleep(Duration::from_secs(1));
             let actual_epoch_accounts_hash = bank.epoch_accounts_hash();
-            debug!(
+            trace!(
                 "slot {},   actual epoch accounts hash: {:?}",
                 bank.slot(),
                 actual_epoch_accounts_hash,
@@ -527,7 +527,7 @@ fn test_background_services_request_handling_for_epoch_accounts_hash() {
 
             bank
         };
-        debug!("new bank {}", bank.slot());
+        trace!("new bank {}", bank.slot());
 
         // Based on the EAH start and snapshot interval, pick a slot to mass-root all the banks in
         // this range such that an EAH request will be sent and also a snapshot request.
