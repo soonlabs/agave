@@ -138,16 +138,21 @@ impl CrdsGossipPush {
                     continue;
                 }
                 let origin = value.pubkey();
+
+                let msg = format!("gossip insert pushed value: {:?} from: {}", value, from);
                 match crds.insert(value, now, GossipRoute::PushMessage(&from)) {
                     Ok(()) => {
+                        info!("success: {}", msg);
                         received_cache.record(origin, from, /*num_dups:*/ 0);
                         origins.insert(origin);
                     }
                     Err(CrdsError::DuplicatePush(num_dups)) => {
+                        info!("duplicate: {}", msg);
                         received_cache.record(origin, from, usize::from(num_dups));
                         self.num_old.fetch_add(1, Ordering::Relaxed);
                     }
                     Err(CrdsError::InsertFailed | CrdsError::UnknownStakes) => {
+                        info!("failed: {}", msg);
                         received_cache.record(origin, from, /*num_dups:*/ usize::MAX);
                         self.num_old.fetch_add(1, Ordering::Relaxed);
                     }

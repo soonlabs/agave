@@ -1724,7 +1724,7 @@ impl ClusterInfo {
             info!(
                 "new push requests from {} origins, after retain {}, converted to {}, target addresses {:?}",
                 origin_count,
-                num_nodes,
+                after_retain_count,
                 converted_count,
                 messages.iter().map(|(addr, _)| addr).collect::<HashSet<_>>(),
             );
@@ -2614,6 +2614,7 @@ impl ClusterInfo {
                 Protocol::PongMessage(pong) => pong_messages.push((from_addr, pong)),
             }
         }
+        let origin_push_count = push_messages.len();
         if self.require_stake_for_gossip(stakes) {
             retain_staked(&mut pull_responses, stakes);
             for (_, data) in &mut push_messages {
@@ -2621,6 +2622,7 @@ impl ClusterInfo {
             }
             push_messages.retain(|(_, data)| !data.is_empty());
         }
+        let after_retain_push_count = push_messages.len();
         if !pings.is_empty() {
             self.stats
                 .packets_sent_gossip_requests_count
@@ -2634,6 +2636,17 @@ impl ClusterInfo {
         }
         self.handle_batch_ping_messages(ping_messages, recycler, response_sender);
         self.handle_batch_prune_messages(prune_messages, stakes);
+        if origin_push_count > 0 {
+            info!(
+                "handle batch push messages, origin count: {}, after retain count: {}, from: {:?}",
+                origin_push_count,
+                after_retain_push_count,
+                push_messages
+                    .iter()
+                    .map(|(from, _)| from)
+                    .collect::<HashSet<_>>()
+            );
+        }
         self.handle_batch_push_messages(
             push_messages,
             thread_pool,
