@@ -412,7 +412,7 @@ impl SendTransactionService {
         let mut last_batch_sent = Instant::now();
         let mut transactions = HashMap::new();
 
-        info!(
+        trace!(
             "Starting send-transaction-service::receive_txn_thread with config {:?}",
             config
         );
@@ -515,7 +515,7 @@ impl SendTransactionService {
         stats_report: Arc<SendTransactionServiceStatsReport>,
         exit: Arc<AtomicBool>,
     ) -> JoinHandle<()> {
-        info!(
+        trace!(
             "Starting send-transaction-service::retry_thread with config {:?}",
             config
         );
@@ -584,7 +584,8 @@ impl SendTransactionService {
             .map(|(_, transaction_info)| {
                 trace!(
                     "Sending transacation {} to (address, slot): {:?}",
-                    transaction_info.signature, addresses,
+                    transaction_info.signature,
+                    addresses,
                 );
                 transaction_info.wire_transaction.as_ref()
             })
