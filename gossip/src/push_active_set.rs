@@ -33,10 +33,13 @@ impl PushActiveSet {
         origin: &'a Pubkey, // CRDS value owner.
         // If true forces gossip push even if the node has pruned the origin.
         should_force_push: impl FnMut(&Pubkey) -> bool + 'a,
-        _stakes: &HashMap<Pubkey, u64>,
+        stakes: &HashMap<Pubkey, u64>,
     ) -> impl Iterator<Item = &Pubkey> + 'a {
-        // let stake = stakes.get(pubkey).min(stakes.get(origin));
-        let stake = Some(&LAMPORTS_PER_SOL);
+        let stake = stakes.get(pubkey).min(stakes.get(origin));
+        info!(
+            "PushActiveSet get_nodes, pubkey: {}, origin: {}, stake: {:?}",
+            pubkey, origin, stake
+        );
         self.get_entry(stake)
             .get_nodes(pubkey, origin, should_force_push)
     }
@@ -48,15 +51,14 @@ impl PushActiveSet {
         pubkey: &Pubkey,    // This node.
         node: &Pubkey,      // Gossip node.
         origins: &[Pubkey], // CRDS value owners.
-        _stakes: &HashMap<Pubkey, u64>,
+        stakes: &HashMap<Pubkey, u64>,
     ) {
-        // let stake = stakes.get(pubkey);
+        let stake = stakes.get(pubkey);
         for origin in origins {
             if origin == pubkey {
                 continue;
             }
-            // let stake = stake.min(stakes.get(origin));
-            let stake = Some(&LAMPORTS_PER_SOL);
+            let stake = stake.min(stakes.get(origin));
             self.get_entry(stake).prune(node, origin)
         }
     }
@@ -68,7 +70,7 @@ impl PushActiveSet {
         cluster_size: usize,
         // Gossip nodes to be sampled for each push active set.
         nodes: &[Pubkey],
-        _stakes: &HashMap<Pubkey, u64>,
+        stakes: &HashMap<Pubkey, u64>,
     ) {
         let num_bloom_filter_items = cluster_size.max(Self::MIN_NUM_BLOOM_ITEMS);
         // Active set of nodes to push to are sampled from these gossip nodes,
@@ -76,8 +78,7 @@ impl PushActiveSet {
         // node.
         let buckets: Vec<_> = nodes
             .iter()
-            // .map(|node| get_stake_bucket(stakes.get(node)))
-            .map(|_node| get_stake_bucket(Some(&LAMPORTS_PER_SOL)))
+            .map(|node| get_stake_bucket(stakes.get(node)))
             .collect();
         // (k, entry) represents push active set where the stake bucket of
         //     min stake of {this node, crds value owner}
