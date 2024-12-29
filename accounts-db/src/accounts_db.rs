@@ -9055,7 +9055,7 @@ impl AccountsDb {
                 .sum();
             index_time.stop();
 
-            info!("rent_collector: {:?}", rent_collector);
+            debug!("rent_collector: {:?}", rent_collector);
             let (total_items, min_bin_size, max_bin_size) = self
                 .accounts_index
                 .account_maps
@@ -9191,7 +9191,7 @@ impl AccountsDb {
                 self.accounts_index
                     .add_uncleaned_roots(uncleaned_roots.into_iter());
                 accounts_data_len.fetch_sub(accounts_data_len_from_duplicates, Ordering::Relaxed);
-                info!(
+                debug!(
                     "accounts data len: {}",
                     accounts_data_len.load(Ordering::Relaxed)
                 );

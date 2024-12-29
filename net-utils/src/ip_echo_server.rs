@@ -70,7 +70,7 @@ async fn process_connection(
     peer_addr: SocketAddr,
     shred_version: Option<u16>,
 ) -> io::Result<()> {
-    info!("connection from {:?}", peer_addr);
+    debug!("ip-echo connection from {:?}", peer_addr);
 
     let mut data = vec![0u8; ip_echo_server_request_length()];
 
@@ -155,7 +155,7 @@ async fn process_connection(
 }
 
 async fn run_echo_server(tcp_listener: std::net::TcpListener, shred_version: Option<u16>) {
-    info!("bound to {:?}", tcp_listener.local_addr().unwrap());
+    debug!("bound to {:?}", tcp_listener.local_addr().unwrap());
     let tcp_listener =
         TcpListener::from_std(tcp_listener).expect("Failed to convert std::TcpListener");
 
@@ -164,7 +164,7 @@ async fn run_echo_server(tcp_listener: std::net::TcpListener, shred_version: Opt
             Ok((socket, peer_addr)) => {
                 runtime::Handle::current().spawn(async move {
                     if let Err(err) = process_connection(socket, peer_addr, shred_version).await {
-                        info!("session failed: {:?}", err);
+                        debug!("ip-echo session failed: {:?}", err);
                     }
                 });
             }

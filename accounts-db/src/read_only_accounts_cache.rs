@@ -303,13 +303,13 @@ impl ReadOnlyAccountsCache {
         thread::Builder::new()
             .name("solAcctReadCache".to_string())
             .spawn(move || {
-                info!("AccountsReadCacheEvictor has started");
+                debug!("AccountsReadCacheEvictor has started");
                 loop {
                     let res = receiver.recv();
                     if let Err(err) = res {
                         // The only error is when the channel is empty and disconnected.
                         // Disconnecting the channel is the intended way to stop the evictor.
-                        trace!("AccountsReadCacheEvictor is shutting down... {err}");
+                        debug!("AccountsReadCacheEvictor is shutting down... {err}");
                         break;
                     };
                     stats
@@ -332,7 +332,7 @@ impl ReadOnlyAccountsCache {
                     stats.evicts.fetch_add(num_evicts, Ordering::Relaxed);
                     stats.evict_us.fetch_add(evict_us, Ordering::Relaxed);
                 }
-                info!("AccountsReadCacheEvictor has stopped");
+                debug!("AccountsReadCacheEvictor has stopped");
             })
             .expect("spawn accounts read cache evictor thread")
     }

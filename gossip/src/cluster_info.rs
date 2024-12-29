@@ -632,7 +632,7 @@ impl ClusterInfo {
 
         match fs::rename(tmp_filename, &filename) {
             Ok(()) => {
-                info!(
+                debug!(
                     "Saved contact info for {} nodes into {}",
                     nodes.len(),
                     filename.display()

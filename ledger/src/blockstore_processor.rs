@@ -1015,7 +1015,7 @@ pub fn process_blockstore_from_root(
         ("forks", bank_forks.read().unwrap().banks().len(), i64),
     );
 
-    info!("ledger processing timing: {:?}", timing);
+    debug!("ledger processing timing: {:?}", timing);
     {
         let bank_forks = bank_forks.read().unwrap();
         let mut bank_slots = bank_forks.banks().keys().copied().collect::<Vec<_>>();

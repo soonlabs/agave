@@ -1355,7 +1355,7 @@ impl ServeRepair {
         max_responses: usize,
         nonce: Nonce,
     ) -> Option<PacketBatch> {
-        info!(
+        debug!(
             "received orphan request for slot {} from {}",
             slot, from_addr
         );

@@ -581,7 +581,7 @@ impl AccountsBackgroundService {
         let t_background = Builder::new()
             .name("solBgAccounts".to_string())
             .spawn(move || {
-                info!("AccountsBackgroundService has started");
+                debug!("AccountsBackgroundService has started");
                 let mut stats = StatsManager::new();
                 let mut last_snapshot_end_time = None;
 
@@ -696,7 +696,7 @@ impl AccountsBackgroundService {
                     stats.record_and_maybe_submit(start_time.elapsed());
                     sleep(Duration::from_millis(INTERVAL_MS));
                 }
-                info!("AccountsBackgroundService has stopped");
+                debug!("AccountsBackgroundService has stopped");
             })
             .unwrap();
 

@@ -151,7 +151,7 @@ impl BlockstoreCleanupService {
         // it guarantees num_slots >= 1 for the subsequent division.
         let num_slots = highest_slot - lowest_slot + 1;
         let mean_shreds_per_slot = num_shreds / num_slots;
-        info!(
+        debug!(
             "Blockstore has {num_shreds} alive shreds in slots [{lowest_slot}, {highest_slot}], \
              mean of {mean_shreds_per_slot} shreds per slot",
         );
@@ -206,7 +206,7 @@ impl BlockstoreCleanupService {
             return;
         }
         *last_purge_slot = root;
-        info!("Looking for Blockstore data to cleanup, latest root: {root}");
+        debug!("Looking for Blockstore data to cleanup, latest root: {root}");
 
         let disk_utilization_pre = blockstore.storage_size();
         let (slots_to_clean, lowest_cleanup_slot, total_shreds) =
