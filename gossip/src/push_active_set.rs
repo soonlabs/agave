@@ -36,10 +36,6 @@ impl PushActiveSet {
         stakes: &HashMap<Pubkey, u64>,
     ) -> impl Iterator<Item = &Pubkey> + 'a {
         let stake = stakes.get(pubkey).min(stakes.get(origin));
-        info!(
-            "PushActiveSet get_nodes, pubkey: {}, origin: {}, stake: {:?}",
-            pubkey, origin, stake
-        );
         self.get_entry(stake)
             .get_nodes(pubkey, origin, should_force_push)
     }

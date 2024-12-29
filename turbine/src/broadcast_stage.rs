@@ -472,7 +472,7 @@ pub fn broadcast_shreds(
     shred_select.stop();
     transmit_stats.shred_select += shred_select.as_us();
 
-    info!(
+    debug!(
         "broadcast_shreds: {} packets, addresses are: {:?}",
         packets.len(),
         packets.iter().map(|p| p.1).collect::<HashSet<_>>()

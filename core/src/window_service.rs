@@ -346,7 +346,7 @@ where
         *ws_metrics.addrs.entry(addr).or_default() += 1;
     }
 
-    info!(
+    debug!(
         "window service received {} shreds from {} packets, for slots: {:?}",
         shreds.len(),
         packets.len(),
@@ -382,7 +382,7 @@ where
         metrics,
     )?;
     if !completed_data_sets.is_empty() {
-        info!(
+        debug!(
             "complete slots in block store: {:?}",
             completed_data_sets
                 .iter()

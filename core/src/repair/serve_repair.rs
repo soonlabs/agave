@@ -268,7 +268,7 @@ fn discard_malformed_repair_requests(
         if request.bytes.len() >= REPAIR_REQUEST_MIN_BYTES {
             true
         } else {
-            info!(
+            debug!(
                 "dropped short repair request from {}, pubkey: {:?}",
                 request.remote_address,
                 request.remote_pubkey.map(|p| p.to_string())

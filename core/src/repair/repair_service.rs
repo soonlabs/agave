@@ -492,7 +492,7 @@ impl RepairService {
                     .collect()
             };
             if let Some(log) = repairs_log {
-                info!(
+                debug!(
                     "{}, {} targets: {:?}",
                     log,
                     batch.len(),

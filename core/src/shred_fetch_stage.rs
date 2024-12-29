@@ -136,7 +136,7 @@ impl ShredFetchStage {
                 }
             }
             stats.maybe_submit(name, STATS_SUBMIT_CADENCE);
-            info!(
+            debug!(
                 "ShredFetchStage: received {} packets, discarded {}",
                 packet_batch.len(),
                 packet_batch.iter().filter(|p| p.meta().discard()).count()
