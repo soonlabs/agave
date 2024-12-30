@@ -205,7 +205,8 @@ fn validate_platform_tools_version(requested_version: &str, builtin_version: Str
     let latest_version = get_latest_platform_tools_version().unwrap_or_else(|err| {
         trace!(
             "Can't get the latest version of platform-tools: {}. Using built-in version {}.",
-            err, &builtin_version,
+            err,
+            &builtin_version,
         );
         builtin_version.clone()
     });

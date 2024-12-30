@@ -2883,7 +2883,8 @@ pub mod rpc_bank {
         ) -> Result<Vec<String>> {
             trace!(
                 "get_slot_leaders rpc request received (start: {} limit: {})",
-                start_slot, limit
+                start_slot,
+                limit
             );
 
             let limit = limit as usize;
@@ -3923,7 +3924,8 @@ pub mod rpc_full {
                 wrapper.map(|wrapper| wrapper.unzip()).unwrap_or_default();
             trace!(
                 "get_blocks rpc request received: {}-{:?}",
-                start_slot, end_slot
+                start_slot,
+                end_slot
             );
             Box::pin(async move {
                 meta.get_blocks(start_slot, end_slot, config.or(maybe_config))
@@ -3940,7 +3942,8 @@ pub mod rpc_full {
         ) -> BoxFuture<Result<Vec<Slot>>> {
             trace!(
                 "get_blocks_with_limit rpc request received: {}-{}",
-                start_slot, limit,
+                start_slot,
+                limit,
             );
             Box::pin(async move { meta.get_blocks_with_limit(start_slot, limit, config).await })
         }

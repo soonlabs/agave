@@ -251,7 +251,8 @@ impl OptimisticallyConfirmedBankTracker {
                 let parent = roots[i - 1];
                 trace!(
                     "Doing SlotNotification::Root for root {}, parent: {}",
-                    root, parent
+                    root,
+                    parent
                 );
                 Self::notify_slot_status(
                     slot_notification_subscribers,

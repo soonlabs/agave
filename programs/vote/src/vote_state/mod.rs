@@ -4,7 +4,6 @@ pub use solana_program::vote::state::{vote_state_versions::*, *};
 use {
     log::*,
     serde_derive::{Deserialize, Serialize},
-    solana_metrics::datapoint_debug,
     solana_program::vote::{error::VoteError, program::id},
     solana_sdk::{
         account::{AccountSharedData, ReadableAccount, WritableAccount},
@@ -497,7 +496,10 @@ fn check_slots_are_valid(
         // there are not slots in `vote_slots` greater than `last_voted_slot`
         trace!(
             "{} dropped vote slots {:?}, vote hash: {:?} slot hashes:SlotHash {:?}, too old ",
-            vote_state.node_pubkey, vote_slots, vote_hash, slot_hashes
+            vote_state.node_pubkey,
+            vote_slots,
+            vote_hash,
+            slot_hashes
         );
         return Err(VoteError::VoteTooOld);
     }

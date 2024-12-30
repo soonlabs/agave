@@ -1331,7 +1331,8 @@ impl ReplayStage {
                     } else {
                         trace!(
                             "Bypass retransmit of slot={} retransmit_info={:?}",
-                            slot, &retransmit_info
+                            slot,
+                            &retransmit_info
                         );
                     }
                 }
@@ -1358,7 +1359,8 @@ impl ReplayStage {
         {
             trace!(
                 "Slot not propagated: start_slot={} latest_leader_slot={}",
-                start_slot, latest_leader_slot
+                start_slot,
+                latest_leader_slot
             );
             Self::maybe_retransmit_unpropagated_slots(
                 "replay_stage-retransmit-timing-based",

@@ -2584,7 +2584,8 @@ impl Bank {
                     } else {
                         trace!(
                             "solana_stake_program::rewards::redeem_rewards() failed for {}: {:?}",
-                            stake_pubkey, redeemed
+                            stake_pubkey,
+                            redeemed
                         );
                     }
                     None

@@ -98,7 +98,8 @@ impl RentState {
         {
             trace!(
                 "Account {} not rent exempt, state {:?}",
-                address, account_state,
+                address,
+                account_state,
             );
             let account_index = account_index as u8;
             Err(TransactionError::InsufficientFundsForRent { account_index })
