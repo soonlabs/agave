@@ -6735,7 +6735,7 @@ impl AccountsDb {
             total_alive_bytes += Self::page_align(store.alive_bytes() as u64);
             total_bytes += store.capacity();
         }
-        info!(
+        debug!(
             "total_stores: {total_count}, newest_slot: {newest_slot}, oldest_slot: {oldest_slot}"
         );
 
