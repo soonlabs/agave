@@ -1113,11 +1113,16 @@ fn confirm_full_slot(
         opts.allow_dead_slots,
         opts.runtime_config.log_messages_bytes_limit,
         &ignored_prioritization_fee_cache,
-    )?;
+    )
+    .map_err(|e| {
+        error!("confirm full slot failed: {}", e);
+        e
+    })?;
 
     timing.accumulate(&confirmation_timing.batch_execute.totals);
 
     if !bank.is_complete() {
+        error!("Slot: {} was not complete", bank.slot());
         Err(BlockstoreProcessorError::InvalidBlock(
             BlockError::Incomplete,
         ))
