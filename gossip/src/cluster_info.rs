@@ -918,7 +918,7 @@ impl ClusterInfo {
                 .map(|x| x.lowest)
                 .unwrap_or_default()
         };
-        if last == 0 || min < last {
+        if (last == 0 && last != min) || min < last {
             let now = timestamp();
             let entry = CrdsValue::new_signed(
                 CrdsData::LowestSlot(0, LowestSlot::new(self_pubkey, min, now)),
