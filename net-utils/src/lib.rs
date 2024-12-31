@@ -159,7 +159,7 @@ fn do_verify_reachable_ports(
             .unwrap();
         match receiver.recv_timeout(timeout) {
             Ok(_) => {
-                info!("{}:tcp/{} is reachable", listening_addr.ip(), port);
+                debug!("{}:tcp/{} is reachable", listening_addr.ip(), port);
             }
             Err(err) => {
                 error!(
@@ -271,7 +271,7 @@ fn do_verify_reachable_ports(
 
             let reachable_ports = reachable_ports.read().unwrap().clone();
             if reachable_ports.len() == checked_ports.len() {
-                info!(
+                debug!(
                     "checked udp ports: {:?}, reachable udp ports: {:?}",
                     checked_ports, reachable_ports
                 );
