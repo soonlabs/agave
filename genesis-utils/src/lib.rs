@@ -54,6 +54,10 @@ fn get_genesis_config(
     if let Ok(tmp_genesis_package) =
         download_genesis_if_missing(rpc_addr, &genesis_package, use_progress_bar)
     {
+        info!(
+            "Downloaded genesis config from {rpc_addr} begin unpacked to {}",
+            ledger_path.display()
+        );
         unpack_genesis_archive(
             &tmp_genesis_package,
             ledger_path,
