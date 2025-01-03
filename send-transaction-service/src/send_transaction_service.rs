@@ -427,7 +427,7 @@ impl SendTransactionService {
                 }
                 match recv_result {
                     Err(RecvTimeoutError::Disconnected) => {
-                        info!("Terminating send-transaction-service.");
+                        trace!("Terminating send-transaction-service.");
                         exit.store(true, Ordering::Relaxed);
                         break;
                     }
@@ -617,7 +617,7 @@ impl SendTransactionService {
                 stats.nonced_transactions.fetch_add(1, Ordering::Relaxed);
             }
             if root_bank.has_signature(signature) {
-                info!("Transaction is rooted: {}", signature);
+                debug!("Transaction is rooted: {}", signature);
                 result.rooted += 1;
                 stats.rooted_transactions.fetch_add(1, Ordering::Relaxed);
                 return false;
@@ -674,7 +674,7 @@ impl SendTransactionService {
                             // Transaction sent before is unknown to the working bank, it might have been
                             // dropped or landed in another fork.  Re-send it
 
-                            info!("Retrying transaction: {}", signature);
+                            debug!("Retrying transaction: {}", signature);
                             result.retried += 1;
                             transaction_info.retries += 1;
                             stats.retries.fetch_add(1, Ordering::Relaxed);
@@ -687,7 +687,7 @@ impl SendTransactionService {
                 }
                 Some((_slot, status)) => {
                     if status.is_err() {
-                        info!("Dropping failed transaction: {}", signature);
+                        debug!("Dropping failed transaction: {}", signature);
                         result.failed += 1;
                         stats.failed_transactions.fetch_add(1, Ordering::Relaxed);
                         false

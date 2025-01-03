@@ -81,7 +81,7 @@ impl DropCallback for SendDroppedBankCallback {
     fn callback(&self, bank: &Bank) {
         BANK_DROP_QUEUE_REPORTER.report(self.sender.len());
         if let Err(SendError(_)) = self.sender.send((bank.slot(), bank.bank_id())) {
-            info!("bank DropCallback signal queue disconnected.");
+            debug!("bank DropCallback signal queue disconnected.");
         }
     }
 
