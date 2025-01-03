@@ -460,7 +460,7 @@ impl RepairService {
             };
 
             let repairs_log = if !repairs.is_empty() {
-                Some(format!("{} repair requests: {:?}", repairs.len(), repairs))
+                Some(format!("{} repair requests", repairs.len()))
             } else {
                 None
             };
@@ -496,7 +496,7 @@ impl RepairService {
                     "{}, {} targets: {:?}",
                     log,
                     batch.len(),
-                    batch.iter().map(|(_, to)| to).collect::<Vec<_>>()
+                    batch.iter().map(|(_, to)| to).collect::<HashSet<_>>()
                 );
             }
             build_repairs_batch_elapsed.stop();
