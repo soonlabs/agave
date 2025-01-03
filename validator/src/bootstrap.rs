@@ -724,7 +724,7 @@ fn get_rpc_nodes(
     loop {
         // Give gossip some time to populate and not spin on grabbing the crds lock
         std::thread::sleep(Duration::from_secs(1));
-        info!("\n{}", cluster_info.rpc_info_trace());
+        info!("\n{:?}", cluster_info.rpc_info_trace());
 
         let rpc_peers = get_rpc_peers(
             cluster_info,

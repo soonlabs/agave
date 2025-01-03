@@ -777,7 +777,7 @@ impl ClusterInfo {
             .unwrap_or_else(|| String::from("none"))
     }
 
-    pub fn rpc_info_trace(&self) -> String {
+    pub fn rpc_info_trace(&self) -> Option<String> {
         let now = timestamp();
         let my_pubkey = self.id();
         let my_shred_version = self.my_shred_version();
@@ -818,16 +818,18 @@ impl ClusterInfo {
             })
             .collect();
 
-        format!(
-            "RPC Address       |Age(ms)| Node identifier                              \
+        (!nodes.is_empty()).then(|| {
+            format!(
+                "RPC Address       |Age(ms)| Node identifier                              \
              | Version | RPC  |PubSub|ShredVer\n\
              ------------------+-------+----------------------------------------------\
              +---------+------+------+--------\n\
              {}\
              RPC Enabled Nodes: {}",
-            nodes.join(""),
-            nodes.len(),
-        )
+                nodes.join(""),
+                nodes.len(),
+            )
+        })
     }
 
     pub fn contact_info_trace(&self) -> String {
@@ -1927,6 +1929,7 @@ impl ClusterInfo {
                             epoch,
                             self.contact_info_trace(),
                             self.rpc_info_trace()
+                                .unwrap_or_else(|| String::from("none")),
                         );
                         last_contact_info_trace = start;
                     }
@@ -5004,16 +5007,16 @@ mod tests {
         assert_eq!(trace.len(), 431);
 
         let trace = cluster_info44.rpc_info_trace();
-        info!("rpc:\n{}", trace);
-        assert_eq!(trace.len(), 335);
+        info!("rpc:\n{}", trace.as_ref().unwrap());
+        assert_eq!(trace.as_ref().unwrap().len(), 335);
 
         let trace = cluster_info43.contact_info_trace();
         info!("cluster:\n{}", trace);
         assert_eq!(trace.len(), 431);
 
         let trace = cluster_info43.rpc_info_trace();
-        info!("rpc:\n{}", trace);
-        assert_eq!(trace.len(), 335);
+        info!("rpc:\n{}", trace.as_ref().unwrap());
+        assert_eq!(trace.as_ref().unwrap().len(), 335);
     }
 
     #[test]
