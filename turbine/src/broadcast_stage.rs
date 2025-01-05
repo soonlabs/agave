@@ -473,8 +473,9 @@ pub fn broadcast_shreds(
     transmit_stats.shred_select += shred_select.as_us();
 
     debug!(
-        "broadcast_shreds: {} packets, addresses are: {:?}",
+        "broadcast_shreds: {} packets about slots {:?}, addresses are: {:?}",
         packets.len(),
+        shreds.iter().map(|s| s.slot()).collect::<HashSet<_>>(),
         packets.iter().map(|p| p.1).collect::<HashSet<_>>()
     );
 
