@@ -870,7 +870,7 @@ pub struct Bank {
 
     epoch_reward_status: EpochRewardStatus,
 
-    transaction_processor: TransactionBatchProcessor<BankForks>,
+    pub transaction_processor: TransactionBatchProcessor<BankForks>,
 
     check_program_modification_slot: bool,
 
@@ -1117,6 +1117,21 @@ impl Bank {
         rent_collector.clone_with_epoch(epoch)
     }
 
+    fn get_rent_collector_from_sysvar(&self, rent_collector: &RentCollector, epoch: Epoch) -> RentCollector {
+        let rent = self.get_account(&sysvar::rent::id());
+        if let Some(rent) = rent {
+            if let Some(rent) = from_account(&rent) {
+                return RentCollector::new(
+                    epoch,
+                    rent_collector.epoch_schedule.clone(),
+                    rent_collector.slots_per_year.clone(),
+                    rent,
+                );
+            }
+        }
+        rent_collector.clone_with_epoch(epoch)
+    }
+
     fn _new_from_parent(
         parent: Arc<Bank>,
         collector_id: &Pubkey,
@@ -1192,7 +1207,7 @@ impl Bank {
             slots_per_year: parent.slots_per_year,
             epoch_schedule,
             collected_rent: AtomicU64::new(0),
-            rent_collector: Self::get_rent_collector_from(&parent.rent_collector, epoch),
+            rent_collector: parent.get_rent_collector_from_sysvar(&parent.rent_collector, epoch),
             max_tick_height: (slot + 1) * parent.ticks_per_slot,
             block_height: parent.block_height + 1,
             fee_rate_governor,
