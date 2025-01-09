@@ -3317,14 +3317,21 @@ impl Blockstore {
                     IteratorDirection::Reverse,
                 ))?;
 
+        // NOTE: Prevent duplicate signatures from being included in the `address_signatures`, add
+        // by soon team.
+        let mut dup_sigs = HashSet::new();
         // Iterate until limit is reached
         while address_signatures.len() < limit {
             if let Some(((key_address, slot, _transaction_index, signature), _)) = iterator.next() {
                 if slot < lowest_slot {
                     break;
                 }
+                if dup_sigs.contains(&signature) {
+                    continue;
+                }
                 if key_address == address {
                     if self.is_root(slot) || confirmed_unrooted_slots.contains(&slot) {
+                        dup_sigs.insert(signature);
                         address_signatures.push((slot, signature));
                     }
                     continue;
@@ -3332,6 +3339,7 @@ impl Blockstore {
             }
             break;
         }
+        drop(dup_sigs);
         address_signatures_iter_timer.stop();
 
         let mut address_signatures: Vec<(Slot, Signature)> = address_signatures
