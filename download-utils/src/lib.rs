@@ -249,10 +249,14 @@ pub fn download_genesis_if_missing(
             &tmp_genesis_package,
             use_progress_bar,
             &mut None,
-        )?;
+        ).map_err(|e| {
+            warn!("Failed to download genesis from {rpc_addr}: {e}");
+            e
+        })?;
 
         Ok(tmp_genesis_package)
     } else {
+        info!("genesis already exists at {}", genesis_package.display());
         Err("genesis already exists".to_string())
     }
 }
