@@ -47,6 +47,7 @@ fn get_genesis_config(
     use_progress_bar: bool,
 ) -> Result<GenesisConfig, String> {
     if no_genesis_fetch {
+        info!("Skipping genesis config fetch, loading local genesis config");
         return load_local_genesis(ledger_path, expected_genesis_hash);
     }
 

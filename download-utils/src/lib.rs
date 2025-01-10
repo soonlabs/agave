@@ -243,6 +243,7 @@ pub fn download_genesis_if_missing(
         let tmp_genesis_package = tmp_genesis_path.join(DEFAULT_GENESIS_ARCHIVE);
 
         let _ignored = fs::remove_dir_all(&tmp_genesis_path);
+        info!("begin to download genesis from {}", rpc_addr);
         download_file(
             &format!("http://{rpc_addr}/{DEFAULT_GENESIS_ARCHIVE}"),
             &tmp_genesis_package,
