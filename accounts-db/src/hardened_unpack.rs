@@ -532,9 +532,18 @@ fn is_valid_genesis_archive_entry<'a>(
     parts: &[&str],
     kind: tar::EntryType,
 ) -> UnpackPath<'a> {
-    trace!("validating: {:?} {:?}", parts, kind);
+    let parts = parts
+        .iter()
+        .map(|s| s.trim_start_matches(&['.', '/'][..]))
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>();
+    if parts.is_empty() {
+        return UnpackPath::Ignore;
+    }
+
+    debug!("validating: {:?} {:?}", parts, kind);
     #[allow(clippy::match_like_matches_macro)]
-    match (parts, kind) {
+    match (&parts[..], kind) {
         ([DEFAULT_GENESIS_FILE], GNUSparse) => UnpackPath::Valid(unpack_dir),
         ([DEFAULT_GENESIS_FILE], Regular) => UnpackPath::Valid(unpack_dir),
         (["rocksdb"], Directory) => UnpackPath::Ignore,
