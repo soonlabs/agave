@@ -438,7 +438,16 @@ fn retain_staked(values: &mut Vec<CrdsValue>, stakes: &HashMap<Pubkey, u64>) {
             | CrdsData::RestartHeaviestFork(_)
             | CrdsData::RestartLastVotedForkSlots(_) => {
                 let stake = stakes.get(&value.pubkey()).copied();
-                stake.unwrap_or_default() >= MIN_STAKE_FOR_GOSSIP
+                let keep = stake.unwrap_or_default() >= MIN_STAKE_FOR_GOSSIP;
+                if !keep {
+                    debug!(
+                        "Gossip connection: dropping {} with stake {:?} < MIN_STAKE_FOR_GOSSIP {}",
+                        value.pubkey(),
+                        stake,
+                        MIN_STAKE_FOR_GOSSIP
+                    );
+                }
+                true
             }
         }
     })
@@ -2583,14 +2592,22 @@ impl ClusterInfo {
                 }
                 Protocol::PullResponse(_, mut data) => {
                     check_duplicate_instance(&data)?;
-                    data.retain(&mut verify_gossip_addr);
+                    data.iter_mut().for_each(|value| {
+                        if !verify_gossip_addr(value) {
+                            debug!("Gossip connection: verify gossip addr fail in pull response");
+                        }
+                    });
                     if !data.is_empty() {
                         pull_responses.append(&mut data);
                     }
                 }
                 Protocol::PushMessage(from, mut data) => {
                     check_duplicate_instance(&data)?;
-                    data.retain(&mut verify_gossip_addr);
+                    data.iter_mut().for_each(|value| {
+                        if !verify_gossip_addr(value) {
+                            debug!("Gossip connection: verify gossip addr fail in push message");
+                        }
+                    });
                     if !data.is_empty() {
                         push_messages.push((from, data));
                     }
@@ -3348,14 +3365,26 @@ fn verify_gossip_addr<R: Rng + CryptoRng>(
         return true;
     }
     // Invalid addresses are not verifiable.
+    let addr_str = format!("{:?}", addr);
     let Some(addr) = addr.ok().filter(|addr| socket_addr_space.check(addr)) else {
+        debug!(
+            "Gossip connection: discarding gossip from {} with invalid address {}",
+            pubkey, addr_str
+        );
         return false;
     };
     let (out, ping) = {
         let node = (*pubkey, addr);
         let mut pingf = move || Ping::new_rand(rng, keypair).ok();
         let mut ping_cache = ping_cache.lock().unwrap();
-        ping_cache.check(Instant::now(), node, &mut pingf)
+        let result = ping_cache.check(Instant::now(), node, &mut pingf);
+        if !result.0 {
+            debug!(
+                "Gossip connection: address {} ping cache check is false",
+                node.1
+            );
+        }
+        result
     };
     if let Some(ping) = ping {
         pings.push((addr, Protocol::PingMessage(ping)));
