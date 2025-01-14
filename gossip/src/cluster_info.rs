@@ -2560,7 +2560,7 @@ impl ClusterInfo {
         let mut pings = Vec::new();
         let mut rng = rand::thread_rng();
         let keypair: Arc<Keypair> = self.keypair().clone();
-        let mut verify_gossip_addr = |value: &CrdsValue| {
+        let mut verify_gossip_addr = |value: &CrdsValue, from_addr: SocketAddr, name: &str| {
             if verify_gossip_addr(
                 &mut rng,
                 &keypair,
@@ -2573,6 +2573,10 @@ impl ClusterInfo {
                 true
             } else {
                 self.stats.num_unverifed_gossip_addrs.add_relaxed(1);
+                debug!(
+                    "Gossip connection: discarding crds value from {} for {}",
+                    from_addr, name
+                );
                 false
             }
         };
@@ -2586,14 +2590,14 @@ impl ClusterInfo {
         for (from_addr, packet) in packets {
             match packet {
                 Protocol::PullRequest(filter, caller) => {
-                    if verify_gossip_addr(&caller) {
+                    if verify_gossip_addr(&caller, from_addr, "PullRequest") {
                         pull_requests.push((from_addr, filter, caller))
                     }
                 }
                 Protocol::PullResponse(_, mut data) => {
                     check_duplicate_instance(&data)?;
                     data.iter_mut().for_each(|value| {
-                        if !verify_gossip_addr(value) {
+                        if !verify_gossip_addr(value, from_addr, "PullResponse") {
                             debug!("Gossip connection: verify gossip addr fail in pull response");
                         }
                     });
@@ -2604,7 +2608,7 @@ impl ClusterInfo {
                 Protocol::PushMessage(from, mut data) => {
                     check_duplicate_instance(&data)?;
                     data.iter_mut().for_each(|value| {
-                        if !verify_gossip_addr(value) {
+                        if !verify_gossip_addr(value, from_addr, "PushMessage") {
                             debug!("Gossip connection: verify gossip addr fail in push message");
                         }
                     });
