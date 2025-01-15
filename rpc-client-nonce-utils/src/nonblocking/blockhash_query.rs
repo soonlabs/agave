@@ -91,12 +91,12 @@ impl BlockhashQuery {
         match self {
             BlockhashQuery::Static(hash) => Ok(*hash),
             BlockhashQuery::Validated(source, hash) => {
-                if !source
-                    .is_blockhash_valid(rpc_client, hash, commitment)
-                    .await?
-                {
-                    return Err(format!("Hash has expired {hash:?}").into());
-                }
+                // if !source
+                //     .is_blockhash_valid(rpc_client, hash, commitment)
+                //     .await?
+                // {
+                //     return Err(format!("Hash has expired {hash:?}").into());
+                // }
                 Ok(*hash)
             }
             BlockhashQuery::Rpc(source) => source.get_blockhash(rpc_client, commitment).await,

@@ -442,6 +442,10 @@ impl SendTransactionService {
                                 .unwrap()
                                 .contains_key(&transaction_info.signature)
                             {
+                                info!(
+                                    "@@ add new transaction {} in receiving tx loop",
+                                    transaction_info.signature
+                                );
                                 entry.or_insert(transaction_info);
                                 new_transaction = true;
                             }
@@ -627,9 +631,9 @@ impl SendTransactionService {
             }
             if root_bank.has_signature(signature) {
                 debug!("Transaction is rooted: {}", signature);
-                result.rooted += 1;
-                stats.rooted_transactions.fetch_add(1, Ordering::Relaxed);
-                return false;
+                // result.rooted += 1;
+                // stats.rooted_transactions.fetch_add(1, Ordering::Relaxed);
+                // return false;
             }
             let signature_status = working_bank.get_signature_status_slot(signature);
             if let Some((nonce_pubkey, durable_nonce)) = transaction_info.durable_nonce_info {
@@ -643,16 +647,16 @@ impl SendTransactionService {
                     nonce_account::verify_nonce_account(&nonce_account, &durable_nonce);
                 if verify_nonce_account.is_none() && signature_status.is_none() && expired {
                     info!("Dropping expired durable-nonce transaction: {}", signature);
-                    result.expired += 1;
-                    stats.expired_transactions.fetch_add(1, Ordering::Relaxed);
-                    return false;
+                    // result.expired += 1;
+                    // stats.expired_transactions.fetch_add(1, Ordering::Relaxed);
+                    // return false;
                 }
             }
             if transaction_info.last_valid_block_height < root_bank.block_height() {
                 info!("Dropping expired transaction: {}", signature);
-                result.expired += 1;
-                stats.expired_transactions.fetch_add(1, Ordering::Relaxed);
-                return false;
+                // result.expired += 1;
+                // stats.expired_transactions.fetch_add(1, Ordering::Relaxed);
+                // return false;
             }
 
             let max_retries = transaction_info
@@ -663,11 +667,11 @@ impl SendTransactionService {
             if let Some(max_retries) = max_retries {
                 if transaction_info.retries >= max_retries {
                     info!("Dropping transaction due to max retries: {}", signature);
-                    result.max_retries_elapsed += 1;
-                    stats
-                        .transactions_exceeding_max_retries
-                        .fetch_add(1, Ordering::Relaxed);
-                    return false;
+                    // result.max_retries_elapsed += 1;
+                    // stats
+                    //     .transactions_exceeding_max_retries
+                    //     .fetch_add(1, Ordering::Relaxed);
+                    // return false;
                 }
             }
 
@@ -697,9 +701,10 @@ impl SendTransactionService {
                 Some((_slot, status)) => {
                     if status.is_err() {
                         debug!("Dropping failed transaction: {}", signature);
-                        result.failed += 1;
-                        stats.failed_transactions.fetch_add(1, Ordering::Relaxed);
-                        false
+                        // result.failed += 1;
+                        // stats.failed_transactions.fetch_add(1, Ordering::Relaxed);
+                        // false
+                        true
                     } else {
                         result.retained += 1;
                         true
