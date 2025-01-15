@@ -646,14 +646,14 @@ impl SendTransactionService {
                 let verify_nonce_account =
                     nonce_account::verify_nonce_account(&nonce_account, &durable_nonce);
                 if verify_nonce_account.is_none() && signature_status.is_none() && expired {
-                    info!("Dropping expired durable-nonce transaction: {}", signature);
+                    debug!("Dropping expired durable-nonce transaction: {}", signature);
                     // result.expired += 1;
                     // stats.expired_transactions.fetch_add(1, Ordering::Relaxed);
                     // return false;
                 }
             }
             if transaction_info.last_valid_block_height < root_bank.block_height() {
-                info!("Dropping expired transaction: {}", signature);
+                debug!("Dropping expired transaction: {}", signature);
                 // result.expired += 1;
                 // stats.expired_transactions.fetch_add(1, Ordering::Relaxed);
                 // return false;
@@ -666,7 +666,7 @@ impl SendTransactionService {
 
             if let Some(max_retries) = max_retries {
                 if transaction_info.retries >= max_retries {
-                    info!("Dropping transaction due to max retries: {}", signature);
+                    debug!("Dropping transaction due to max retries: {}", signature);
                     // result.max_retries_elapsed += 1;
                     // stats
                     //     .transactions_exceeding_max_retries
@@ -675,42 +675,43 @@ impl SendTransactionService {
                 }
             }
 
-            match signature_status {
-                None => {
-                    let now = Instant::now();
-                    let need_send = transaction_info
-                        .last_sent_time
-                        .map(|last| now.duration_since(last) >= retry_rate)
-                        .unwrap_or(true);
-                    if need_send {
-                        if transaction_info.last_sent_time.is_some() {
-                            // Transaction sent before is unknown to the working bank, it might have been
-                            // dropped or landed in another fork.  Re-send it
+            // match signature_status {
+            //     None => {
+            let now = Instant::now();
+            //         let need_send = transaction_info
+            //             .last_sent_time
+            //             .map(|last| now.duration_since(last) >= retry_rate)
+            //             .unwrap_or(true);
+            //         if need_send {
+            //             if transaction_info.last_sent_time.is_some() {
+            //                 // Transaction sent before is unknown to the working bank, it might have been
+            //                 // dropped or landed in another fork.  Re-send it
 
-                            debug!("Retrying transaction: {}", signature);
-                            result.retried += 1;
-                            transaction_info.retries += 1;
-                            stats.retries.fetch_add(1, Ordering::Relaxed);
-                        }
+            //                 info!("Retrying transaction: {}", signature);
+            //                 result.retried += 1;
+            //                 transaction_info.retries += 1;
+            //                 stats.retries.fetch_add(1, Ordering::Relaxed);
+            //             }
 
-                        batched_transactions.insert(*signature);
-                        transaction_info.last_sent_time = Some(now);
-                    }
-                    true
-                }
-                Some((_slot, status)) => {
-                    if status.is_err() {
-                        debug!("Dropping failed transaction: {}", signature);
-                        // result.failed += 1;
-                        // stats.failed_transactions.fetch_add(1, Ordering::Relaxed);
-                        // false
-                        true
-                    } else {
-                        result.retained += 1;
-                        true
-                    }
-                }
-            }
+            batched_transactions.insert(*signature);
+            transaction_info.last_sent_time = Some(now);
+            true
+            //     }
+            //     true
+            // }
+            // Some((_slot, status)) => {
+            //     if status.is_err() {
+            //         info!("Dropping failed transaction: {}", signature);
+            //         // result.failed += 1;
+            //         // stats.failed_transactions.fetch_add(1, Ordering::Relaxed);
+            //         // false
+            //         true
+            //     } else {
+            //         result.retained += 1;
+            //         true
+            //     }
+            //     }
+            // }
         });
 
         if !batched_transactions.is_empty() {
