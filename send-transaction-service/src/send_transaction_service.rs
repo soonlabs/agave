@@ -571,6 +571,11 @@ impl SendTransactionService {
             .as_ref()
             .map(|addrs| addrs.iter().map(|a| (a, 0)).collect::<Vec<_>>())
             .unwrap_or_default();
+        info!(
+            "@@ send transactions in batch, addresses: {:?}, transactions: {}",
+            addresses,
+            transactions.len()
+        );
         let leader_addresses = Self::get_tpu_addresses_with_slots(
             tpu_address,
             leader_info,
@@ -578,6 +583,10 @@ impl SendTransactionService {
             connection_cache.protocol(),
         );
         addresses.extend(leader_addresses);
+        info!(
+            "@@ send transactions in batch, full addresses: {:?}",
+            addresses
+        );
 
         let wire_transactions = transactions
             .iter()
@@ -714,6 +723,11 @@ impl SendTransactionService {
                     .as_ref()
                     .map(|addrs| addrs.iter().collect::<Vec<_>>())
                     .unwrap_or_default();
+                info!(
+                    "@@ retry transactions, addresses: {:?}, transactions: {}",
+                    addresses,
+                    chunk.len()
+                );
                 let mut leader_info_provider = leader_info_provider.lock().unwrap();
                 let leader_info = leader_info_provider.get_leader_info();
                 let leader_addresses = Self::get_tpu_addresses(
@@ -723,6 +737,11 @@ impl SendTransactionService {
                     connection_cache.protocol(),
                 );
                 addresses.extend(leader_addresses);
+                info!(
+                    "@@ retry transactions, full addresses: {:?}, transactions: {}",
+                    addresses,
+                    chunk.len()
+                );
 
                 for address in &addresses {
                     Self::send_transactions(address, chunk, connection_cache, stats);
