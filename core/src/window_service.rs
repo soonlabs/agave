@@ -346,15 +346,17 @@ where
         *ws_metrics.addrs.entry(addr).or_default() += 1;
     }
 
-    debug!(
-        "window service received {} shreds from {} packets, for slots: {:?}",
-        shreds.len(),
-        packets.len(),
-        shreds
-            .iter()
-            .map(|shred| shred.slot())
-            .collect::<HashSet<_>>()
-    );
+    if !shreds.is_empty() {
+        debug!(
+            "window service received {} shreds from {} packets, for slots: {:?}",
+            shreds.len(),
+            packets.len(),
+            shreds
+                .iter()
+                .map(|shred| shred.slot())
+                .collect::<HashSet<_>>()
+        );
+    }
     let mut prune_shreds_elapsed = Measure::start("prune_shreds_elapsed");
     let num_shreds = shreds.len();
     prune_shreds_by_repair_status(

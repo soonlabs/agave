@@ -162,12 +162,20 @@ impl CrdsGossip {
         stakes: &HashMap<Pubkey, u64>,
     ) -> Result<(), CrdsGossipError> {
         if now > wallclock.saturating_add(self.push.prune_timeout) {
+            debug!(
+                "Gossip connection: prune timeout with, peer is {}, dest is {}",
+                peer, destination
+            );
             Err(CrdsGossipError::PruneMessageTimeout)
         } else if self_pubkey == destination {
             self.push
                 .process_prune_msg(self_pubkey, peer, origin, stakes);
             Ok(())
         } else {
+            debug!(
+                "Gossip connection: bad prune destination, peer is {}, dest is {}",
+                peer, destination
+            );
             Err(CrdsGossipError::BadPruneDestination)
         }
     }

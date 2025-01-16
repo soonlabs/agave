@@ -19,7 +19,7 @@ use {
         crds::{Crds, GossipRoute, VersionedCrdsValue},
         crds_gossip,
         crds_gossip_error::CrdsGossipError,
-        crds_value::CrdsValue,
+        crds_value::{CrdsValue, CrdsValueLabel},
         ping_pong::PingCache,
     },
     rand::{
@@ -537,7 +537,15 @@ impl CrdsGossipPull {
         let mut crds = crds.write().unwrap();
         let labels = crds.find_old_labels(thread_pool, now, timeouts);
         for label in &labels {
-            crds.remove(label, now);
+            match label {
+                CrdsValueLabel::ContactInfo(pubkey) | CrdsValueLabel::LegacyContactInfo(pubkey) => {
+                    debug!(
+                        "Gossip connection: removing contact info for {} when purge active",
+                        pubkey
+                    );
+                }
+                _ => crds.remove(label, now),
+            }
         }
         labels.len()
     }

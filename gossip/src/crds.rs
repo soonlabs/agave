@@ -670,10 +670,20 @@ impl Crds {
             .flat_map(|k| &self.records[&k])
             .map(|k| self.table.get_index(*k).unwrap().0.clone())
             .collect();
+
+        let mut num_purged = 0;
         for key in &keys {
-            self.remove(key, now);
+            match key {
+                CrdsValueLabel::ContactInfo(pubkey) | CrdsValueLabel::LegacyContactInfo(pubkey) => {
+                    debug!("Gossip connection: removing contact info: {}", pubkey);
+                }
+                _ => {
+                    self.remove(key, now);
+                    num_purged += 1;
+                }
+            }
         }
-        Ok(keys.len())
+        Ok(num_purged)
     }
 
     pub(crate) fn take_stats(&self) -> CrdsStats {
