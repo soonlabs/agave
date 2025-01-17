@@ -440,10 +440,12 @@ pub fn broadcast_shreds(
 ) -> Result<()> {
     let mut result = Ok(());
     let mut shred_select = Measure::start("shred_select");
+    debug!("begin of batch send transaction");
     let (root_bank, working_bank) = {
         let bank_forks = bank_forks.read().unwrap();
         (bank_forks.root_bank(), bank_forks.working_bank())
     };
+    debug!("broadcast root bank: {}, working bank: {}", root_bank.slot(), working_bank.slot());
     let (packets, quic_packets): (Vec<_>, Vec<_>) = shreds
         .iter()
         .group_by(|shred| shred.slot())
@@ -487,16 +489,20 @@ pub fn broadcast_shreds(
             result = Err(Error::Io(ioerr));
         }
     }
+    debug!("batch send packets len: {}", packets.len());
     send_mmsg_time.stop();
     transmit_stats.send_mmsg_elapsed += send_mmsg_time.as_us();
     transmit_stats.total_packets += packets.len() + quic_packets.len();
-    for (shred, addr) in quic_packets {
-        let shred = Bytes::from(shred.clone());
-        if let Err(err) = quic_endpoint_sender.blocking_send((addr, shred)) {
-            transmit_stats.dropped_packets_quic += 1;
-            result = Err(Error::from(err));
-        }
+    if !quic_packets.is_empty() {
+        debug!("quic packets is not empty, packet length: {}", quic_packets.len());
     }
+    // for (shred, addr) in quic_packets {
+    //     let shred = Bytes::from(shred.clone());
+    //     if let Err(err) = quic_endpoint_sender.blocking_send((addr, shred)) {
+    //         transmit_stats.dropped_packets_quic += 1;
+    //         result = Err(Error::from(err));
+    //     }
+    // }
     result
 }
 
