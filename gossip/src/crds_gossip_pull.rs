@@ -613,10 +613,11 @@ impl<'a> Index<&Pubkey> for CrdsTimeouts<'a> {
     fn index(&self, pubkey: &Pubkey) -> &Self::Output {
         if pubkey == &self.pubkey {
             &u64::MAX
-        } else if self.stakes.get(pubkey) > Some(&0u64) {
-            &self.extended_timeout
         } else {
-            &self.default_timeout
+        // } else if self.stakes.get(pubkey) > Some(&0u64) {
+            &self.extended_timeout
+        // } else {
+        //     &self.default_timeout
         }
     }
 }
