@@ -706,6 +706,10 @@ impl SendTransactionService {
                 .filter(|(signature, _)| batched_transactions.contains(signature))
                 .map(|(_, transaction_info)| transaction_info.wire_transaction.as_ref())
                 .collect::<Vec<&[u8]>>();
+            debug!(
+                "process transactions: sending transactions wire transactions count {}",
+                wire_transactions.len()
+            );
 
             let iter = wire_transactions.chunks(config.batch_size);
             for chunk in iter {
@@ -714,6 +718,10 @@ impl SendTransactionService {
                     .as_ref()
                     .map(|addrs| addrs.iter().collect::<Vec<_>>())
                     .unwrap_or_default();
+                debug!(
+                    "process transactions: sending transactions address from tpu peers {:?}",
+                    addresses
+                );
                 let mut leader_info_provider = leader_info_provider.lock().unwrap();
                 let leader_info = leader_info_provider.get_leader_info();
                 let leader_addresses = Self::get_tpu_addresses(
@@ -723,6 +731,10 @@ impl SendTransactionService {
                     connection_cache.protocol(),
                 );
                 addresses.extend(leader_addresses);
+                debug!(
+                    "process transactions: sending transactions total addresses {:?}",
+                    addresses
+                );
 
                 for address in &addresses {
                     Self::send_transactions(address, chunk, connection_cache, stats);
