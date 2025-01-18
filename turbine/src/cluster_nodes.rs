@@ -159,7 +159,7 @@ impl ClusterNodes<BroadcastStage> {
         new_cluster_nodes(cluster_info, cluster_type, stakes)
     }
 
-    pub(crate) fn get_broadcast_peer(&self, shred: &ShredId) -> Option<&ContactInfo> {
+    pub fn get_broadcast_peer(&self, shred: &ShredId) -> Option<&ContactInfo> {
         let mut rng = get_seeded_rng(/*leader:*/ &self.pubkey, shred);
         let index = self.weighted_shuffle.first(&mut rng)?;
         self.nodes[index].contact_info()
@@ -453,7 +453,7 @@ impl<T: 'static> ClusterNodesCache<T> {
         }
     }
 
-    pub(crate) fn get(
+    pub fn get(
         &self,
         shred_slot: Slot,
         root_bank: &Bank,
