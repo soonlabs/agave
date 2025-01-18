@@ -1453,8 +1453,8 @@ impl ClusterInfo {
     }
 
     pub fn peers_slots(&self) -> (Vec<String>, Vec<String>) {
-        let gossip_crds = self.gossip.crds.read().unwrap();
-        (
+        let lowest_slots = {
+            let gossip_crds = self.gossip.crds.read().unwrap();
             gossip_crds
                 .get_nodes_contact_info()
                 .map(|node| {
@@ -1466,7 +1466,10 @@ impl ClusterInfo {
                         gossip_crds.get::<&LowestSlot>(pk).map(|s| s.lowest),
                     )
                 })
-                .collect(),
+                .collect()
+        };
+        (
+            lowest_slots,
             self.get_epoch_slots(&mut Cursor::default())
                 .iter()
                 .map(|s| {
@@ -1864,7 +1867,8 @@ impl ClusterInfo {
     // Trims the CRDS table by dropping all values associated with the pubkeys
     // with the lowest stake, so that the number of unique pubkeys are bounded.
     fn trim_crds_table(&self, cap: usize, stakes: &HashMap<Pubkey, u64>) {
-        if !self.gossip.crds.read().unwrap().should_trim(cap) {
+        let should_trim = { self.gossip.crds.read().unwrap().should_trim(cap) };
+        if !should_trim {
             return;
         }
         let keep: Vec<_> = self

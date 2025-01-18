@@ -264,7 +264,7 @@ impl CrdsGossipPush {
         if nodes.is_empty() {
             return;
         }
-        let cluster_size = crds.read().unwrap().num_pubkeys().max(stakes.len());
+        let cluster_size = { crds.read().unwrap().num_pubkeys().max(stakes.len()) };
         let mut active_set = self.active_set.write().unwrap();
         active_set.rotate(
             &mut rng,

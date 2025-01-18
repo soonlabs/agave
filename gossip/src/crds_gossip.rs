@@ -98,7 +98,7 @@ impl CrdsGossip {
         let pubkey = keypair.pubkey();
         // Skip if there are already records of duplicate shreds for this slot.
         let shred_slot = shred.slot();
-        let mut crds = self.crds.write().unwrap();
+        let crds = self.crds.read().unwrap();
         if crds
             .get_records(&pubkey)
             .any(|value| match &value.value.data {
@@ -142,6 +142,9 @@ impl CrdsGossip {
             CrdsValue::new_signed(data, keypair)
         });
         let now = timestamp();
+        drop(crds);
+
+        let mut crds = self.crds.write().unwrap();
         for entry in entries {
             if let Err(err) = crds.insert(entry, now, GossipRoute::LocalMessage) {
                 error!("push_duplicate_shred failed: {:?}", err);
