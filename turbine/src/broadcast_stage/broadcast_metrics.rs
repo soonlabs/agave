@@ -21,8 +21,8 @@ pub struct TransmitShredsStats {
     pub shred_select: u64,
     pub num_shreds: usize,
     pub total_packets: usize,
-    pub(crate) dropped_packets_udp: usize,
-    pub(crate) dropped_packets_quic: usize,
+    pub dropped_packets_udp: usize,
+    pub dropped_packets_quic: usize,
 }
 
 impl BroadcastStats for TransmitShredsStats {
