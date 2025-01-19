@@ -582,10 +582,9 @@ impl SendTransactionService {
         let wire_transactions = transactions
             .iter()
             .map(|(_, transaction_info)| {
-                trace!(
+                debug!(
                     "Sending transacation {} to (address, slot): {:?}",
-                    transaction_info.signature,
-                    addresses,
+                    transaction_info.signature, addresses,
                 );
                 transaction_info.wire_transaction.as_ref()
             })
