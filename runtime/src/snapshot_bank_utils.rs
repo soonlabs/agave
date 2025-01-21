@@ -796,7 +796,8 @@ fn verify_slot_deltas_with_history(
     let slot_missing_from_deltas = (slot_history.oldest()..=slot_history.newest())
         .rev()
         .filter(|slot| slot_history.check(*slot) == Check::Found)
-        .take(status_cache::MAX_CACHE_ENTRIES)
+        // capatible for MAX_RECENT_BLOCKHASH extension.
+        .take(status_cache::MAX_CACHE_ENTRIES.min(slots_from_slot_deltas.len()))
         .find(|slot| !slots_from_slot_deltas.contains(slot));
     if let Some(slot) = slot_missing_from_deltas {
         return Err(VerifySlotDeltasError::SlotNotFoundInDeltas(slot));
