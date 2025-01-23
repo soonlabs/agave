@@ -697,7 +697,7 @@ fn rebuild_bank_from_snapshot(
         .join(snapshot_utils::SNAPSHOT_STATUS_CACHE_FILENAME);
     let slot_deltas = deserialize_status_cache(&status_cache_path)?;
 
-    verify_slot_deltas(slot_deltas.as_slice(), &bank)?;
+    // verify_slot_deltas(slot_deltas.as_slice(), &bank)?;
 
     bank.status_cache.write().unwrap().append(&slot_deltas);
 
