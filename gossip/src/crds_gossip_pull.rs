@@ -543,6 +543,7 @@ impl CrdsGossipPull {
                         "Gossip connection: removing contact info for {} when purge active",
                         pubkey
                     );
+                    crds.remove(label, now)
                 }
                 _ => crds.remove(label, now),
             }
