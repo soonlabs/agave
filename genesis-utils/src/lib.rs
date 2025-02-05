@@ -38,7 +38,7 @@ fn load_local_genesis(
     Ok(existing_genesis)
 }
 
-fn get_genesis_config(
+pub fn get_genesis_config(
     rpc_addr: &SocketAddr,
     ledger_path: &std::path::Path,
     expected_genesis_hash: Option<Hash>,
