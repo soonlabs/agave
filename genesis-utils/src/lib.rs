@@ -79,7 +79,7 @@ fn get_genesis_config(
     }
 }
 
-fn set_and_verify_expected_genesis_hash(
+pub fn set_and_verify_expected_genesis_hash(
     genesis_config: GenesisConfig,
     expected_genesis_hash: &mut Option<Hash>,
     rpc_client: &RpcClient,
