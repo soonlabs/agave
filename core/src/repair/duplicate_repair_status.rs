@@ -115,6 +115,7 @@ impl AncestorRequestType {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct AncestorDuplicateSlotToRepair {
     // Slot that `ancestor_hashes_service` found that needs to be repaired
     pub slot_to_repair: (Slot, Hash),
