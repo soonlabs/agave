@@ -615,10 +615,10 @@ impl<'a> Index<&Pubkey> for CrdsTimeouts<'a> {
         if pubkey == &self.pubkey {
             &u64::MAX
         } else {
-        // } else if self.stakes.get(pubkey) > Some(&0u64) {
+            // } else if self.stakes.get(pubkey) > Some(&0u64) {
             &self.extended_timeout
-        // } else {
-        //     &self.default_timeout
+            // } else {
+            //     &self.default_timeout
         }
     }
 }

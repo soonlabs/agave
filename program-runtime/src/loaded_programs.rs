@@ -3,7 +3,7 @@ use {
         invoke_context::{BuiltinFunctionWithContext, InvokeContext},
         timings::ExecuteDetailsTimings,
     },
-    log::{debug, error, log_enabled, trace},
+    log::{error, log_enabled, trace},
     percentage::PercentageInteger,
     solana_measure::measure::Measure,
     solana_rbpf::{

@@ -40,7 +40,7 @@ use {
     solana_entry::entry::{create_ticks, Entry},
     solana_measure::measure::Measure,
     solana_metrics::{
-        datapoint_debug, datapoint_error,
+        datapoint_error,
         poh_timing_point::{send_poh_timing_point, PohTimingSender, SlotPohTimingInfo},
     },
     solana_runtime::bank::Bank,

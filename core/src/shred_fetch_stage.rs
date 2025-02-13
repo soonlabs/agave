@@ -136,11 +136,19 @@ impl ShredFetchStage {
                 }
             }
             stats.maybe_submit(name, STATS_SUBMIT_CADENCE);
-            debug!(
-                "ShredFetchStage: received {} packets, discarded {}",
-                packet_batch.len(),
-                packet_batch.iter().filter(|p| p.meta().discard()).count()
-            );
+            {
+                let packet_len = packet_batch.len();
+                let packet_discard_len = packet_batch.iter().filter(|p| p.meta().discard()).count();
+                debug!(
+                    "ShredFetchStage: received {} packets, discarded {}",
+                    packet_len, packet_discard_len
+                );
+                if packet_discard_len > 0 {
+                    debug!("ShredFetchStage: discard stat: {:?}, last_root = {}, max_slot = {}, shred_version = {}, turbine_disabled = {}", 
+                    stats, last_root, max_slot, shred_version, turbine_disabled);
+                }
+            }
+
             if sendr.send(packet_batch).is_err() {
                 break;
             }

@@ -67,9 +67,7 @@ use {
         use_snapshot_archives_at_startup::UseSnapshotArchivesAtStartup,
     },
     solana_measure::measure::Measure,
-    solana_metrics::{
-        datapoint_info, metrics::metrics_config_sanity_check, poh_timing_point::PohTimingSender,
-    },
+    solana_metrics::{metrics::metrics_config_sanity_check, poh_timing_point::PohTimingSender},
     solana_poh::{
         poh_recorder::PohRecorder,
         poh_service::{self, PohService},

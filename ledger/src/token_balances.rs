@@ -4,7 +4,6 @@ use {
         parse_token::{is_known_spl_token_id, token_amount_to_ui_amount_v2, UiTokenAmount},
     },
     solana_measure::measure::Measure,
-    solana_metrics::datapoint_debug,
     solana_runtime::{bank::Bank, transaction_batch::TransactionBatch},
     solana_sdk::{account::ReadableAccount, pubkey::Pubkey},
     solana_transaction_status::{

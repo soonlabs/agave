@@ -1,9 +1,6 @@
 //! Stats for Accounts Background Services
 
-use {
-    solana_metrics::datapoint_info,
-    std::time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 const SUBMIT_INTERVAL: Duration = Duration::from_secs(60);
 

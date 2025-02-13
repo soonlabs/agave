@@ -249,7 +249,8 @@ pub fn download_genesis_if_missing(
             &tmp_genesis_package,
             use_progress_bar,
             &mut None,
-        ).map_err(|e| {
+        )
+        .map_err(|e| {
             warn!("Failed to download genesis from {rpc_addr}: {e}");
             e
         })?;

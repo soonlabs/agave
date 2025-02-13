@@ -1117,7 +1117,11 @@ impl Bank {
         rent_collector.clone_with_epoch(epoch)
     }
 
-    fn get_rent_collector_from_sysvar(&self, rent_collector: &RentCollector, epoch: Epoch) -> RentCollector {
+    fn get_rent_collector_from_sysvar(
+        &self,
+        rent_collector: &RentCollector,
+        epoch: Epoch,
+    ) -> RentCollector {
         let rent = self.get_account(&sysvar::rent::id());
         if let Some(rent) = rent {
             if let Some(rent) = from_account(&rent) {
