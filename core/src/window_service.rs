@@ -345,6 +345,7 @@ where
         let addr = packet.meta().socket_addr();
         *ws_metrics.addrs.entry(addr).or_default() += 1;
     }
+    debug!("window service stat: packets_len: {}, shreds_len: {}, repair_len: {}", packets.len(), shreds.len(), repair_infos.len());
 
     if !shreds.is_empty() {
         debug!(
