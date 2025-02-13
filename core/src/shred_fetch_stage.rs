@@ -108,7 +108,7 @@ impl ShredFetchStage {
             }
 
             // Limit shreds to 2 epochs away.
-            let max_slot = last_slot + 2 * slots_per_epoch;
+            let max_slot = last_slot + 10 * slots_per_epoch;
             let enable_chained_merkle_shreds = |shred_slot| {
                 cluster_type == ClusterType::Development
                     || check_feature_activation(
