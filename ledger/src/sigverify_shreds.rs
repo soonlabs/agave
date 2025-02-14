@@ -38,27 +38,39 @@ pub fn verify_shred_cpu(
     cache: &RwLock<LruCache>,
 ) -> bool {
     if packet.meta().discard() {
+        debug!("verify_shred_cpu: discard");
         return false;
     }
     let Some(shred) = shred::layout::get_shred(packet) else {
+        debug!("verify_shred_cpu: no shred");
         return false;
     };
     let Some(slot) = shred::layout::get_slot(shred) else {
+        debug!("verify_shred_cpu: no slot");
         return false;
     };
     trace!("slot {}", slot);
     let Some(pubkey) = slot_leaders.get(&slot) else {
+        debug!("verify_shred_cpu: no leader");
         return false;
     };
     let Some(signature) = shred::layout::get_signature(shred) else {
+        debug!("verify_shred_cpu: no signature");
         return false;
     };
     trace!("signature {}", signature);
     let Some(data) = shred::layout::get_signed_data(shred) else {
+        debug!("verify_shred_cpu: no signed data");
         return false;
     };
     match data {
-        SignedData::Chunk(chunk) => signature.verify(pubkey.as_ref(), chunk),
+        SignedData::Chunk(chunk) => {
+            let ok = signature.verify(pubkey.as_ref(), chunk);
+            if !ok {
+                debug!("verify_shred_cpu: verify failed, pubkey={}", pubkey);
+            }
+            ok
+        }
         SignedData::MerkleRoot(root) => {
             let key = (signature, *pubkey, root);
             if cache.read().unwrap().get(&key).is_some() {
@@ -67,6 +79,10 @@ pub fn verify_shred_cpu(
                 cache.write().unwrap().put(key, ());
                 true
             } else {
+                debug!(
+                    "verify_shred_cpu: verify merkle root failed, pubkey={}",
+                    pubkey
+                );
                 false
             }
         }
