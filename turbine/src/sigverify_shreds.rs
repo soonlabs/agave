@@ -144,6 +144,7 @@ fn run_shred_sigverify<const K: usize>(
     stats.num_batches += packets.len();
     stats.num_packets += packets.iter().map(PacketBatch::len).sum::<usize>();
     stats.num_discards_pre += count_discards(&packets);
+    debug!("discard packets 0.0: {}", count_discards(&packets));
     stats.num_duplicates += thread_pool.install(|| {
         packets
             .par_iter_mut()
@@ -162,6 +163,7 @@ fn run_shred_sigverify<const K: usize>(
         let bank_forks = bank_forks.read().unwrap();
         (bank_forks.working_bank(), bank_forks.root_bank())
     };
+    debug!("discard packets 0.1: {}", count_discards(&packets));
     verify_packets(
         thread_pool,
         &keypair.pubkey(),
@@ -171,6 +173,7 @@ fn run_shred_sigverify<const K: usize>(
         &mut packets,
         cache,
     );
+    debug!("discard packets 0.2: {}", count_discards(&packets));
     stats.num_discards_post += count_discards(&packets);
     // Verify retransmitter's signature, and resign shreds
     // Merkle root as the retransmitter node.
@@ -227,6 +230,7 @@ fn run_shred_sigverify<const K: usize>(
                 }
             })
     });
+    debug!("discard packets 0.3: {}", count_discards(&packets));
     stats.resign_micros += resign_start.elapsed().as_micros() as u64;
     // Exclude repair packets from retransmit.
     let shreds: Vec<_> = packets
@@ -238,20 +242,20 @@ fn run_shred_sigverify<const K: usize>(
         .collect();
     stats.num_retransmit_shreds += shreds.len();
     debug!(
-        "sigverify_shreds: origin {} packets, verified {} packets, retransmit {} shreds, \
-        num discard pre: {}, num discard post: {}",
+        "sigverify_shreds: origin {} packets with {} packet, discard_pre: {}, discard_post: {}, duplicate: {} \
+        retransmit {} shreds",
         stats.num_batches,
-        shreds.len(),
-        packets.len(),
+        stats.num_packets,
         stats.num_discards_pre,
-        stats.num_discards_post
+        stats.num_discards_post,
+        stats.num_duplicates,
+        stats.num_retransmit_shreds,
     );
     retransmit_sender.send(shreds)?;
     verified_sender.send(packets)?;
     stats.elapsed_micros += now.elapsed().as_micros() as u64;
     Ok(())
 }
-
 
 #[must_use]
 fn verify_retransmitter_signature(
@@ -309,14 +313,18 @@ fn verify_packets(
     packets: &mut [PacketBatch],
     cache: &RwLock<LruCache>,
 ) {
+    debug!("discard packets 1.1: {}", count_discards(&packets));
     let leader_slots: HashMap<Slot, Pubkey> =
         get_slot_leaders(self_pubkey, packets, leader_schedule_cache, working_bank)
             .into_iter()
             .filter_map(|(slot, pubkey)| Some((slot, pubkey?)))
             .chain(std::iter::once((Slot::MAX, Pubkey::default())))
             .collect();
+    debug!("discard packets 1.2: {}", count_discards(&packets));
     let out = verify_shreds_gpu(thread_pool, packets, &leader_slots, recycler_cache, cache);
+    debug!("discard packets 1.3: {}", count_discards(&packets));
     solana_perf::sigverify::mark_disabled(packets, &out);
+    debug!("discard packets 1.4: {}", count_discards(&packets));
 }
 
 // Returns pubkey of leaders for shred slots refrenced in the packets.
@@ -351,6 +359,7 @@ fn get_slot_leaders(
                 .is_none()
         })
         .for_each(|packet| packet.meta_mut().set_discard(true));
+    debug!("all leaders: {:?}", leaders);
     leaders
 }
 
