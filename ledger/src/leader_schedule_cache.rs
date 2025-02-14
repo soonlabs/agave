@@ -175,13 +175,16 @@ impl LeaderScheduleCache {
 
     fn slot_leader_at_else_compute(&self, slot: Slot, bank: &Bank) -> Option<Pubkey> {
         let cache_result = self.slot_leader_at_no_compute(slot);
+        if cache_result.is_some() {
+            return cache_result;
+        }
         // Forbid asking for slots in an unconfirmed epoch
         let bank_epoch = self.epoch_schedule.get_epoch_and_slot_index(slot).0;
-        if bank_epoch > *self.max_epoch.read().unwrap() {
-            trace!(
-                "Requested leader in slot: {} of unconfirmed epoch: {}",
-                slot,
-                bank_epoch
+        let max_epoch = { *self.max_epoch.read().unwrap() };
+        if bank_epoch > max_epoch {
+            debug!(
+                "Requested leader in slot: {} of unconfirmed epoch: {}, max_epoch: {}",
+                slot, bank_epoch, max_epoch
             );
             return None;
         }
@@ -189,8 +192,16 @@ impl LeaderScheduleCache {
             cache_result
         } else {
             let (epoch, slot_index) = bank.get_epoch_and_slot_index(slot);
-            self.compute_epoch_schedule(epoch, bank)
-                .map(|epoch_schedule| epoch_schedule[slot_index])
+            let rtn = self
+                .compute_epoch_schedule(epoch, bank)
+                .map(|epoch_schedule| epoch_schedule[slot_index]);
+            if rtn.is_none() {
+                debug!(
+                    "Unable to compute leader for slot: {}, epoch: {}, slot_idx {}",
+                    slot, epoch, slot_index
+                );
+            }
+            rtn
         }
     }
 
