@@ -251,7 +251,7 @@ fn run_shred_sigverify<const K: usize>(
     stats.elapsed_micros += now.elapsed().as_micros() as u64;
     Ok(())
 }
-}
+
 
 #[must_use]
 fn verify_retransmitter_signature(
