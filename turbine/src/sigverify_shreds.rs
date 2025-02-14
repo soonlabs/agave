@@ -238,14 +238,19 @@ fn run_shred_sigverify<const K: usize>(
         .collect();
     stats.num_retransmit_shreds += shreds.len();
     debug!(
-        "sigverify_shreds: retransmit {} shreds, verified {} packets",
+        "sigverify_shreds: origin {} packets, verified {} packets, retransmit {} shreds, \
+        num discard pre: {}, num discard post: {}",
+        stats.num_batches,
         shreds.len(),
-        packets.len()
+        packets.len(),
+        stats.num_discards_pre,
+        stats.num_discards_post
     );
     retransmit_sender.send(shreds)?;
     verified_sender.send(packets)?;
     stats.elapsed_micros += now.elapsed().as_micros() as u64;
     Ok(())
+}
 }
 
 #[must_use]
