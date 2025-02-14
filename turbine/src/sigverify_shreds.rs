@@ -144,7 +144,6 @@ fn run_shred_sigverify<const K: usize>(
     stats.num_batches += packets.len();
     stats.num_packets += packets.iter().map(PacketBatch::len).sum::<usize>();
     stats.num_discards_pre += count_discards(&packets);
-    debug!("discard packets 0.0: {}", count_discards(&packets));
     stats.num_duplicates += thread_pool.install(|| {
         packets
             .par_iter_mut()
@@ -163,7 +162,6 @@ fn run_shred_sigverify<const K: usize>(
         let bank_forks = bank_forks.read().unwrap();
         (bank_forks.working_bank(), bank_forks.root_bank())
     };
-    debug!("discard packets 0.1: {}", count_discards(&packets));
     verify_packets(
         thread_pool,
         &keypair.pubkey(),
@@ -173,7 +171,6 @@ fn run_shred_sigverify<const K: usize>(
         &mut packets,
         cache,
     );
-    debug!("discard packets 0.2: {}", count_discards(&packets));
     stats.num_discards_post += count_discards(&packets);
     // Verify retransmitter's signature, and resign shreds
     // Merkle root as the retransmitter node.
@@ -230,7 +227,6 @@ fn run_shred_sigverify<const K: usize>(
                 }
             })
     });
-    debug!("discard packets 0.3: {}", count_discards(&packets));
     stats.resign_micros += resign_start.elapsed().as_micros() as u64;
     // Exclude repair packets from retransmit.
     let shreds: Vec<_> = packets
@@ -313,18 +309,22 @@ fn verify_packets(
     packets: &mut [PacketBatch],
     cache: &RwLock<LruCache>,
 ) {
-    debug!("discard packets 1.1: {}", count_discards(&packets));
+    debug!(
+        "discard packets before get_leader: {}",
+        count_discards(&packets)
+    );
     let leader_slots: HashMap<Slot, Pubkey> =
         get_slot_leaders(self_pubkey, packets, leader_schedule_cache, working_bank)
             .into_iter()
             .filter_map(|(slot, pubkey)| Some((slot, pubkey?)))
             .chain(std::iter::once((Slot::MAX, Pubkey::default())))
             .collect();
-    debug!("discard packets 1.2: {}", count_discards(&packets));
+    debug!(
+        "discard packets after get_leader: {}",
+        count_discards(&packets)
+    );
     let out = verify_shreds_gpu(thread_pool, packets, &leader_slots, recycler_cache, cache);
-    debug!("discard packets 1.3: {}", count_discards(&packets));
     solana_perf::sigverify::mark_disabled(packets, &out);
-    debug!("discard packets 1.4: {}", count_discards(&packets));
 }
 
 // Returns pubkey of leaders for shred slots refrenced in the packets.
@@ -352,14 +352,19 @@ fn get_slot_leaders(
                 .entry(slot)
                 .or_insert_with(|| {
                     // Discard the shred if the slot leader is the node itself.
-                    leader_schedule_cache
-                        .slot_leader_at(slot, Some(bank))
-                        .filter(|leader| leader != self_pubkey)
+                    let leader = leader_schedule_cache.slot_leader_at(slot, Some(bank));
+                    if leader.is_none() {
+                        debug!("leader is none on slot {}, bank {}", slot, bank.slot());
+                    }
+                    leader.filter(|leader| leader != self_pubkey)
                 })
                 .is_none()
         })
         .for_each(|packet| packet.meta_mut().set_discard(true));
-    debug!("all leaders: {:?}", leaders);
+    debug!(
+        "all leaders: {:?}, self_pubkey = {:?}",
+        leaders, self_pubkey
+    );
     leaders
 }
 
