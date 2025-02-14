@@ -51,7 +51,7 @@ pub fn verify_shred_cpu(
     };
     trace!("slot {}", slot);
     let Some(pubkey) = slot_leaders.get(&slot) else {
-        debug!("verify_shred_cpu: no leader");
+        debug!("verify_shred_cpu: no leader: slot={}, leader={:?}", slot, slot_leaders);
         return false;
     };
     let Some(signature) = shred::layout::get_signature(shred) else {
