@@ -174,8 +174,10 @@ impl GeyserPluginService {
 
     pub fn join(self) -> thread::Result<()> {
         if let Some(mut slot_status_observer) = self.slot_status_observer {
+            info!("Waiting for slot_status_observer to exit...");
             slot_status_observer.join()?;
         }
+        info!("Shutting down GeyserPluginService");
         self.plugin_manager.write().unwrap().unload();
         Ok(())
     }
