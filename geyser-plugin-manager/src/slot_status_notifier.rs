@@ -50,6 +50,7 @@ impl SlotStatusNotifierImpl {
             return;
         }
 
+        warn!("notify slot status: slot = {}, parent = {:?}, status = {:?}", slot, parent, slot_status);
         for plugin in plugin_manager.plugins.iter() {
             let mut measure = Measure::start("geyser-plugin-update-slot");
             match plugin.update_slot_status(slot, parent, slot_status) {
