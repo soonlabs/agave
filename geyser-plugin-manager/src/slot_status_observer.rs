@@ -52,7 +52,7 @@ impl SlotStatusObserver {
             .name("solBankNotif".to_string())
             .spawn(move || {
                 while !exit.load(Ordering::Relaxed) {
-                    if let Ok(slot) = bank_notification_receiver.recv() {
+                    if let Ok(slot) = bank_notification_receiver.recv_timeout(std::time::Duration::from_millis(500)) {
                         match slot {
                             SlotNotification::OptimisticallyConfirmed(slot) => {
                                 slot_status_notifier
