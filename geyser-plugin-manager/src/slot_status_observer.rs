@@ -36,6 +36,7 @@ impl SlotStatusObserver {
 
     pub fn join(&mut self) -> thread::Result<()> {
         self.exit_updated_slot_server.store(true, Ordering::Relaxed);
+        log::info!("Waiting for bank_notification_receiver_service to exit...");
         self.bank_notification_receiver_service
             .take()
             .map(JoinHandle::join)
@@ -74,6 +75,7 @@ impl SlotStatusObserver {
                         }
                     }
                 }
+                log::info!("Bank notification receiver service exited");
             })
             .unwrap()
     }
