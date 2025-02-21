@@ -304,14 +304,20 @@ fn verify_packets(
     packets: &mut [PacketBatch],
     cache: &RwLock<LruCache>,
 ) {
-    debug!("discard packets before get_slot {}", count_discards(&packets));
+    debug!(
+        "discard packets before get_slot {}",
+        count_discards(&packets)
+    );
     let leader_slots: HashMap<Slot, Pubkey> =
         get_slot_leaders(self_pubkey, packets, leader_schedule_cache, working_bank)
             .into_iter()
             .filter_map(|(slot, pubkey)| Some((slot, pubkey?)))
             .chain(std::iter::once((Slot::MAX, Pubkey::default())))
             .collect();
-    debug!("discard packets after get_slot {}", count_discards(&packets));
+    debug!(
+        "discard packets after get_slot {}",
+        count_discards(&packets)
+    );
     let out = verify_shreds_gpu(thread_pool, packets, &leader_slots, recycler_cache, cache);
     solana_perf::sigverify::mark_disabled(packets, &out);
 }

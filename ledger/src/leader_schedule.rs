@@ -6,6 +6,11 @@ use {
     std::{collections::HashMap, convert::identity, ops::Index, sync::Arc},
 };
 
+#[derive(Clone, Debug)]
+pub struct SoonSchedule {
+    pub schedules: Vec<(std::ops::Range<u64>, Arc<LeaderSchedule>)>,
+}
+
 // Used for testing
 #[derive(Clone, Debug)]
 pub struct FixedSchedule {

@@ -36,6 +36,7 @@ pub struct LeaderScheduleCache {
     max_epoch: RwLock<Epoch>,
     max_schedules: CacheCapacity,
     fixed_schedule: Option<Arc<FixedSchedule>>,
+    soon_schedules: Option<HashMap<Pubkey, std::ops::Range<Slot>>>,
 }
 
 impl LeaderScheduleCache {
@@ -50,6 +51,7 @@ impl LeaderScheduleCache {
             max_epoch: RwLock::new(0),
             max_schedules: CacheCapacity::default(),
             fixed_schedule: None,
+            soon_schedules: None,
         };
 
         // This sets the root and calculates the schedule at leader_schedule_epoch(root)
@@ -70,6 +72,11 @@ impl LeaderScheduleCache {
         if max_schedules > 0 {
             self.max_schedules = CacheCapacity(max_schedules);
         }
+    }
+
+    /// Set the `soon_schedules` configuration
+    pub fn set_soon_schedules(&mut self, soon_schedules: HashMap<Pubkey, std::ops::Range<Slot>>) {
+        self.soon_schedules = Some(soon_schedules);
     }
 
     pub fn max_schedules(&self) -> usize {
@@ -161,6 +168,13 @@ impl LeaderScheduleCache {
     }
 
     fn slot_leader_at_no_compute(&self, slot: Slot) -> Option<Pubkey> {
+        // NOTE: `soon_schedules` configuration has the highest priority
+        if let Some(soon_schedules) = &self.soon_schedules {
+            return soon_schedules
+                .iter()
+                .find_map(|(pubkey, range)| range.contains(&slot).then_some(*pubkey));
+        }
+
         let (epoch, slot_index) = self.epoch_schedule.get_epoch_and_slot_index(slot);
         if let Some(ref fixed_schedule) = self.fixed_schedule {
             return Some(fixed_schedule.leader_schedule[slot_index]);
