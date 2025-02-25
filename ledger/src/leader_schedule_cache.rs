@@ -28,6 +28,11 @@ impl Default for CacheCapacity {
     }
 }
 
+struct SoonLeaderSchedules {
+    ascend: Vec<(Slot, Pubkey)>,
+    descend: Vec<(Slot, Pubkey)>,
+}
+
 #[derive(Default)]
 pub struct LeaderScheduleCache {
     // Map from an epoch to a leader schedule for that epoch
@@ -36,6 +41,8 @@ pub struct LeaderScheduleCache {
     max_epoch: RwLock<Epoch>,
     max_schedules: CacheCapacity,
     fixed_schedule: Option<Arc<FixedSchedule>>,
+    // Fixed schedules with activation slot and leader pubkey, especially for SOON
+    soon_schedules: Option<SoonLeaderSchedules>,
 }
 
 impl LeaderScheduleCache {
@@ -50,6 +57,7 @@ impl LeaderScheduleCache {
             max_epoch: RwLock::new(0),
             max_schedules: CacheCapacity::default(),
             fixed_schedule: None,
+            soon_schedules: None,
         };
 
         // This sets the root and calculates the schedule at leader_schedule_epoch(root)
@@ -70,6 +78,26 @@ impl LeaderScheduleCache {
         if max_schedules > 0 {
             self.max_schedules = CacheCapacity(max_schedules);
         }
+    }
+
+    /// Set the `soon_schedules` configuration
+    pub fn set_soon_schedules(&mut self, soon_schedules: &[(Slot, Pubkey)]) {
+        assert_eq!(
+            soon_schedules.iter().unique_by(|(slot, _)| *slot).count(),
+            soon_schedules.len(),
+            "Duplicate slots found in `soon_schedules`"
+        );
+        let ascend = soon_schedules
+            .iter()
+            .sorted_unstable_by_key(|(slot, _)| *slot)
+            .cloned()
+            .collect();
+        let descend = soon_schedules
+            .iter()
+            .sorted_unstable_by(|a, b| b.0.cmp(&a.0))
+            .cloned()
+            .collect();
+        self.soon_schedules = Some(SoonLeaderSchedules { ascend, descend });
     }
 
     pub fn max_schedules(&self) -> usize {
@@ -161,6 +189,16 @@ impl LeaderScheduleCache {
     }
 
     fn slot_leader_at_no_compute(&self, slot: Slot) -> Option<Pubkey> {
+        // NOTE: `soon_schedules` configuration has the highest priority
+        if let Some(soon_schedules) = &self.soon_schedules {
+            for (activate_slot, leader) in &soon_schedules.descend {
+                if slot >= *activate_slot {
+                    return Some(*leader);
+                }
+            }
+            return None;
+        }
+
         let (epoch, slot_index) = self.epoch_schedule.get_epoch_and_slot_index(slot);
         if let Some(ref fixed_schedule) = self.fixed_schedule {
             return Some(fixed_schedule.leader_schedule[slot_index]);
@@ -206,6 +244,44 @@ impl LeaderScheduleCache {
     }
 
     pub fn get_epoch_leader_schedule(&self, epoch: Epoch) -> Option<Arc<LeaderSchedule>> {
+        // NOTE: `soon_schedules` configuration has the highest priority
+        if let Some(soon_schedules) = &self.soon_schedules {
+            let soon_schedules = &soon_schedules.ascend;
+
+            let first_slot_in_epoch = self.epoch_schedule.get_first_slot_in_epoch(epoch);
+            let last_slot_in_epoch = self.epoch_schedule.get_last_slot_in_epoch(epoch);
+            let leaders_num = (last_slot_in_epoch - first_slot_in_epoch + 1) as usize;
+            // Find the range of slots in the soon_schedules that are in the epoch
+            let start_index = soon_schedules
+                .binary_search_by_key(&first_slot_in_epoch, |(slot, _)| *slot)
+                .unwrap_or_else(|index| index - 1);
+            let end_index = soon_schedules
+                .binary_search_by_key(&last_slot_in_epoch, |(slot, _)| *slot)
+                .unwrap_or_else(|index| index - 1);
+
+            // Fill the leaders for the entire epoch
+            //
+            //     |__________+__________________+________|          Minimum soon schedules range
+            //         activate_slot_i    activate_slot_j
+            //                |
+            //                |
+            //       |________+______________________________|       Epoch leaders to be filled
+            //   first_slot   |                          last_slot
+            //             slot_ptr
+            let mut current_leader = Pubkey::default();
+            let mut slot_ptr = first_slot_in_epoch;
+            let mut leaders = Vec::with_capacity(leaders_num);
+            for &(activate_slot, leader) in &soon_schedules[start_index..=end_index] {
+                if activate_slot > slot_ptr {
+                    leaders.extend(vec![current_leader; (activate_slot - slot_ptr) as usize]);
+                    slot_ptr = activate_slot;
+                }
+                current_leader = leader;
+            }
+            leaders.extend(vec![current_leader; (last_slot_in_epoch - slot_ptr + 1) as usize]);
+            debug_assert_eq!(leaders.len(), leaders_num);
+            return Some(Arc::new(LeaderSchedule::new_from_schedule(leaders)));
+        }
         self.cached_schedules.read().unwrap().0.get(&epoch).cloned()
     }
 
