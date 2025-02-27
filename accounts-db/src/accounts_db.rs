@@ -2813,7 +2813,7 @@ impl AccountsDb {
                 let mut delete = true;
                 for (slot, _account_info) in account_infos {
                     if let Some(count) = store_counts.get(slot).map(|s| s.0) {
-                        debug!(
+                        trace!(
                             "calc_delete_dependencies()
                             slot: {slot},
                             count len: {count}"
@@ -2835,7 +2835,7 @@ impl AccountsDb {
                 }
             } else {
                 // a pubkey we were planning to remove is not removing all stores that contain the account
-                debug!(
+                trace!(
                     "calc_delete_dependencies(),
                     pubkey: {},
                     account_infos: {:?},
@@ -3448,7 +3448,7 @@ impl AccountsDb {
                         .map(|store| store.count())
                         .unwrap()
                         - 1;
-                    debug!(
+                    trace!(
                         "store_counts, inserting slot: {}, store id: {}, count: {}",
                         slot, account_info.store_id(), count
                     );
@@ -4287,7 +4287,7 @@ impl AccountsDb {
     // Reads all accounts in given slot's AppendVecs and filter only to alive,
     // then create a minimum AppendVec filled with the alive.
     fn shrink_slot_forced(&self, slot: Slot) {
-        debug!("shrink_slot_forced: slot: {}", slot);
+        trace!("shrink_slot_forced: slot: {}", slot);
 
         if let Some(store) = self
             .storage
