@@ -138,24 +138,37 @@ impl BankForks {
         bank_forks
     }
 
+    pub fn read_lock(&self, func: &'static str) {
+        // info!("[bank_forks] read lock {} by {:?}", func, std::thread::current().name());
+    }
+
+    pub fn write_lock(&self, func: &'static str) {
+        info!("[bank_forks] write lock {} by {:?}", func, std::thread::current().name());
+    }
+
     pub fn banks(&self) -> &HashMap<Slot, BankWithScheduler> {
+        self.read_lock("banks");
         &self.banks
     }
 
     pub fn get_vote_only_mode_signal(&self) -> Arc<AtomicBool> {
+        self.read_lock("get_vote_only_mode_signal");
         self.in_vote_only_mode.clone()
     }
 
     pub fn len(&self) -> usize {
+        self.read_lock("len");
         self.banks.len()
     }
 
     pub fn is_empty(&self) -> bool {
+        self.read_lock("is_empty");
         self.banks.is_empty()
     }
 
     /// Create a map of bank slot id to the set of ancestors for the bank slot.
     pub fn ancestors(&self) -> HashMap<Slot, HashSet<Slot>> {
+        self.read_lock("ancestors");
         let root = self.root();
         self.banks
             .iter()
@@ -168,10 +181,12 @@ impl BankForks {
 
     /// Create a map of bank slot id to the set of all of its descendants
     pub fn descendants(&self) -> HashMap<Slot, HashSet<Slot>> {
+        self.read_lock("descendants");
         self.descendants.clone()
     }
 
     pub fn frozen_banks(&self) -> HashMap<Slot, Arc<Bank>> {
+        self.read_lock("frozen_banks");
         self.banks
             .iter()
             .filter(|(_, b)| b.is_frozen())
@@ -180,6 +195,7 @@ impl BankForks {
     }
 
     pub fn active_bank_slots(&self) -> Vec<Slot> {
+        self.read_lock("active_bank_slots");
         self.banks
             .iter()
             .filter(|(_, v)| !v.is_frozen())
@@ -188,10 +204,12 @@ impl BankForks {
     }
 
     pub fn get_with_scheduler(&self, bank_slot: Slot) -> Option<BankWithScheduler> {
+        self.read_lock("get_with_scheduler");
         self.banks.get(&bank_slot).map(|b| b.clone_with_scheduler())
     }
 
     pub fn get(&self, bank_slot: Slot) -> Option<Arc<Bank>> {
+        self.read_lock("get");
         self.get_with_scheduler(bank_slot)
             .map(|b| b.clone_without_scheduler())
     }
@@ -200,6 +218,7 @@ impl BankForks {
         &self,
         (bank_slot, expected_hash): (Slot, Hash),
     ) -> Option<Arc<Bank>> {
+        self.read_lock("get_with_checked_hash");
         let maybe_bank = self.get(bank_slot);
         if let Some(bank) = &maybe_bank {
             assert_eq!(bank.hash(), expected_hash);
@@ -208,14 +227,17 @@ impl BankForks {
     }
 
     pub fn bank_hash(&self, slot: Slot) -> Option<Hash> {
+        self.read_lock("bank_hash");
         self.get(slot).map(|bank| bank.hash())
     }
 
     pub fn root_bank(&self) -> Arc<Bank> {
+        self.read_lock("root_bank");
         self[self.root()].clone()
     }
 
     pub fn install_scheduler_pool(&mut self, pool: InstalledSchedulerPoolArc) {
+        self.write_lock("install_scheduler_pool");
         info!("Installed new scheduler_pool into bank_forks: {:?}", pool);
         assert!(
             self.scheduler_pool.replace(pool).is_none(),
@@ -224,6 +246,7 @@ impl BankForks {
     }
 
     pub fn insert(&mut self, mut bank: Bank) -> BankWithScheduler {
+        self.write_lock("insert");
         if self.root.load(Ordering::Relaxed) < self.highest_slot_at_startup {
             bank.set_check_program_modification_slot(true);
         }
@@ -249,11 +272,13 @@ impl BankForks {
     }
 
     pub fn insert_from_ledger(&mut self, bank: Bank) -> BankWithScheduler {
+        self.write_lock("insert_from_ledger");
         self.highest_slot_at_startup = std::cmp::max(self.highest_slot_at_startup, bank.slot());
         self.insert(bank)
     }
 
     pub fn remove(&mut self, slot: Slot) -> Option<BankWithScheduler> {
+        self.write_lock("remove");
         let bank = self.banks.remove(&slot)?;
         for parent in bank.proper_ancestors() {
             let Entry::Occupied(mut entry) = self.descendants.entry(parent) else {
@@ -274,14 +299,17 @@ impl BankForks {
     }
 
     pub fn highest_slot(&self) -> Slot {
+        self.read_lock("highest_slot");
         self.banks.values().map(|bank| bank.slot()).max().unwrap()
     }
 
     pub fn working_bank(&self) -> Arc<Bank> {
+        self.read_lock("working_bank");
         self[self.highest_slot()].clone()
     }
 
     pub fn working_bank_with_scheduler(&self) -> &BankWithScheduler {
+        self.read_lock("working_bank_with_scheduler");
         &self.banks[&self.highest_slot()]
     }
 
@@ -295,6 +323,7 @@ impl BankForks {
         banks: &[&Arc<Bank>],
         accounts_background_request_sender: &AbsRequestSender,
     ) -> Result<(bool, SquashTiming), SetRootError> {
+        self.write_lock("send_eah_request_if_needed");
         let mut is_root_bank_squashed = false;
         let mut squash_timing = SquashTiming::default();
 
@@ -350,6 +379,7 @@ impl BankForks {
         accounts_background_request_sender: &AbsRequestSender,
         highest_super_majority_root: Option<Slot>,
     ) -> Result<(Vec<BankWithScheduler>, SetRootMetrics), SetRootError> {
+        self.write_lock("set_root");
         let old_epoch = self.root_bank().epoch();
         // To support `RootBankCache` (via `ReadOnlyAtomicSlot`) accessing `root` *without* locking
         // BankForks first *and* from a different thread, this store *must* be at least Release to
@@ -472,6 +502,7 @@ impl BankForks {
     }
 
     pub fn prune_program_cache(&self, root: Slot) {
+        self.read_lock("prune_program_cache");
         if let Some(root_bank) = self.banks.get(&root) {
             root_bank.prune_program_cache(root, root_bank.epoch());
         }
@@ -483,6 +514,7 @@ impl BankForks {
         accounts_background_request_sender: &AbsRequestSender,
         highest_super_majority_root: Option<Slot>,
     ) -> Result<Vec<BankWithScheduler>, SetRootError> {
+        self.write_lock("set_root");
         let program_cache_prune_start = Instant::now();
         let set_root_start = Instant::now();
         let (removed_banks, set_root_metrics) = self.do_set_root_return_metrics(
@@ -579,11 +611,13 @@ impl BankForks {
     }
 
     pub fn root(&self) -> Slot {
+        self.read_lock("root");
         self.root.load(Ordering::Relaxed)
     }
 
     /// Gets a read-only wrapper to an atomic slot holding the root slot.
     pub fn get_atomic_root(&self) -> ReadOnlyAtomicSlot {
+        self.read_lock("get_atomic_root");
         ReadOnlyAtomicSlot {
             slot: self.root.clone(),
         }
@@ -644,6 +678,7 @@ impl BankForks {
         root: Slot,
         highest_super_majority_root: Option<Slot>,
     ) -> (Vec<BankWithScheduler>, u64, u64) {
+        self.write_lock("prune_non_rooted");
         // We want to collect timing separately, and the 2nd collect requires
         // a unique borrow to self which is already borrowed by self.banks
         let mut prune_slots_time = Measure::start("prune_slots");
@@ -678,16 +713,19 @@ impl BankForks {
     }
 
     pub fn set_snapshot_config(&mut self, snapshot_config: Option<SnapshotConfig>) {
+        self.write_lock("set_snapshot_config");
         self.snapshot_config = snapshot_config;
     }
 
     pub fn set_accounts_hash_interval_slots(&mut self, accounts_interval_slots: u64) {
+        self.write_lock("set_accounts_hash_interval_slots");
         self.accounts_hash_interval_slots = accounts_interval_slots;
     }
 
     /// Determine if this bank should request an epoch accounts hash
     #[must_use]
     fn should_request_epoch_accounts_hash(&self, bank: &Bank) -> bool {
+        self.read_lock("should_request_epoch_accounts_hash");
         if !epoch_accounts_hash_utils::is_enabled_this_epoch(bank) {
             return false;
         }
@@ -701,6 +739,7 @@ impl BankForks {
 
 impl ForkGraph for BankForks {
     fn relationship(&self, a: Slot, b: Slot) -> BlockRelation {
+        self.read_lock("relationship");
         let known_slot_range = self.root()..=self.highest_slot();
         (known_slot_range.contains(&a) && known_slot_range.contains(&b))
             .then(|| {
@@ -724,6 +763,7 @@ impl ForkGraph for BankForks {
     }
 
     fn slot_epoch(&self, slot: Slot) -> Option<Epoch> {
+        self.read_lock("slot_epoch");
         self.banks.get(&slot).map(|bank| bank.epoch())
     }
 }
