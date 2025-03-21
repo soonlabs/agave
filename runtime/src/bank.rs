@@ -2919,6 +2919,11 @@ impl Bank {
         self.parent_hash
     }
 
+    /// Only for ledger-tool uses!
+    pub fn set_parent_hash(&mut self, hash: Hash) {
+        self.parent_hash = hash;
+    }
+
     fn process_genesis_config(
         &mut self,
         genesis_config: &GenesisConfig,
