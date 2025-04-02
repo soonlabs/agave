@@ -278,7 +278,10 @@ impl LeaderScheduleCache {
                 }
                 current_leader = leader;
             }
-            leaders.extend(vec![current_leader; (last_slot_in_epoch - slot_ptr + 1) as usize]);
+            leaders.extend(vec![
+                current_leader;
+                (last_slot_in_epoch - slot_ptr + 1) as usize
+            ]);
             debug_assert_eq!(leaders.len(), leaders_num);
             return Some(Arc::new(LeaderSchedule::new_from_schedule(leaders)));
         }

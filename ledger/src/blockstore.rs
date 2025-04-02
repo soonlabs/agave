@@ -2900,6 +2900,49 @@ impl Blockstore {
         Ok(())
     }
 
+    // NOTE: This function should be only used by SOON ledger-tool!
+    pub fn iter_address_signatures(
+        &self,
+        address: Pubkey,
+        slot: Slot,
+        index: Option<u32>,
+        signature: Option<Signature>,
+        forward: bool,
+    ) -> Result<Vec<(Pubkey, Slot, u32, Signature)>> {
+        Ok(self
+            .address_signatures_cf
+            .iter_current_index_filtered(IteratorMode::From(
+                (
+                    address,
+                    slot,
+                    index.unwrap_or_default(),
+                    signature.unwrap_or_default(),
+                ),
+                if forward {
+                    IteratorDirection::Forward
+                } else {
+                    IteratorDirection::Reverse
+                },
+            ))?
+            .into_iter()
+            .map(|((address, slot, transaction_index, signature), _)| {
+                (address, slot, transaction_index, signature)
+            })
+            .collect())
+    }
+
+    // NOTE: This function should be only used by SOON ledger-tool!
+    pub fn delete_address_signature(
+        &self,
+        address: Pubkey,
+        slot: Slot,
+        transaction_index: u32,
+        signature: Signature,
+    ) -> Result<()> {
+        self.address_signatures_cf
+            .delete((address, slot, transaction_index, signature))
+    }
+
     pub fn read_transaction_memos(
         &self,
         signature: Signature,
