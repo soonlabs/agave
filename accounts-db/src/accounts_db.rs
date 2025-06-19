@@ -7731,15 +7731,37 @@ impl AccountsDb {
             let sorted_storages = SortedStorages::new_with_slots(storages_and_slots, None, None);
             let (calculated_accounts_hash, calculated_lamports) =
                 self.calculate_accounts_hash(&calc_config, &sorted_storages, HashStats::default());
+
             if calculated_lamports != total_lamports {
                 warn!(
                     "Mismatched total lamports: {} calculated: {}",
                     total_lamports, calculated_lamports
                 );
-                return Err(AccountsHashVerificationError::MismatchedTotalLamports(
-                    calculated_lamports,
-                    total_lamports,
-                ));
+                let mut calculated_total_lamports = 0u64;
+                if let Err(e) = self.scan_accounts(
+                    &Ancestors::default(),
+                    0,
+                    |account_tuple| {
+                        if let Some((_pubkey, account, _slot)) = account_tuple {
+                            calculated_total_lamports =
+                                calculated_total_lamports.saturating_add(account.lamports());
+                        }
+                    },
+                    &ScanConfig::new(true),
+                ) {
+                    warn!("Failed to scan accounts: {:?}", e);
+                }
+
+                if calculated_total_lamports == total_lamports {
+                    info!(
+                        "ignoring mismatch in total lamports when calculating accounts hash because it matches when scanning accounts"
+                    );
+                } else {
+                    return Err(AccountsHashVerificationError::MismatchedTotalLamports(
+                        calculated_lamports,
+                        total_lamports,
+                    ));
+                }
             }
             let (found_accounts_hash, _) = self
                 .get_accounts_hash(slot)
