@@ -424,7 +424,7 @@ static_assertions = "1.1.0"
 stream-cancel = "0.8.2"
 strum = "0.24"
 strum_macros = "0.24"
-subtle = "2.5.0"
+subtle = "2.6.1"
 symlink = "0.1.0"
 syn = "2.0"
 sys-info = "0.9.1"
@@ -552,3 +552,14 @@ tag = "curve25519-4.1.2-risczero.0"
 [patch.crates-io.tokio]
 git = "https://github.com/anza-xyz/solana-tokio.git"
 rev = "7cf47705faacf7bf0e43e4131a5377b3291fce21"
+
+# curve25519-dalek uses the simd backend by default in v4 if possible,
+# which has very slow performance on some platforms with opt-level 0,
+# which is the default for dev and test builds.
+# This slowdown causes certain interactions in the solana-test-validator,
+# such as verifying ZK proofs in transactions, to take much more than 400ms,
+# creating problems in the testing environment.
+# To enable better performance in solana-test-validator during tests and dev builds,
+# we override the opt-level to 3 for the crate.
+[profile.dev.package.curve25519-dalek]
+opt-level = 3

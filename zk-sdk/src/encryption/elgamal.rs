@@ -315,7 +315,7 @@ impl ElGamalPubkey {
     /// Derives the `ElGamalPubkey` that uniquely corresponds to an `ElGamalSecretKey`.
     pub fn new(secret: &ElGamalSecretKey) -> Self {
         let s = &secret.0;
-        assert!(s != &Scalar::zero());
+        assert!(s != &Scalar::ZERO);
 
         ElGamalPubkey(s.invert() * &(*H))
     }
@@ -380,8 +380,12 @@ impl TryFrom<&[u8]> for ElGamalPubkey {
             return Err(ElGamalError::PubkeyDeserialization);
         }
 
+        let Ok(compressed_ristretto) = CompressedRistretto::from_slice(bytes) else {
+            return Err(ElGamalError::PubkeyDeserialization);
+        };
+
         Ok(ElGamalPubkey(
-            CompressedRistretto::from_slice(bytes)
+            compressed_ristretto
                 .decompress()
                 .ok_or(ElGamalError::PubkeyDeserialization)?,
         ))
@@ -550,6 +554,7 @@ impl TryFrom<&[u8]> for ElGamalSecretKey {
         match bytes.try_into() {
             Ok(bytes) => Ok(ElGamalSecretKey::from(
                 Scalar::from_canonical_bytes(bytes)
+                    .into_option()
                     .ok_or(ElGamalError::SecretKeyDeserialization)?,
             )),
             _ => Err(ElGamalError::SecretKeyDeserialization),
@@ -737,9 +742,11 @@ impl DecryptHandle {
             return None;
         }
 
-        Some(DecryptHandle(
-            CompressedRistretto::from_slice(bytes).decompress()?,
-        ))
+        let Ok(compressed_ristretto) = CompressedRistretto::from_slice(bytes) else {
+            return None;
+        };
+
+        compressed_ristretto.decompress().map(DecryptHandle)
     }
 }
 
