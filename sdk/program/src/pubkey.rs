@@ -937,6 +937,7 @@ mod tests {
                 let is_on_curve = curve25519_dalek::edwards::CompressedEdwardsY::from_slice(
                     &program_address.to_bytes(),
                 )
+                .expect("conversion to EdwardsY failed")
                 .decompress()
                 .is_some();
                 assert!(!is_on_curve);

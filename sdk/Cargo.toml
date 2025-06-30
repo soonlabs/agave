@@ -26,7 +26,7 @@ full = [
     "generic-array",
     "memmap2",
     "rand",
-    "rand0-7",
+    "rand_core",
     "serde_json",
     "ed25519-dalek",
     "ed25519-dalek-bip32",
@@ -56,7 +56,7 @@ chrono = { workspace = true, features = ["alloc"], optional = true }
 curve25519-dalek = { workspace = true, optional = true }
 derivation-path = { workspace = true }
 digest = { workspace = true, optional = true }
-ed25519-dalek = { workspace = true, optional = true }
+ed25519-dalek = { workspace = true, optional = true, features = ["rand_core"] }
 ed25519-dalek-bip32 = { workspace = true, optional = true }
 generic-array = { workspace = true, features = ["serde", "more_lengths"], optional = true }
 hmac = { workspace = true }
@@ -70,7 +70,7 @@ pbkdf2 = { workspace = true }
 qstring = { workspace = true }
 qualifier_attr = { workspace = true, optional = true }
 rand = { workspace = true, optional = true }
-rand0-7 = { package = "rand", version = "0.7", optional = true }
+rand_core = { workspace = true, optional = true }
 rustversion = { workspace = true }
 serde = { workspace = true }
 serde_bytes = { workspace = true }
