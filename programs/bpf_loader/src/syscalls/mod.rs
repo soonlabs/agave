@@ -15,7 +15,7 @@ use {
     solana_compute_budget::compute_budget::ComputeBudget,
     solana_poseidon as poseidon,
     solana_program_runtime::{
-        ic_logger_msg, ic_msg, invoke_context::InvokeContext, stable_log, timings::ExecuteTimings,
+        ic_logger_msg, ic_msg, invoke_context::InvokeContext, stable_log,
     },
     solana_rbpf::{
         declare_builtin_function,
@@ -67,6 +67,9 @@ use {
     },
     thiserror::Error as ThisError,
 };
+#[cfg(not(target_os = "zkvm"))]
+#[allow(deprecated)]
+use solana_program_runtime::timings::ExecuteTimings;
 
 mod cpi;
 mod logging;

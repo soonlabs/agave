@@ -1,11 +1,10 @@
 use {
     solana_compute_budget::compute_budget::ComputeBudget,
-    solana_measure::measure::Measure,
     solana_program_runtime::{
         ic_logger_msg,
         invoke_context::InvokeContext,
         loaded_programs::{
-            LoadProgramMetrics, ProgramCacheEntry, ProgramCacheEntryType,
+            ProgramCacheEntry, ProgramCacheEntryType,
             DELAY_VISIBILITY_SLOT_OFFSET,
         },
         log_collector::LogCollector,
@@ -27,11 +26,16 @@ use {
         loader_v4_instruction::LoaderV4Instruction,
         program_utils::limited_deserialize,
         pubkey::Pubkey,
-        saturating_add_assign,
         transaction_context::{BorrowedAccount, InstructionContext},
     },
     solana_type_overrides::sync::{atomic::Ordering, Arc},
     std::{cell::RefCell, rc::Rc},
+};
+#[cfg(not(target_os = "zkvm"))]
+use {
+    solana_measure::measure::Measure,
+    solana_program_runtime::loaded_programs::LoadProgramMetrics,
+    solana_sdk::saturating_add_assign,
 };
 
 pub const DEFAULT_COMPUTE_UNITS: u64 = 2_000;
@@ -154,17 +158,21 @@ fn execute<'a, 'b: 'a>(
     let transaction_context = &invoke_context.transaction_context;
     let instruction_context = transaction_context.get_current_instruction_context()?;
     let program_id = *instruction_context.get_last_program_key(transaction_context)?;
-    #[cfg(any(target_os = "windows", not(target_arch = "x86_64")))]
+    #[cfg(any(target_os = "windows", target_os = "zkvm", not(target_arch = "x86_64")))]
     let use_jit = false;
-    #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
+    #[cfg(all(not(target_os = "windows"), not(target_os = "zkvm"), target_arch = "x86_64"))]
     let use_jit = executable.get_compiled_program().is_some();
 
     let compute_meter_prev = invoke_context.get_remaining();
+    #[cfg(not(target_os = "zkvm"))]
     let mut create_vm_time = Measure::start("create_vm");
     let mut vm = create_vm(invoke_context, executable)?;
-    create_vm_time.stop();
+    #[cfg(not(target_os = "zkvm"))]
+    let mut execute_time = {
+        create_vm_time.stop();
 
-    let mut execute_time = Measure::start("execute");
+        Measure::start("execute")
+    };
     stable_log::program_invoke(&log_collector, &program_id, stack_height);
     let (compute_units_consumed, result) = vm.execute_program(executable, !use_jit);
     drop(vm);
@@ -175,11 +183,14 @@ fn execute<'a, 'b: 'a>(
         compute_units_consumed,
         compute_meter_prev
     );
-    execute_time.stop();
+    #[cfg(not(target_os = "zkvm"))]
+    {
+        execute_time.stop();
 
-    let timings = &mut invoke_context.timings;
-    timings.create_vm_us = timings.create_vm_us.saturating_add(create_vm_time.as_us());
-    timings.execute_us = timings.execute_us.saturating_add(execute_time.as_us());
+        let timings = &mut invoke_context.timings;
+        timings.create_vm_us = timings.create_vm_us.saturating_add(create_vm_time.as_us());
+        timings.execute_us = timings.execute_us.saturating_add(execute_time.as_us());
+    }
 
     match result {
         ProgramResult::Ok(status) if status != SUCCESS => {
@@ -415,6 +426,7 @@ pub fn process_instruction_deploy(
             InstructionError::InvalidArgument
         })?;
 
+    #[cfg(not(target_os = "zkvm"))]
     let mut load_program_metrics = LoadProgramMetrics {
         program_id: buffer.get_key().to_string(),
         ..LoadProgramMetrics::default()
@@ -426,12 +438,14 @@ pub fn process_instruction_deploy(
         effective_slot,
         programdata,
         buffer.get_data().len(),
+        #[cfg(not(target_os = "zkvm"))]
         &mut load_program_metrics,
     )
     .map_err(|err| {
         ic_logger_msg!(log_collector, "{}", err);
         InstructionError::InvalidAccountData
     })?;
+    #[cfg(not(target_os = "zkvm"))]
     load_program_metrics.submit_datapoint(&mut invoke_context.timings);
     if let Some(mut source_program) = source_program {
         let rent = invoke_context.get_sysvar_cache().get_rent()?;
@@ -590,6 +604,7 @@ pub fn process_instruction_inner(
             ic_logger_msg!(log_collector, "Program is not deployed");
             return Err(Box::new(InstructionError::InvalidArgument));
         }
+        #[cfg(not(target_os = "zkvm"))]
         let mut get_or_create_executor_time = Measure::start("get_or_create_executor_time");
         let loaded_program = invoke_context
             .program_cache_for_tx_batch
@@ -598,11 +613,14 @@ pub fn process_instruction_inner(
                 ic_logger_msg!(log_collector, "Program is not cached");
                 InstructionError::InvalidAccountData
             })?;
-        get_or_create_executor_time.stop();
-        saturating_add_assign!(
-            invoke_context.timings.get_or_create_executor_us,
-            get_or_create_executor_time.as_us()
-        );
+        #[cfg(not(target_os = "zkvm"))]
+        {
+            get_or_create_executor_time.stop();
+            saturating_add_assign!(
+                invoke_context.timings.get_or_create_executor_us,
+                get_or_create_executor_time.as_us()
+            );
+        }
         drop(program);
         loaded_program
             .ix_usage_counter

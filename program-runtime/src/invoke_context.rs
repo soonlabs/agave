@@ -8,10 +8,8 @@ use {
         log_collector::LogCollector,
         stable_log,
         sysvar_cache::SysvarCache,
-        timings::{ExecuteDetailsTimings, ExecuteTimings},
     },
     solana_compute_budget::compute_budget::ComputeBudget,
-    solana_measure::measure::Measure,
     solana_rbpf::{
         ebpf::MM_HEAP_START,
         error::{EbpfError, ProgramResult},
@@ -29,7 +27,6 @@ use {
         instruction::{AccountMeta, InstructionError},
         native_loader,
         pubkey::Pubkey,
-        saturating_add_assign,
         stable_layout::stable_instruction::StableInstruction,
         sysvar,
         transaction_context::{
@@ -44,6 +41,12 @@ use {
         fmt::{self, Debug},
         rc::Rc,
     },
+};
+#[cfg(not(target_os = "zkvm"))]
+use {
+    crate::timings::{ExecuteDetailsTimings, ExecuteTimings},
+    solana_sdk::saturating_add_assign,
+    solana_measure::measure::Measure,
 };
 
 pub type BuiltinFunctionWithContext = BuiltinFunction<InvokeContext<'static>>;
@@ -86,7 +89,7 @@ macro_rules! declare_process_instruction {
     };
 }
 
-impl<'a> ContextObject for InvokeContext<'a> {
+impl ContextObject for InvokeContext<'_> {
     fn trace(&mut self, state: [u64; 12]) {
         self.syscall_context
             .last_mut()
@@ -202,8 +205,10 @@ pub struct InvokeContext<'a> {
     /// the designated compute budget during program execution.
     compute_meter: RefCell<u64>,
     log_collector: Option<Rc<RefCell<LogCollector>>>,
+    #[cfg(not(target_os = "zkvm"))]
     /// Latest measurement not yet accumulated in [ExecuteDetailsTimings::execute_us]
     pub execute_time: Option<Measure>,
+    #[cfg(not(target_os = "zkvm"))]
     pub timings: ExecuteDetailsTimings,
     pub syscall_context: Vec<Option<SyscallContext>>,
     traces: Vec<Vec<[u64; 12]>>,
@@ -225,7 +230,9 @@ impl<'a> InvokeContext<'a> {
             log_collector,
             compute_budget,
             compute_meter: RefCell::new(compute_budget.compute_unit_limit),
+            #[cfg(not(target_os = "zkvm"))]
             execute_time: None,
+            #[cfg(not(target_os = "zkvm"))]
             timings: ExecuteDetailsTimings::default(),
             syscall_context: Vec::new(),
             traces: Vec::new(),
@@ -318,6 +325,7 @@ impl<'a> InvokeContext<'a> {
             &instruction_accounts,
             &program_indices,
             &mut compute_units_consumed,
+            #[cfg(not(target_os = "zkvm"))]
             &mut ExecuteTimings::default(),
         )?;
         Ok(())
@@ -453,6 +461,7 @@ impl<'a> InvokeContext<'a> {
         instruction_accounts: &[InstructionAccount],
         program_indices: &[IndexOfAccount],
         compute_units_consumed: &mut u64,
+        #[cfg(not(target_os = "zkvm"))]
         timings: &mut ExecuteTimings,
     ) -> Result<(), InstructionError> {
         *compute_units_consumed = 0;
@@ -460,7 +469,7 @@ impl<'a> InvokeContext<'a> {
             .get_next_instruction_context()?
             .configure(program_indices, instruction_accounts, instruction_data);
         self.push()?;
-        self.process_executable_chain(compute_units_consumed, timings)
+        self.process_executable_chain(compute_units_consumed, #[cfg(not(target_os = "zkvm"))] timings)
             // MUST pop if and only if `push` succeeded, independent of `result`.
             // Thus, the `.and()` instead of an `.and_then()`.
             .and(self.pop())
@@ -470,9 +479,11 @@ impl<'a> InvokeContext<'a> {
     fn process_executable_chain(
         &mut self,
         compute_units_consumed: &mut u64,
+        #[cfg(not(target_os = "zkvm"))]
         timings: &mut ExecuteTimings,
     ) -> Result<(), InstructionError> {
         let instruction_context = self.transaction_context.get_current_instruction_context()?;
+        #[cfg(not(target_os = "zkvm"))]
         let process_executable_chain_time = Measure::start("process_executable_chain_time");
 
         let builtin_id = {
@@ -555,6 +566,7 @@ impl<'a> InvokeContext<'a> {
             return Err(InstructionError::BuiltinProgramsMustConsumeComputeUnits);
         }
 
+        #[cfg(not(target_os = "zkvm"))]
         saturating_add_assign!(
             timings
                 .execute_accessories
@@ -650,7 +662,7 @@ impl<'a> InvokeContext<'a> {
     pub fn get_syscall_context(&self) -> Result<&SyscallContext, InstructionError> {
         self.syscall_context
             .last()
-            .and_then(std::option::Option::as_ref)
+            .and_then(Option::as_ref)
             .ok_or(InstructionError::CallDepth)
     }
 
@@ -796,6 +808,7 @@ pub fn mock_process_instruction<F: FnMut(&mut InvokeContext), G: FnMut(&mut Invo
         &instruction_accounts,
         &program_indices,
         &mut 0,
+        #[cfg(not(target_os = "zkvm"))]
         &mut ExecuteTimings::default(),
     );
     assert_eq!(result, expected_result);

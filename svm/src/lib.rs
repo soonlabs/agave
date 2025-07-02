@@ -10,11 +10,13 @@ pub mod program_loader;
 pub mod rollback_accounts;
 pub mod runtime_config;
 pub mod transaction_account_state_info;
+#[cfg(not(target_os = "zkvm"))]
 pub mod transaction_error_metrics;
 pub mod transaction_processing_callback;
 pub mod transaction_processor;
 pub mod transaction_results;
 
+#[cfg(not(target_os = "zkvm"))]
 #[macro_use]
 extern crate solana_metrics;
 

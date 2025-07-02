@@ -2,7 +2,6 @@ use {
     crate::{
         account_overrides::AccountOverrides, account_rent_state::RentState,
         nonce_info::NoncePartial, rollback_accounts::RollbackAccounts,
-        transaction_error_metrics::TransactionErrorMetrics,
         transaction_processing_callback::TransactionProcessingCallback,
     },
     itertools::Itertools,
@@ -29,6 +28,8 @@ use {
     solana_system_program::{get_system_account_kind, SystemAccountKind},
     std::num::NonZeroUsize,
 };
+#[cfg(not(target_os = "zkvm"))]
+use crate::transaction_error_metrics::TransactionErrorMetrics;
 
 // for the load instructions
 pub(crate) type TransactionRent = u64;
@@ -104,16 +105,19 @@ pub fn validate_fee_payer(
     payer_address: &Pubkey,
     payer_account: &mut AccountSharedData,
     payer_index: IndexOfAccount,
+    #[cfg(not(target_os = "zkvm"))]
     error_metrics: &mut TransactionErrorMetrics,
     rent_collector: &RentCollector,
     fee: u64,
 ) -> Result<()> {
     if payer_account.lamports() == 0 {
-        error_metrics.account_not_found += 1;
+        #[cfg(not(target_os = "zkvm"))]
+        { error_metrics.account_not_found += 1; }
         return Err(TransactionError::AccountNotFound);
     }
     let system_account_kind = get_system_account_kind(payer_account).ok_or_else(|| {
-        error_metrics.invalid_account_for_fee += 1;
+        #[cfg(not(target_os = "zkvm"))]
+        { error_metrics.invalid_account_for_fee += 1; }
         TransactionError::InvalidAccountForFee
     })?;
     let min_balance = match system_account_kind {
@@ -130,7 +134,8 @@ pub fn validate_fee_payer(
         .checked_sub(min_balance)
         .and_then(|v| v.checked_sub(fee))
         .ok_or_else(|| {
-            error_metrics.insufficient_funds += 1;
+            #[cfg(not(target_os = "zkvm"))]
+            { error_metrics.insufficient_funds += 1; }
             TransactionError::InsufficientFundsForFee
         })?;
 
@@ -158,6 +163,7 @@ pub(crate) fn load_accounts<CB: TransactionProcessingCallback>(
     callbacks: &CB,
     txs: &[SanitizedTransaction],
     validation_results: Vec<TransactionValidationResult>,
+    #[cfg(not(target_os = "zkvm"))]
     error_metrics: &mut TransactionErrorMetrics,
     account_overrides: Option<&AccountOverrides>,
     feature_set: &FeatureSet,
@@ -175,6 +181,7 @@ pub(crate) fn load_accounts<CB: TransactionProcessingCallback>(
                     callbacks,
                     message,
                     tx_details,
+                    #[cfg(not(target_os = "zkvm"))]
                     error_metrics,
                     account_overrides,
                     feature_set,
@@ -191,6 +198,7 @@ fn load_transaction_accounts<CB: TransactionProcessingCallback>(
     callbacks: &CB,
     message: &SanitizedMessage,
     tx_details: ValidatedTransactionDetails,
+    #[cfg(not(target_os = "zkvm"))]
     error_metrics: &mut TransactionErrorMetrics,
     account_overrides: Option<&AccountOverrides>,
     feature_set: &FeatureSet,
@@ -279,6 +287,7 @@ fn load_transaction_accounts<CB: TransactionProcessingCallback>(
                     &mut accumulated_accounts_data_size,
                     account_size,
                     requested_loaded_accounts_data_size_limit,
+                    #[cfg(not(target_os = "zkvm"))]
                     error_metrics,
                 )?;
 
@@ -310,12 +319,14 @@ fn load_transaction_accounts<CB: TransactionProcessingCallback>(
 
             let account_found = accounts_found.get(program_index).unwrap_or(&true);
             if !account_found {
-                error_metrics.account_not_found += 1;
+                #[cfg(not(target_os = "zkvm"))]
+                { error_metrics.account_not_found += 1; }
                 return Err(TransactionError::ProgramAccountNotFound);
             }
 
             if !program_account.executable() {
-                error_metrics.invalid_program_for_execution += 1;
+                #[cfg(not(target_os = "zkvm"))]
+                { error_metrics.invalid_program_for_execution += 1; }
                 return Err(TransactionError::InvalidProgramForExecution);
             }
             account_indices.insert(0, program_index as IndexOfAccount);
@@ -336,18 +347,21 @@ fn load_transaction_accounts<CB: TransactionProcessingCallback>(
                     if !native_loader::check_id(owner_account.owner())
                         || !owner_account.executable()
                     {
-                        error_metrics.invalid_program_for_execution += 1;
+                        #[cfg(not(target_os = "zkvm"))]
+                        { error_metrics.invalid_program_for_execution += 1; }
                         return Err(TransactionError::InvalidProgramForExecution);
                     }
                     accumulate_and_check_loaded_account_data_size(
                         &mut accumulated_accounts_data_size,
                         owner_account.data().len(),
                         requested_loaded_accounts_data_size_limit,
+                        #[cfg(not(target_os = "zkvm"))]
                         error_metrics,
                     )?;
                     accounts.push((*owner_id, owner_account));
                 } else {
-                    error_metrics.account_not_found += 1;
+                    #[cfg(not(target_os = "zkvm"))]
+                    { error_metrics.account_not_found += 1; }
                     return Err(TransactionError::ProgramAccountNotFound);
                 }
                 owner_index
@@ -409,12 +423,14 @@ fn accumulate_and_check_loaded_account_data_size(
     accumulated_loaded_accounts_data_size: &mut usize,
     account_data_size: usize,
     requested_loaded_accounts_data_size_limit: Option<NonZeroUsize>,
+    #[cfg(not(target_os = "zkvm"))]
     error_metrics: &mut TransactionErrorMetrics,
 ) -> Result<()> {
     if let Some(requested_loaded_accounts_data_size) = requested_loaded_accounts_data_size_limit {
         saturating_add_assign!(*accumulated_loaded_accounts_data_size, account_data_size);
         if *accumulated_loaded_accounts_data_size > requested_loaded_accounts_data_size.get() {
-            error_metrics.max_loaded_accounts_data_size_exceeded += 1;
+            #[cfg(not(target_os = "zkvm"))]
+            { error_metrics.max_loaded_accounts_data_size_exceeded += 1; }
             Err(TransactionError::MaxLoadedAccountsDataSizeExceeded)
         } else {
             Ok(())

@@ -1,11 +1,7 @@
 use {
-    crate::{
-        invoke_context::{BuiltinFunctionWithContext, InvokeContext},
-        timings::ExecuteDetailsTimings,
-    },
-    log::{error, log_enabled, trace},
+    crate::invoke_context::{BuiltinFunctionWithContext, InvokeContext},
+    log::{log_enabled, trace},
     percentage::PercentageInteger,
-    solana_measure::measure::Measure,
     solana_rbpf::{
         elf::Executable,
         program::{BuiltinProgram, FunctionRegistry},
@@ -20,18 +16,16 @@ use {
         saturating_add_assign,
     },
     solana_type_overrides::{
+        sync::{atomic::{AtomicU64, Ordering}, Arc, Condvar, Mutex},
         rand::{thread_rng, Rng},
-        sync::{
-            atomic::{AtomicU64, Ordering},
-            Arc, Condvar, Mutex, RwLock,
-        },
-        thread,
     },
-    std::{
-        collections::{hash_map::Entry, HashMap},
-        fmt::{Debug, Formatter},
-        sync::Weak,
-    },
+    std::{collections::{HashMap, hash_map::Entry}, fmt::{Debug, Formatter}, sync::{Weak, RwLock}},
+};
+#[cfg(not(target_os = "zkvm"))]
+use {
+    crate::timings::ExecuteDetailsTimings,
+    solana_type_overrides::thread,
+    solana_measure::measure::Measure,
 };
 
 pub type ProgramRuntimeEnvironment = Arc<BuiltinProgram<InvokeContext<'static>>>;
@@ -279,6 +273,7 @@ impl ProgramCacheStats {
     }
 }
 
+#[cfg(not(target_os = "zkvm"))]
 /// Time measurements for loading a single [ProgramCacheEntry].
 #[derive(Debug, Default)]
 pub struct LoadProgramMetrics {
@@ -294,6 +289,7 @@ pub struct LoadProgramMetrics {
     pub jit_compile_us: u64,
 }
 
+#[cfg(not(target_os = "zkvm"))]
 impl LoadProgramMetrics {
     pub fn submit_datapoint(&self, timings: &mut ExecuteDetailsTimings) {
         saturating_add_assign!(
@@ -331,6 +327,7 @@ impl ProgramCacheEntry {
         effective_slot: Slot,
         elf_bytes: &[u8],
         account_size: usize,
+        #[cfg(not(target_os = "zkvm"))]
         metrics: &mut LoadProgramMetrics,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         Self::new_internal(
@@ -340,6 +337,7 @@ impl ProgramCacheEntry {
             effective_slot,
             elf_bytes,
             account_size,
+            #[cfg(not(target_os = "zkvm"))]
             metrics,
             false, /* reloading */
         )
@@ -360,6 +358,7 @@ impl ProgramCacheEntry {
         effective_slot: Slot,
         elf_bytes: &[u8],
         account_size: usize,
+        #[cfg(not(target_os = "zkvm"))]
         metrics: &mut LoadProgramMetrics,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         Self::new_internal(
@@ -369,6 +368,7 @@ impl ProgramCacheEntry {
             effective_slot,
             elf_bytes,
             account_size,
+            #[cfg(not(target_os = "zkvm"))]
             metrics,
             true, /* reloading */
         )
@@ -381,23 +381,32 @@ impl ProgramCacheEntry {
         effective_slot: Slot,
         elf_bytes: &[u8],
         account_size: usize,
+        #[cfg(not(target_os = "zkvm"))]
         metrics: &mut LoadProgramMetrics,
         reloading: bool,
     ) -> Result<Self, Box<dyn std::error::Error>> {
+        #[cfg(not(target_os = "zkvm"))]
         let load_elf_time = Measure::start("load_elf_time");
         // The following unused_mut exception is needed for architectures that do not
         // support JIT compilation.
         #[allow(unused_mut)]
         let mut executable = Executable::load(elf_bytes, program_runtime_environment.clone())?;
-        metrics.load_elf_us = load_elf_time.end_as_us();
-
-        if !reloading {
-            let verify_code_time = Measure::start("verify_code_time");
-            executable.verify::<RequisiteVerifier>()?;
-            metrics.verify_code_us = verify_code_time.end_as_us();
+        #[cfg(not(target_os = "zkvm"))]
+        {
+            metrics.load_elf_us = load_elf_time.end_as_us();
         }
 
-        #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
+        if !reloading {
+            #[cfg(not(target_os = "zkvm"))]
+            let verify_code_time = Measure::start("verify_code_time");
+            executable.verify::<RequisiteVerifier>()?;
+            #[cfg(not(target_os = "zkvm"))]
+            {
+                metrics.verify_code_us = verify_code_time.end_as_us();
+            }
+        }
+
+        #[cfg(all(not(target_os = "windows"), not(target_os = "zkvm"), target_arch = "x86_64"))]
         {
             let jit_compile_time = Measure::start("jit_compile_time");
             executable.jit_compile()?;
@@ -602,7 +611,10 @@ enum IndexImplementation {
         /// It is possible that multiple TX batches from different slots need different versions of a
         /// program. The deployment slot of a program is only known after load tho,
         /// so all loads for a given program key are serialized.
+        #[cfg(not(target_os = "zkvm"))]
         loading_entries: Mutex<HashMap<Pubkey, (Slot, thread::ThreadId)>>,
+        #[cfg(target_os = "zkvm")]
+        loading_entries: Mutex<HashMap<Pubkey, Slot>>,
     },
 }
 
@@ -904,7 +916,7 @@ impl<FG: ForkGraph> ProgramCache<FG> {
                             ) => {}
                             _ => {
                                 // Something is wrong, I can feel it ...
-                                error!("ProgramCache::assign_program() failed key={:?} existing={:?} entry={:?}", key, slot_versions, entry);
+                                log::error!("ProgramCache::assign_program() failed key={:?} existing={:?} entry={:?}", key, slot_versions, entry);
                                 debug_assert!(false, "Unexpected replacement of an entry");
                                 self.stats.replacements.fetch_add(1, Ordering::Relaxed);
                                 return true;
@@ -946,12 +958,12 @@ impl<FG: ForkGraph> ProgramCache<FG> {
     /// Before rerooting the blockstore this removes all superfluous entries
     pub fn prune(&mut self, new_root_slot: Slot, new_root_epoch: Epoch) {
         let Some(fork_graph) = self.fork_graph.clone() else {
-            error!("Program cache doesn't have fork graph.");
+            log::error!("Program cache doesn't have fork graph.");
             return;
         };
         let fork_graph = fork_graph.upgrade().unwrap();
         let Ok(fork_graph) = fork_graph.read() else {
-            error!("Failed to lock fork graph for reading.");
+            log::error!("Failed to lock fork graph for reading.");
             return;
         };
         let mut preparation_phase_ends = false;
@@ -1126,10 +1138,13 @@ impl<FG: ForkGraph> ProgramCache<FG> {
                         let mut loading_entries = loading_entries.lock().unwrap();
                         let entry = loading_entries.entry(*key);
                         if let Entry::Vacant(entry) = entry {
+                            #[cfg(not(target_os = "zkvm"))]
                             entry.insert((
                                 loaded_programs_for_tx_batch.slot,
                                 thread::current().id(),
                             ));
+                            #[cfg(target_os = "zkvm")]
+                            entry.insert(loaded_programs_for_tx_batch.slot);
                             cooperative_loading_task = Some((*key, *usage_count));
                         }
                     }
@@ -1162,7 +1177,10 @@ impl<FG: ForkGraph> ProgramCache<FG> {
                 loading_entries, ..
             } => {
                 let loading_thread = loading_entries.get_mut().unwrap().remove(&key);
+                #[cfg(not(target_os = "zkvm"))]
                 debug_assert_eq!(loading_thread, Some((slot, thread::current().id())));
+                #[cfg(target_os = "zkvm")]
+                debug_assert_eq!(loading_thread, Some(slot));
                 // Check that it will be visible to our own fork once inserted
                 if loaded_program.deployment_slot > self.latest_root_slot
                     && !matches!(

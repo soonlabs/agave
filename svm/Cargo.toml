@@ -21,13 +21,15 @@ solana-compute-budget = { workspace = true }
 solana-frozen-abi = { workspace = true, optional = true }
 solana-frozen-abi-macro = { workspace = true, optional = true }
 solana-loader-v4-program = { workspace = true }
-solana-measure = { workspace = true }
-solana-metrics = { workspace = true }
 solana-program-runtime = { workspace = true }
 solana-sdk = { workspace = true }
 solana-system-program = { workspace = true }
 solana-type-overrides = { workspace = true }
 solana-vote = { workspace = true }
+
+[target.'cfg(not(target_os = "zkvm"))'.dependencies]
+solana-measure = { workspace = true }
+solana-metrics = { workspace = true }
 
 [lib]
 crate-type = ["lib"]

@@ -4,6 +4,7 @@ pub mod vote_processor;
 pub mod vote_state;
 pub mod vote_transaction;
 
+#[cfg(not(target_os = "zkvm"))]
 #[macro_use]
 extern crate solana_metrics;
 

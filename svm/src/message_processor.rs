@@ -1,18 +1,19 @@
 use {
-    solana_measure::measure::Measure,
-    solana_program_runtime::{
-        invoke_context::InvokeContext,
-        timings::{ExecuteDetailsTimings, ExecuteTimings},
-    },
+    solana_program_runtime::invoke_context::InvokeContext,
     solana_sdk::{
         account::WritableAccount,
         message::SanitizedMessage,
         precompiles::is_precompile,
-        saturating_add_assign,
         sysvar::instructions,
         transaction::TransactionError,
         transaction_context::{IndexOfAccount, InstructionAccount},
     },
+};
+#[cfg(not(target_os = "zkvm"))]
+use {
+    solana_measure::measure::Measure,
+    solana_program_runtime::timings::{ExecuteDetailsTimings, ExecuteTimings},
+    solana_sdk::saturating_add_assign,
 };
 
 #[derive(Debug, Default, Clone, serde_derive::Deserialize, serde_derive::Serialize)]
@@ -37,6 +38,7 @@ impl MessageProcessor {
         message: &SanitizedMessage,
         program_indices: &[Vec<IndexOfAccount>],
         invoke_context: &mut InvokeContext,
+        #[cfg(not(target_os = "zkvm"))]
         execute_timings: &mut ExecuteTimings,
         accumulated_consumed_units: &mut u64,
     ) -> Result<(), TransactionError> {
@@ -105,6 +107,7 @@ impl MessageProcessor {
                         invoke_context.transaction_context.pop()
                     })
             } else {
+                #[cfg(not(target_os = "zkvm"))]
                 let time = Measure::start("execute_instruction");
                 let mut compute_units_consumed = 0;
                 let result = invoke_context.process_instruction(
@@ -112,28 +115,33 @@ impl MessageProcessor {
                     &instruction_accounts,
                     program_indices,
                     &mut compute_units_consumed,
+                    #[cfg(not(target_os = "zkvm"))]
                     execute_timings,
                 );
+                #[cfg(not(target_os = "zkvm"))]
                 let time = time.end_as_us();
                 *accumulated_consumed_units =
                     accumulated_consumed_units.saturating_add(compute_units_consumed);
-                execute_timings.details.accumulate_program(
-                    program_id,
-                    time,
-                    compute_units_consumed,
-                    result.is_err(),
-                );
-                invoke_context.timings = {
-                    execute_timings.details.accumulate(&invoke_context.timings);
-                    ExecuteDetailsTimings::default()
-                };
-                saturating_add_assign!(
-                    execute_timings
-                        .execute_accessories
-                        .process_instructions
-                        .total_us,
-                    time
-                );
+                #[cfg(not(target_os = "zkvm"))]
+                {
+                    execute_timings.details.accumulate_program(
+                        program_id,
+                        time,
+                        compute_units_consumed,
+                        result.is_err(),
+                    );
+                    invoke_context.timings = {
+                        execute_timings.details.accumulate(&invoke_context.timings);
+                        ExecuteDetailsTimings::default()
+                    };
+                    saturating_add_assign!(
+                        execute_timings
+                            .execute_accessories
+                            .process_instructions
+                            .total_us,
+                        time
+                    );
+                }
                 result
             };
 

@@ -12,7 +12,6 @@ use {
         program_loader::{get_program_modification_slot, load_program_with_pubkey},
         rollback_accounts::RollbackAccounts,
         transaction_account_state_info::TransactionAccountStateInfo,
-        transaction_error_metrics::TransactionErrorMetrics,
         transaction_processing_callback::TransactionProcessingCallback,
         transaction_results::{TransactionExecutionDetails, TransactionExecutionResult},
     },
@@ -24,7 +23,6 @@ use {
         compute_budget_processor::process_compute_budget_instructions,
     },
     solana_loader_v4_program::create_program_runtime_environment_v2,
-    solana_measure::{measure, measure::Measure},
     solana_program_runtime::{
         invoke_context::{EnvironmentConfig, InvokeContext},
         loaded_programs::{
@@ -33,7 +31,6 @@ use {
         },
         log_collector::LogCollector,
         sysvar_cache::SysvarCache,
-        timings::{ExecuteTimingType, ExecuteTimings},
     },
     solana_sdk::{
         account::{AccountSharedData, ReadableAccount, PROGRAM_OWNERS},
@@ -62,6 +59,12 @@ use {
         rc::Rc,
     },
 };
+#[cfg(not(target_os = "zkvm"))]
+use {
+    crate::transaction_error_metrics::TransactionErrorMetrics,
+    solana_measure::{measure, measure::Measure},
+    solana_program_runtime::timings::{ExecuteTimingType, ExecuteTimings},
+};
 
 /// A list of log messages emitted during a transaction
 pub type TransactionLogMessages = Vec<String>;
@@ -69,8 +72,10 @@ pub type TransactionLogMessages = Vec<String>;
 /// The output of the transaction batch processor's
 /// `load_and_execute_sanitized_transactions` method.
 pub struct LoadAndExecuteSanitizedTransactionsOutput {
+    #[cfg(not(target_os = "zkvm"))]
     /// Error metrics for transactions that were processed.
     pub error_metrics: TransactionErrorMetrics,
+    #[cfg(not(target_os = "zkvm"))]
     /// Timings for transaction batch execution.
     pub execute_timings: ExecuteTimings,
     // Vector of results indicating whether a transaction was executed or could not
@@ -229,10 +234,12 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
         environment: &TransactionProcessingEnvironment,
         config: &TransactionProcessingConfig,
     ) -> LoadAndExecuteSanitizedTransactionsOutput {
+        #[cfg(not(target_os = "zkvm"))]
         // Initialize metrics.
         let mut error_metrics = TransactionErrorMetrics::default();
+        #[cfg(not(target_os = "zkvm"))]
         let mut execute_timings = ExecuteTimings::default();
-
+        #[cfg(not(target_os = "zkvm"))]
         let (validation_results, validate_fees_time) = measure!(self.validate_fees(
             callbacks,
             config.account_overrides,
@@ -247,7 +254,24 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                 .unwrap_or(&RentCollector::default()),
             &mut error_metrics
         ));
+        #[cfg(target_os = "zkvm")]
+        let validation_results = self.validate_fees(
+            callbacks,
+            config.account_overrides,
+            sanitized_txs,
+            check_results,
+            &environment.feature_set,
+            environment
+                .fee_structure
+                .unwrap_or(&FeeStructure::default()),
+            environment
+                .rent_collector
+                .unwrap_or(&RentCollector::default()),
+            #[cfg(not(target_os = "zkvm"))]
+            &mut error_metrics
+        );
 
+        #[cfg(not(target_os = "zkvm"))]
         let mut program_cache_time = Measure::start("program_cache");
         let mut program_accounts_map = Self::filter_executable_program_accounts(
             callbacks,
@@ -272,19 +296,23 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
             let execution_results =
                 vec![TransactionExecutionResult::NotExecuted(ERROR); sanitized_txs.len()];
             return LoadAndExecuteSanitizedTransactionsOutput {
+                #[cfg(not(target_os = "zkvm"))]
                 error_metrics,
+                #[cfg(not(target_os = "zkvm"))]
                 execute_timings,
                 execution_results,
                 loaded_transactions,
             };
         }
+        #[cfg(not(target_os = "zkvm"))]
         program_cache_time.stop();
-
+        #[cfg(not(target_os = "zkvm"))]
         let mut load_time = Measure::start("accounts_load");
         let mut loaded_transactions = load_accounts(
             callbacks,
             sanitized_txs,
             validation_results,
+            #[cfg(not(target_os = "zkvm"))]
             &mut error_metrics,
             config.account_overrides,
             &environment.feature_set,
@@ -293,8 +321,9 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                 .unwrap_or(&RentCollector::default()),
             &program_cache_for_tx_batch.borrow(),
         );
+        #[cfg(not(target_os = "zkvm"))]
         load_time.stop();
-
+        #[cfg(not(target_os = "zkvm"))]
         let mut execution_time = Measure::start("execution_time");
 
         let execution_results: Vec<TransactionExecutionResult> = loaded_transactions
@@ -306,7 +335,9 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                     let result = self.execute_loaded_transaction(
                         tx,
                         loaded_transaction,
+                        #[cfg(not(target_os = "zkvm"))]
                         &mut execute_timings,
+                        #[cfg(not(target_os = "zkvm"))]
                         &mut error_metrics,
                         &mut program_cache_for_tx_batch.borrow_mut(),
                         environment,
@@ -332,6 +363,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
             })
             .collect();
 
+        #[cfg(not(target_os = "zkvm"))]
         execution_time.stop();
 
         // Skip eviction when there's no chance this particular tx batch has increased the size of
@@ -351,27 +383,32 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                 );
         }
 
-        trace!(
-            "load: {}us execute: {}us txs_len={}",
-            load_time.as_us(),
-            execution_time.as_us(),
-            sanitized_txs.len(),
-        );
-
-        execute_timings.saturating_add_in_place(
-            ExecuteTimingType::ValidateFeesUs,
-            validate_fees_time.as_us(),
-        );
-        execute_timings.saturating_add_in_place(
-            ExecuteTimingType::ProgramCacheUs,
-            program_cache_time.as_us(),
-        );
-        execute_timings.saturating_add_in_place(ExecuteTimingType::LoadUs, load_time.as_us());
-        execute_timings
-            .saturating_add_in_place(ExecuteTimingType::ExecuteUs, execution_time.as_us());
+        #[cfg(not(target_os = "zkvm"))]
+        {
+            trace!(
+                "load: {}us execute: {}us txs_len={}",
+                load_time.as_us(),
+                execution_time.as_us(),
+                sanitized_txs.len(),
+            );
+            
+            execute_timings.saturating_add_in_place(
+                ExecuteTimingType::ValidateFeesUs,
+                validate_fees_time.as_us(),
+            );
+            execute_timings.saturating_add_in_place(
+                ExecuteTimingType::ProgramCacheUs,
+                program_cache_time.as_us(),
+            );
+            execute_timings.saturating_add_in_place(ExecuteTimingType::LoadUs, load_time.as_us());
+            execute_timings
+                .saturating_add_in_place(ExecuteTimingType::ExecuteUs, execution_time.as_us());
+        }
 
         LoadAndExecuteSanitizedTransactionsOutput {
+            #[cfg(not(target_os = "zkvm"))]
             error_metrics,
+            #[cfg(not(target_os = "zkvm"))]
             execute_timings,
             execution_results,
             loaded_transactions,
@@ -387,6 +424,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
         feature_set: &FeatureSet,
         fee_structure: &FeeStructure,
         rent_collector: &RentCollector,
+        #[cfg(not(target_os = "zkvm"))]
         error_counters: &mut TransactionErrorMetrics,
     ) -> Vec<TransactionValidationResult> {
         sanitized_txs
@@ -403,6 +441,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                         feature_set,
                         fee_structure,
                         rent_collector,
+                        #[cfg(not(target_os = "zkvm"))]
                         error_counters,
                     )
                 })
@@ -422,13 +461,15 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
         feature_set: &FeatureSet,
         fee_structure: &FeeStructure,
         rent_collector: &RentCollector,
+        #[cfg(not(target_os = "zkvm"))]
         error_counters: &mut TransactionErrorMetrics,
     ) -> transaction::Result<ValidatedTransactionDetails> {
         let compute_budget_limits = process_compute_budget_instructions(
             message.program_instructions_iter(),
         )
         .map_err(|err| {
-            error_counters.invalid_compute_budget += 1;
+            #[cfg(not(target_os = "zkvm"))]
+            { error_counters.invalid_compute_budget += 1; }
             err
         })?;
 
@@ -439,7 +480,8 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
             .or_else(|| callbacks.get_account_shared_data(fee_payer_address));
 
         let Some(mut fee_payer_account) = fee_payer_account else {
-            error_counters.account_not_found += 1;
+            #[cfg(not(target_os = "zkvm"))]
+            { error_counters.account_not_found += 1; }
             return Err(TransactionError::AccountNotFound);
         };
 
@@ -471,6 +513,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
             fee_payer_address,
             &mut fee_payer_account,
             fee_payer_index,
+            #[cfg(not(target_os = "zkvm"))]
             error_counters,
             rent_collector,
             fee_details.total_fee(),
@@ -714,7 +757,9 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
         &self,
         tx: &SanitizedTransaction,
         loaded_transaction: &mut LoadedTransaction,
+        #[cfg(not(target_os = "zkvm"))]
         execute_timings: &mut ExecuteTimings,
+        #[cfg(not(target_os = "zkvm"))]
         error_metrics: &mut TransactionErrorMetrics,
         program_cache_for_tx_batch: &mut ProgramCacheForTxBatch,
         environment: &TransactionProcessingEnvironment,
@@ -790,18 +835,22 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
             compute_budget,
         );
 
+        #[cfg(not(target_os = "zkvm"))]
         let mut process_message_time = Measure::start("process_message_time");
         let process_result = MessageProcessor::process_message(
             tx.message(),
             &loaded_transaction.program_indices,
             &mut invoke_context,
+            #[cfg(not(target_os = "zkvm"))]
             execute_timings,
             &mut executed_units,
         );
+        #[cfg(not(target_os = "zkvm"))]
         process_message_time.stop();
 
         drop(invoke_context);
 
+        #[cfg(not(target_os = "zkvm"))]
         saturating_add_assign!(
             execute_timings.execute_accessories.process_message_us,
             process_message_time.as_us()
@@ -819,6 +868,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                 .map(|_| info)
             })
             .map_err(|err| {
+                #[cfg(not(target_os = "zkvm"))]
                 match err {
                     TransactionError::InvalidRentPayingAccount
                     | TransactionError::InsufficientFundsForRent { .. } => {
@@ -852,7 +902,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
         let ExecutionRecord {
             accounts,
             return_data,
-            touched_account_count,
+            touched_account_count: _touched_account_count,
             accounts_resize_delta: accounts_data_len_delta,
         } = transaction_context.into();
 
@@ -866,14 +916,17 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
         let status = status.map(|_| ());
 
         loaded_transaction.accounts = accounts;
-        saturating_add_assign!(
-            execute_timings.details.total_account_count,
-            loaded_transaction.accounts.len() as u64
-        );
-        saturating_add_assign!(
-            execute_timings.details.changed_account_count,
-            touched_account_count
-        );
+        #[cfg(not(target_os = "zkvm"))]
+        {
+            saturating_add_assign!(
+                execute_timings.details.total_account_count,
+                loaded_transaction.accounts.len() as u64
+            );
+                saturating_add_assign!(
+                execute_timings.details.changed_account_count,
+                _touched_account_count
+            );
+        }
 
         let return_data = if config.recording_config.enable_return_data_recording
             && !return_data.data.is_empty()

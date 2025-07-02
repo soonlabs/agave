@@ -92,6 +92,7 @@ impl RentState {
         account_state: &AccountSharedData,
         account_index: IndexOfAccount,
     ) -> Result<()> {
+        #[cfg(not(target_os = "zkvm"))]
         Self::submit_rent_state_metrics(pre_rent_state, post_rent_state);
         if !solana_sdk::incinerator::check_id(address)
             && !post_rent_state.transition_allowed_from(pre_rent_state)
@@ -108,6 +109,7 @@ impl RentState {
         }
     }
 
+    #[cfg(not(target_os = "zkvm"))]
     fn submit_rent_state_metrics(pre_rent_state: &Self, post_rent_state: &Self) {
         match (pre_rent_state, post_rent_state) {
             (&RentState::Uninitialized, &RentState::RentPaying { .. }) => {

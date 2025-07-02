@@ -2,10 +2,9 @@ use {
     crate::transaction_processing_callback::TransactionProcessingCallback,
     solana_program_runtime::{
         loaded_programs::{
-            LoadProgramMetrics, ProgramCacheEntry, ProgramCacheEntryOwner, ProgramCacheEntryType,
+            ProgramCacheEntry, ProgramCacheEntryOwner, ProgramCacheEntryType,
             ProgramRuntimeEnvironment, ProgramRuntimeEnvironments, DELAY_VISIBILITY_SLOT_OFFSET,
         },
-        timings::ExecuteDetailsTimings,
     },
     solana_sdk::{
         account::{AccountSharedData, ReadableAccount},
@@ -20,6 +19,8 @@ use {
     },
     solana_type_overrides::sync::Arc,
 };
+#[cfg(not(target_os = "zkvm"))]
+use solana_program_runtime::{loaded_programs::LoadProgramMetrics, timings::ExecuteDetailsTimings};
 
 #[derive(Debug)]
 pub(crate) enum ProgramAccountLoadResult {
@@ -31,6 +32,7 @@ pub(crate) enum ProgramAccountLoadResult {
 }
 
 pub(crate) fn load_program_from_bytes(
+    #[cfg(not(target_os = "zkvm"))]
     load_program_metrics: &mut LoadProgramMetrics,
     programdata: &[u8],
     loader_key: &Pubkey,
@@ -49,6 +51,7 @@ pub(crate) fn load_program_from_bytes(
                 deployment_slot.saturating_add(DELAY_VISIBILITY_SLOT_OFFSET),
                 programdata,
                 account_size,
+                #[cfg(not(target_os = "zkvm"))]
                 load_program_metrics,
             )
         }
@@ -60,6 +63,7 @@ pub(crate) fn load_program_from_bytes(
             deployment_slot.saturating_add(DELAY_VISIBILITY_SLOT_OFFSET),
             programdata,
             account_size,
+            #[cfg(not(target_os = "zkvm"))]
             load_program_metrics,
         )
     }
@@ -128,6 +132,7 @@ pub fn load_program_with_pubkey<CB: TransactionProcessingCallback>(
     slot: Slot,
     reload: bool,
 ) -> Option<Arc<ProgramCacheEntry>> {
+    #[cfg(not(target_os = "zkvm"))]
     let mut load_program_metrics = LoadProgramMetrics {
         program_id: pubkey.to_string(),
         ..LoadProgramMetrics::default()
@@ -139,6 +144,7 @@ pub fn load_program_with_pubkey<CB: TransactionProcessingCallback>(
         ),
 
         ProgramAccountLoadResult::ProgramOfLoaderV1(program_account) => load_program_from_bytes(
+            #[cfg(not(target_os = "zkvm"))]
             &mut load_program_metrics,
             program_account.data(),
             program_account.owner(),
@@ -150,6 +156,7 @@ pub fn load_program_with_pubkey<CB: TransactionProcessingCallback>(
         .map_err(|_| (0, ProgramCacheEntryOwner::LoaderV1)),
 
         ProgramAccountLoadResult::ProgramOfLoaderV2(program_account) => load_program_from_bytes(
+            #[cfg(not(target_os = "zkvm"))]
             &mut load_program_metrics,
             program_account.data(),
             program_account.owner(),
@@ -167,6 +174,7 @@ pub fn load_program_with_pubkey<CB: TransactionProcessingCallback>(
                 .ok_or(Box::new(InstructionError::InvalidAccountData).into())
                 .and_then(|programdata| {
                     load_program_from_bytes(
+                        #[cfg(not(target_os = "zkvm"))]
                         &mut load_program_metrics,
                         programdata,
                         program_account.owner(),
@@ -188,6 +196,7 @@ pub fn load_program_with_pubkey<CB: TransactionProcessingCallback>(
             .ok_or(Box::new(InstructionError::InvalidAccountData).into())
             .and_then(|elf_bytes| {
                 load_program_from_bytes(
+                    #[cfg(not(target_os = "zkvm"))]
                     &mut load_program_metrics,
                     elf_bytes,
                     &loader_v4::id(),
@@ -212,8 +221,11 @@ pub fn load_program_with_pubkey<CB: TransactionProcessingCallback>(
         )
     });
 
-    let mut timings = ExecuteDetailsTimings::default();
-    load_program_metrics.submit_datapoint(&mut timings);
+    #[cfg(not(target_os = "zkvm"))]
+    {
+        let mut timings = ExecuteDetailsTimings::default();
+        load_program_metrics.submit_datapoint(&mut timings);
+    }
     loaded_program.update_access_slot(slot);
     Some(Arc::new(loaded_program))
 }

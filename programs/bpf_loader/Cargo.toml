@@ -17,13 +17,18 @@ log = { workspace = true }
 scopeguard = { workspace = true }
 solana-compute-budget = { workspace = true }
 solana-curve25519 = { workspace = true }
-solana-measure = { workspace = true }
 solana-poseidon = { workspace = true }
 solana-program-runtime = { workspace = true }
 solana-sdk = { workspace = true }
 solana-type-overrides = { workspace = true }
-solana_rbpf = { workspace = true }
 thiserror = { workspace = true }
+
+[target.'cfg(not(target_os = "zkvm"))'.dependencies]
+solana-measure = { workspace = true }
+solana_rbpf = { workspace = true, features = ["default"] }
+
+[target.'cfg(target_os = "zkvm")'.dependencies]
+solana_rbpf = { workspace = true }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

@@ -6,12 +6,11 @@ pub mod syscalls;
 
 use {
     solana_compute_budget::compute_budget::MAX_INSTRUCTION_STACK_DEPTH,
-    solana_measure::measure::Measure,
     solana_program_runtime::{
         ic_logger_msg, ic_msg,
         invoke_context::{BpfAllocator, InvokeContext, SerializedAccountMetadata, SyscallContext},
         loaded_programs::{
-            LoadProgramMetrics, ProgramCacheEntry, ProgramCacheEntryOwner, ProgramCacheEntryType,
+            ProgramCacheEntry, ProgramCacheEntryOwner, ProgramCacheEntryType,
             DELAY_VISIBILITY_SLOT_OFFSET,
         },
         log_collector::LogCollector,
@@ -43,13 +42,18 @@ use {
         loader_v4, native_loader,
         program_utils::limited_deserialize,
         pubkey::Pubkey,
-        saturating_add_assign,
         system_instruction::{self, MAX_PERMITTED_DATA_LENGTH},
         transaction_context::{IndexOfAccount, InstructionContext, TransactionContext},
     },
     solana_type_overrides::sync::{atomic::Ordering, Arc},
     std::{cell::RefCell, mem, rc::Rc},
     syscalls::{create_program_runtime_environment_v1, morph_into_deployment_environment_v1},
+};
+#[cfg(not(target_os = "zkvm"))]
+use {
+    solana_measure::measure::Measure,
+    solana_program_runtime::loaded_programs::LoadProgramMetrics,
+    solana_sdk::saturating_add_assign,
 };
 
 pub const DEFAULT_LOADER_COMPUTE_UNITS: u64 = 570;
@@ -63,6 +67,7 @@ thread_local! {
 #[allow(clippy::too_many_arguments)]
 pub fn load_program_from_bytes(
     log_collector: Option<Rc<RefCell<LogCollector>>>,
+    #[cfg(not(target_os = "zkvm"))]
     load_program_metrics: &mut LoadProgramMetrics,
     programdata: &[u8],
     loader_key: &Pubkey,
@@ -82,6 +87,7 @@ pub fn load_program_from_bytes(
                 effective_slot,
                 programdata,
                 account_size,
+                #[cfg(not(target_os = "zkvm"))]
                 load_program_metrics,
             )
         }
@@ -93,6 +99,7 @@ pub fn load_program_from_bytes(
             effective_slot,
             programdata,
             account_size,
+            #[cfg(not(target_os = "zkvm"))]
             load_program_metrics,
         )
     }
@@ -106,7 +113,9 @@ pub fn load_program_from_bytes(
 macro_rules! deploy_program {
     ($invoke_context:expr, $program_id:expr, $loader_key:expr,
      $account_size:expr, $slot:expr, $drop:expr, $new_programdata:expr $(,)?) => {{
+        #[cfg(not(target_os = "zkvm"))]
         let mut load_program_metrics = LoadProgramMetrics::default();
+        #[cfg(not(target_os = "zkvm"))]
         let mut register_syscalls_time = Measure::start("register_syscalls_time");
         let deployment_slot: Slot = $slot;
         let environments = $invoke_context.get_environments_for_slot(
@@ -122,10 +131,13 @@ macro_rules! deploy_program {
             ic_msg!($invoke_context, "Failed to register syscalls: {}", e);
             InstructionError::ProgramEnvironmentSetupFailure
         })?;
-        register_syscalls_time.stop();
-        load_program_metrics.register_syscalls_us = register_syscalls_time.as_us();
-        // Verify using stricter deployment_program_runtime_environment
-        let mut load_elf_time = Measure::start("load_elf_time");
+        #[cfg(not(target_os = "zkvm"))]
+        let mut load_elf_time = {
+            register_syscalls_time.stop();
+            load_program_metrics.register_syscalls_us = register_syscalls_time.as_us();
+            // Verify using stricter deployment_program_runtime_environment
+            Measure::start("load_elf_time")
+        };
         let executable = Executable::<InvokeContext>::load(
             $new_programdata,
             Arc::new(deployment_program_runtime_environment),
@@ -133,18 +145,25 @@ macro_rules! deploy_program {
             ic_logger_msg!($invoke_context.get_log_collector(), "{}", err);
             InstructionError::InvalidAccountData
         })?;
-        load_elf_time.stop();
-        load_program_metrics.load_elf_us = load_elf_time.as_us();
-        let mut verify_code_time = Measure::start("verify_code_time");
+        #[cfg(not(target_os = "zkvm"))]
+        let mut verify_code_time = {
+            load_elf_time.stop();
+            load_program_metrics.load_elf_us = load_elf_time.as_us();
+            Measure::start("verify_code_time")
+        };
         executable.verify::<RequisiteVerifier>().map_err(|err| {
             ic_logger_msg!($invoke_context.get_log_collector(), "{}", err);
             InstructionError::InvalidAccountData
         })?;
-        verify_code_time.stop();
-        load_program_metrics.verify_code_us = verify_code_time.as_us();
+        #[cfg(not(target_os = "zkvm"))]
+        {
+            verify_code_time.stop();
+            load_program_metrics.verify_code_us = verify_code_time.as_us();
+        }
         // Reload but with environments.program_runtime_v1
         let executor = load_program_from_bytes(
             $invoke_context.get_log_collector(),
+            #[cfg(not(target_os = "zkvm"))]
             &mut load_program_metrics,
             $new_programdata,
             $loader_key,
@@ -164,8 +183,11 @@ macro_rules! deploy_program {
             );
         }
         $drop
-        load_program_metrics.program_id = $program_id.to_string();
-        load_program_metrics.submit_datapoint(&mut $invoke_context.timings);
+        #[cfg(not(target_os = "zkvm"))]
+        {
+            load_program_metrics.program_id = $program_id.to_string();
+            load_program_metrics.submit_datapoint(&mut $invoke_context.timings);
+        }
         $invoke_context.program_cache_for_tx_batch.store_modified_entry($program_id, Arc::new(executor));
     }};
 }
@@ -436,6 +458,7 @@ pub fn process_instruction_inner(
         return Err(Box::new(InstructionError::IncorrectProgramId));
     }
 
+    #[cfg(not(target_os = "zkvm"))]
     let mut get_or_create_executor_time = Measure::start("get_or_create_executor_time");
     let executor = invoke_context
         .program_cache_for_tx_batch
@@ -445,12 +468,14 @@ pub fn process_instruction_inner(
             InstructionError::InvalidAccountData
         })?;
     drop(program_account);
-    get_or_create_executor_time.stop();
-    saturating_add_assign!(
-        invoke_context.timings.get_or_create_executor_us,
-        get_or_create_executor_time.as_us()
-    );
-
+    #[cfg(not(target_os = "zkvm"))]
+    {
+        get_or_create_executor_time.stop();
+        saturating_add_assign!(
+            invoke_context.timings.get_or_create_executor_us,
+            get_or_create_executor_time.as_us()
+        );
+    }
     executor.ix_usage_counter.fetch_add(1, Ordering::Relaxed);
     match &executor.program {
         ProgramCacheEntryType::FailedVerification(_)
@@ -1355,20 +1380,22 @@ fn execute<'a, 'b: 'a>(
             *program_account.get_owner() == bpf_loader_deprecated::id(),
         )
     };
-    #[cfg(any(target_os = "windows", not(target_arch = "x86_64")))]
+    #[cfg(any(target_os = "windows", target_os = "zkvm", not(target_arch = "x86_64")))]
     let use_jit = false;
-    #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
+    #[cfg(all(not(target_os = "windows"), not(target_os = "zkvm"), target_arch = "x86_64"))]
     let use_jit = executable.get_compiled_program().is_some();
     let direct_mapping = invoke_context
         .get_feature_set()
         .is_active(&bpf_account_data_direct_mapping::id());
 
+    #[cfg(not(target_os = "zkvm"))]
     let mut serialize_time = Measure::start("serialize");
     let (parameter_bytes, regions, accounts_metadata) = serialization::serialize_parameters(
         invoke_context.transaction_context,
         instruction_context,
         !direct_mapping,
     )?;
+    #[cfg(not(target_os = "zkvm"))]
     serialize_time.stop();
 
     // save the account addresses so in case we hit an AccessViolation error we
@@ -1388,6 +1415,7 @@ fn execute<'a, 'b: 'a>(
         })
         .collect::<Vec<_>>();
 
+    #[cfg(not(target_os = "zkvm"))]
     let mut create_vm_time = Measure::start("create_vm");
     let execution_result = {
         let compute_meter_prev = invoke_context.get_remaining();
@@ -1399,9 +1427,12 @@ fn execute<'a, 'b: 'a>(
                 return Err(Box::new(InstructionError::ProgramEnvironmentSetupFailure));
             }
         };
-        create_vm_time.stop();
+        #[cfg(not(target_os = "zkvm"))]
+        {
+            create_vm_time.stop();
 
-        vm.context_object_pointer.execute_time = Some(Measure::start("execute"));
+            vm.context_object_pointer.execute_time = Some(Measure::start("execute"));
+        }
         let (compute_units_consumed, result) = vm.execute_program(executable, !use_jit);
         MEMORY_POOL.with_borrow_mut(|memory_pool| {
             memory_pool.put_stack(stack);
@@ -1410,6 +1441,7 @@ fn execute<'a, 'b: 'a>(
             debug_assert!(memory_pool.heap_len() <= MAX_INSTRUCTION_STACK_DEPTH);
         });
         drop(vm);
+        #[cfg(not(target_os = "zkvm"))]
         if let Some(execute_time) = invoke_context.execute_time.as_mut() {
             execute_time.stop();
             saturating_add_assign!(invoke_context.timings.execute_us, execute_time.as_us());
@@ -1494,20 +1526,24 @@ fn execute<'a, 'b: 'a>(
         )
     }
 
+    #[cfg(not(target_os = "zkvm"))]
     let mut deserialize_time = Measure::start("deserialize");
     let execute_or_deserialize_result = execution_result.and_then(|_| {
         deserialize_parameters(invoke_context, parameter_bytes.as_slice(), !direct_mapping)
             .map_err(|error| Box::new(error) as Box<dyn std::error::Error>)
     });
-    deserialize_time.stop();
+    #[cfg(not(target_os = "zkvm"))]
+    {
+        deserialize_time.stop();
 
-    // Update the timings
-    saturating_add_assign!(invoke_context.timings.serialize_us, serialize_time.as_us());
-    saturating_add_assign!(invoke_context.timings.create_vm_us, create_vm_time.as_us());
-    saturating_add_assign!(
-        invoke_context.timings.deserialize_us,
-        deserialize_time.as_us()
-    );
+        // Update the timings
+        saturating_add_assign!(invoke_context.timings.serialize_us, serialize_time.as_us());
+        saturating_add_assign!(invoke_context.timings.create_vm_us, create_vm_time.as_us());
+        saturating_add_assign!(
+            invoke_context.timings.deserialize_us,
+            deserialize_time.as_us()
+        );
+    }
 
     execute_or_deserialize_result
 }
@@ -1519,6 +1555,7 @@ pub mod test_utils {
     };
 
     pub fn load_all_invoked_programs(invoke_context: &mut InvokeContext) {
+        #[cfg(not(target_os = "zkvm"))]
         let mut load_program_metrics = LoadProgramMetrics::default();
         let program_runtime_environment = create_program_runtime_environment_v1(
             invoke_context.get_feature_set(),
@@ -1544,6 +1581,7 @@ pub mod test_utils {
 
                 if let Ok(loaded_program) = load_program_from_bytes(
                     None,
+                    #[cfg(not(target_os = "zkvm"))]
                     &mut load_program_metrics,
                     account.data(),
                     owner,

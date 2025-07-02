@@ -2,7 +2,6 @@ use {
     super::*,
     crate::serialization::account_data_region_memory_state,
     scopeguard::defer,
-    solana_measure::measure::Measure,
     solana_program_runtime::invoke_context::SerializedAccountMetadata,
     solana_rbpf::{
         ebpf,
@@ -10,7 +9,6 @@ use {
     },
     solana_sdk::{
         feature_set::enable_bpf_loader_set_authority_checked_ix,
-        saturating_add_assign,
         stable_layout::stable_instruction::StableInstruction,
         syscalls::{
             MAX_CPI_ACCOUNT_INFOS, MAX_CPI_INSTRUCTION_ACCOUNTS, MAX_CPI_INSTRUCTION_DATA_LEN,
@@ -18,6 +16,11 @@ use {
         transaction_context::BorrowedAccount,
     },
     std::{mem, ptr},
+};
+#[cfg(not(target_os = "zkvm"))]
+use {
+    solana_measure::measure::Measure,
+    solana_sdk::saturating_add_assign,
 };
 
 fn check_account_info_pointer(
@@ -1072,6 +1075,7 @@ fn cpi_common<S: SyscallInvokeSigned>(
         invoke_context,
         invoke_context.get_compute_budget().invoke_units,
     )?;
+    #[cfg(not(target_os = "zkvm"))]
     if let Some(execute_time) = invoke_context.execute_time.as_mut() {
         execute_time.stop();
         saturating_add_assign!(invoke_context.timings.execute_us, execute_time.as_us());
@@ -1113,6 +1117,7 @@ fn cpi_common<S: SyscallInvokeSigned>(
         &instruction_accounts,
         &program_indices,
         &mut compute_units_consumed,
+        #[cfg(not(target_os = "zkvm"))]
         &mut ExecuteTimings::default(),
     )?;
 
@@ -1161,7 +1166,10 @@ fn cpi_common<S: SyscallInvokeSigned>(
         }
     }
 
-    invoke_context.execute_time = Some(Measure::start("execute"));
+    #[cfg(not(target_os = "zkvm"))]
+    {
+        invoke_context.execute_time = Some(Measure::start("execute"));
+    }
     Ok(SUCCESS)
 }
 
@@ -1404,7 +1412,7 @@ fn update_caller_account(
                     let original_state = realloc_region.state.replace(MemoryState::Writable);
                     defer! {
                         realloc_region.state.set(original_state);
-                    };
+                    }
 
                     // We need to zero the unused space in the realloc region, starting after the
                     // last byte of the new data which might be > original_data_len.
@@ -1513,7 +1521,7 @@ fn update_caller_account(
                 let original_state = realloc_region.state.replace(MemoryState::Writable);
                 defer! {
                     realloc_region.state.set(original_state);
-                };
+                }
 
                 translate_slice_mut::<u8>(
                     memory_mapping,
