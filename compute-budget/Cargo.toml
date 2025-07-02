@@ -21,3 +21,8 @@ frozen-abi = [
     "dep:solana-frozen-abi",
     "solana-sdk/frozen-abi",
 ]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(RUSTC_WITH_SPECIALIZATION)'
+] }

@@ -5,7 +5,7 @@
 use {
     crate::errors::AuthenticatedEncryptionError,
     base64::{prelude::BASE64_STANDARD, Engine},
-    sha3::{Digest, Sha3_512},
+    tiny_keccak::{Sha3, Hasher},
     solana_sdk::{
         derivation_path::DerivationPath,
         signature::Signature,
@@ -123,11 +123,12 @@ impl AeKey {
             return Err(SignerError::Custom("Rejecting default signature".into()));
         }
 
-        let mut hasher = Sha3_512::new();
+        let mut hasher = Sha3::v512();
         hasher.update(signature.as_ref());
-        let result = hasher.finalize();
+        let mut result = vec![0u8; 64];
+        hasher.finalize(&mut result);
 
-        Ok(result.to_vec())
+        Ok(result)
     }
 
     /// Generates a random authenticated encryption key.
@@ -173,9 +174,10 @@ impl SeedDerivable for AeKey {
             return Err(AuthenticatedEncryptionError::SeedLengthTooLong.into());
         }
 
-        let mut hasher = Sha3_512::new();
+        let mut hasher = Sha3::v512();
         hasher.update(seed);
-        let result = hasher.finalize();
+        let mut result = [0u8; 64];
+        hasher.finalize(&mut result);
 
         Ok(Self(result[..AE_KEY_LEN].try_into()?))
     }

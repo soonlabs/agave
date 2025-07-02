@@ -143,3 +143,8 @@ name = "sigverify_stage"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(RUSTC_WITH_SPECIALIZATION)'
+] }

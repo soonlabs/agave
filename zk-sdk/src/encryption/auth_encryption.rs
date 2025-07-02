@@ -13,7 +13,7 @@ use {
     },
     base64::{prelude::BASE64_STANDARD, Engine},
     rand::{rngs::OsRng, Rng},
-    sha3::{Digest, Sha3_512},
+    tiny_keccak::{Sha3, Hasher},
     solana_sdk::{
         derivation_path::DerivationPath,
         signature::Signature,
@@ -124,11 +124,11 @@ impl AeKey {
 
     /// Derive a seed from a signature used to generate an authenticated encryption key.
     pub fn seed_from_signature(signature: &Signature) -> Vec<u8> {
-        let mut hasher = Sha3_512::new();
-        hasher.update(signature);
-        let result = hasher.finalize();
-
-        result.to_vec()
+        let mut hasher = Sha3::v512();
+        hasher.update(signature.as_ref());
+        let mut result = vec![0u8; 64];
+        hasher.finalize(&mut result);
+        result
     }
 
     /// Generates a random authenticated encryption key.
@@ -174,9 +174,10 @@ impl SeedDerivable for AeKey {
             return Err(AuthenticatedEncryptionError::SeedLengthTooLong.into());
         }
 
-        let mut hasher = Sha3_512::new();
+        let mut hasher = Sha3::v512();
         hasher.update(seed);
-        let result = hasher.finalize();
+        let mut result = [0u8; 64];
+        hasher.finalize(&mut result);
 
         Ok(Self(result[..AE_KEY_LEN].try_into()?))
     }

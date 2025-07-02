@@ -61,3 +61,10 @@ name = "discard"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(RUSTC_WITH_SPECIALIZATION)',
+    'cfg(build_target_feature_avx)',
+    'cfg(build_target_feature_avx2)',
+] }

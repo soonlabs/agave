@@ -128,3 +128,8 @@ frozen-abi = [
 
 [[bench]]
 name = "prioritization_fee_cache"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(RUSTC_WITH_SPECIALIZATION)'
+] }

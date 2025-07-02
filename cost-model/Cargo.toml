@@ -55,3 +55,8 @@ frozen-abi = [
 
 [[bench]]
 name = "cost_tracker"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(RUSTC_WITH_SPECIALIZATION)'
+] }

@@ -426,7 +426,7 @@ impl InnerProductProof {
 mod tests {
     use {
         super::*, crate::range_proof::generators::BulletproofGens, rand::rngs::OsRng,
-        sha3::Sha3_512,
+        tiny_keccak::{Sha3, Hasher},
     };
 
     #[test]
@@ -438,7 +438,11 @@ mod tests {
         let G: Vec<RistrettoPoint> = bp_gens.G(n).cloned().collect();
         let H: Vec<RistrettoPoint> = bp_gens.H(n).cloned().collect();
 
-        let Q = RistrettoPoint::hash_from_bytes::<Sha3_512>(b"test point");
+        let mut hasher = Sha3::v512();
+        hasher.update(b"test point");
+        let mut hash = [0u8; 64];
+        hasher.finalize(&mut hash);
+        let Q = RistrettoPoint::from_uniform_bytes(&hash);
 
         let a: Vec<_> = (0..n).map(|_| Scalar::random(&mut OsRng)).collect();
         let b: Vec<_> = (0..n).map(|_| Scalar::random(&mut OsRng)).collect();

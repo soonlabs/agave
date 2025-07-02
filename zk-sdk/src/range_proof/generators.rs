@@ -1,28 +1,25 @@
 use {
     crate::range_proof::errors::RangeProofGeneratorError,
-    curve25519_dalek::{
-        digest::{ExtendableOutput, Update, XofReader},
-        ristretto::RistrettoPoint,
-    },
-    sha3::{Shake256, Shake256Reader},
+    curve25519_dalek::ristretto::RistrettoPoint,
+    tiny_keccak::{Shake, Xof, Hasher},
 };
 
 const MAX_GENERATOR_LENGTH: usize = u32::MAX as usize;
 
 /// Generators for Pedersen vector commitments that are used for inner-product proofs.
 struct GeneratorsChain {
-    reader: Shake256Reader,
+    reader: Shake,
 }
 
 impl GeneratorsChain {
     /// Creates a chain of generators, determined by the hash of `label`.
     fn new(label: &[u8]) -> Self {
-        let mut shake = Shake256::default();
+        let mut shake = Shake::v256();
         shake.update(b"GeneratorsChain");
         shake.update(label);
 
         GeneratorsChain {
-            reader: shake.finalize_xof(),
+            reader: shake,
         }
     }
 
@@ -31,7 +28,7 @@ impl GeneratorsChain {
     fn fast_forward(mut self, n: usize) -> Self {
         for _ in 0..n {
             let mut buf = [0u8; 64];
-            self.reader.read(&mut buf);
+            self.reader.squeeze(&mut buf);
         }
         self
     }
@@ -48,7 +45,7 @@ impl Iterator for GeneratorsChain {
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut uniform_bytes = [0u8; 64];
-        self.reader.read(&mut uniform_bytes);
+        self.reader.squeeze(&mut uniform_bytes);
 
         Some(RistrettoPoint::from_uniform_bytes(&uniform_bytes))
     }

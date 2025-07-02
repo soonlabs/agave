@@ -32,7 +32,7 @@ use {
     },
     rand::rngs::OsRng,
     serde::{Deserialize, Serialize},
-    sha3::{Digest, Sha3_512},
+    tiny_keccak::{Sha3, Hasher},
     solana_sdk::{
         derivation_path::DerivationPath,
         signature::Signature,
@@ -451,11 +451,11 @@ impl ElGamalSecretKey {
 
     /// Derive an ElGamal secret key from a signature.
     pub fn seed_from_signature(signature: &Signature) -> Vec<u8> {
-        let mut hasher = Sha3_512::new();
+        let mut hasher = Sha3::v512();
         hasher.update(signature.as_ref());
-        let result = hasher.finalize();
-
-        result.to_vec()
+        let mut output = vec![0u8; 64];
+        hasher.finalize(&mut output);
+        output
     }
 
     /// Randomly samples an ElGamal secret key.
@@ -476,7 +476,12 @@ impl ElGamalSecretKey {
         if seed.len() > MAXIMUM_SEED_LEN {
             return Err(ElGamalError::SeedLengthTooLong);
         }
-        Ok(ElGamalSecretKey(Scalar::hash_from_bytes::<Sha3_512>(seed)))
+
+        let mut hasher = Sha3::v512();
+        hasher.update(seed);
+        let mut output = [0u8; 64];
+        hasher.finalize(&mut output);
+        Ok(ElGamalSecretKey(Scalar::from_bytes_mod_order_wide(&output)))
     }
 
     pub fn get_scalar(&self) -> &Scalar {

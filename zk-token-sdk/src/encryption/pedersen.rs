@@ -12,7 +12,7 @@ use {
         traits::MultiscalarMul,
     },
     serde::{Deserialize, Serialize},
-    sha3::Sha3_512,
+    tiny_keccak::{Sha3, Hasher},
     std::convert::TryInto,
     subtle::{Choice, ConstantTimeEq},
     zeroize::Zeroize,
@@ -28,8 +28,13 @@ lazy_static::lazy_static! {
     /// Pedersen base point for encoding messages to be committed.
     pub static ref G: RistrettoPoint = RISTRETTO_BASEPOINT_POINT;
     /// Pedersen base point for encoding the commitment openings.
-    pub static ref H: RistrettoPoint =
-        RistrettoPoint::hash_from_bytes::<Sha3_512>(RISTRETTO_BASEPOINT_COMPRESSED.as_bytes());
+    pub static ref H: RistrettoPoint = {
+        let mut hasher = Sha3::v512();
+        hasher.update(RISTRETTO_BASEPOINT_COMPRESSED.as_bytes());
+        let mut hash = [0u8; 64];
+        hasher.finalize(&mut hash);
+        RistrettoPoint::from_uniform_bytes(&hash)
+    };
 }
 
 /// Algorithm handle for the Pedersen commitment scheme.

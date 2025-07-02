@@ -25,17 +25,22 @@ tiny-bip39 = { workspace = true }
 [target.'cfg(not(target_os = "solana"))'.dependencies]
 aes-gcm-siv = { workspace = true }
 bincode = { workspace = true }
-curve25519-dalek = { workspace = true, features = ["serde", "digest"] }
+curve25519-dalek = { workspace = true, features = ["serde", "digest", "rand_core"] }
 itertools = { workspace = true }
 lazy_static = { workspace = true }
 rand = { workspace = true }
 serde = { workspace = true }
 serde_derive = { workspace = true }
 serde_json = { workspace = true }
-sha3 = { workspace = true }
+tiny-keccak = { workspace = true, features = ["sha3", "shake"] }
 solana-sdk = { workspace = true }
 subtle = { workspace = true }
 zeroize = { workspace = true, features = ["zeroize_derive"] }
 
 [lib]
 crate-type = ["cdylib", "rlib"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(target_os, values("solana"))'
+] }

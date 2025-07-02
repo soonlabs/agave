@@ -12,7 +12,7 @@ edition = { workspace = true }
 [dependencies]
 bincode = { workspace = true }
 byteorder = { workspace = true }
-libsecp256k1 = { workspace = true }
+k256 = { workspace = true }
 log = { workspace = true }
 scopeguard = { workspace = true }
 solana-compute-budget = { workspace = true }

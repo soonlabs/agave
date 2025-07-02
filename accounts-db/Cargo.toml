@@ -102,3 +102,8 @@ harness = false
 [[bench]]
 name = "bench_serde"
 harness = false
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(RUSTC_WITH_SPECIALIZATION)'
+] }

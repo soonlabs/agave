@@ -30,8 +30,8 @@ full = [
     "serde_json",
     "ed25519-dalek",
     "ed25519-dalek-bip32",
-    "libsecp256k1",
-    "sha3",
+    "k256",
+    "tiny-keccak",
     "digest",
 ]
 borsh = ["dep:borsh", "solana-program/borsh"]
@@ -62,7 +62,7 @@ generic-array = { workspace = true, features = ["serde", "more_lengths"], option
 hmac = { workspace = true }
 itertools =  { workspace = true }
 lazy_static = { workspace = true }
-libsecp256k1 = { workspace = true, optional = true, features = ["hmac"] }
+k256 = { workspace = true, optional = true }
 log = { workspace = true }
 memmap2 = { workspace = true, optional = true }
 num_enum = { workspace = true }
@@ -78,7 +78,7 @@ serde_derive = { workspace = true }
 serde_json = { workspace = true, optional = true }
 serde_with = { workspace = true, features = ["macros"] }
 sha2 = { workspace = true }
-sha3 = { workspace = true, optional = true }
+tiny-keccak = { workspace = true, optional = true, features = ["keccak"] }
 siphasher = { workspace = true }
 solana-frozen-abi = { workspace = true, optional = true }
 solana-frozen-abi-macro = { workspace = true, optional = true }
@@ -111,3 +111,9 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(target_os, values("solana"))',
+    'cfg(RUSTC_WITH_SPECIALIZATION)'
+] }

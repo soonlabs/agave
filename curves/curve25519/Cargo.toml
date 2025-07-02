@@ -19,3 +19,8 @@ solana-program = { workspace = true }
 
 [target.'cfg(not(target_os = "solana"))'.dependencies]
 curve25519-dalek = { workspace = true, features = ["serde"] }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(target_os, values("solana"))'
+] }

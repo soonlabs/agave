@@ -415,14 +415,15 @@ pub fn secp256k1_recover(
 
     #[cfg(not(target_os = "solana"))]
     {
-        let message = libsecp256k1::Message::parse_slice(hash)
-            .map_err(|_| Secp256k1RecoverError::InvalidHash)?;
-        let recovery_id = libsecp256k1::RecoveryId::parse(recovery_id)
-            .map_err(|_| Secp256k1RecoverError::InvalidRecoveryId)?;
-        let signature = libsecp256k1::Signature::parse_standard_slice(signature)
+        if k256::ecdsa::hazmat::bits2field::<k256::Secp256k1>(hash).is_err() {
+            return Err(Secp256k1RecoverError::InvalidHash);
+        }
+        let recovery_id = k256::ecdsa::RecoveryId::from_byte(recovery_id)
+            .ok_or(Secp256k1RecoverError::InvalidRecoveryId)?;
+        let signature = k256::ecdsa::Signature::from_slice(signature)
             .map_err(|_| Secp256k1RecoverError::InvalidSignature)?;
-        let secp256k1_key = libsecp256k1::recover(&message, &signature, &recovery_id)
+        let secp256k1_key = k256::ecdsa::VerifyingKey::recover_from_prehash(hash, &signature, recovery_id)
             .map_err(|_| Secp256k1RecoverError::InvalidSignature)?;
-        Ok(Secp256k1Pubkey::new(&secp256k1_key.serialize()[1..65]))
+        Ok(Secp256k1Pubkey::new(&secp256k1_key.to_sec1_bytes()[1..65]))
     }
 }

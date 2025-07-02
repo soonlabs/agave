@@ -6,7 +6,7 @@
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use {
     crate::sanitize::Sanitize,
-    sha3::{Digest, Keccak256},
+    tiny_keccak::{Keccak, Hasher as KeccakHasher},
     std::{convert::TryFrom, fmt, mem, str::FromStr},
     thiserror::Error,
 };
@@ -24,9 +24,17 @@ const MAX_BASE58_LEN: usize = 44;
 #[repr(transparent)]
 pub struct Hash(pub [u8; HASH_BYTES]);
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct Hasher {
-    hasher: Keccak256,
+    hasher: Keccak,
+}
+
+impl Default for Hasher {
+    fn default() -> Self {
+        Hasher {
+            hasher: Keccak::v256(),
+        }
+    }
 }
 
 impl Hasher {
@@ -39,7 +47,9 @@ impl Hasher {
         }
     }
     pub fn result(self) -> Hash {
-        Hash(self.hasher.finalize().into())
+        let mut output = [0u8; HASH_BYTES];
+        self.hasher.finalize(&mut output);
+        Hash(output)
     }
 }
 
