@@ -1,7 +1,7 @@
+use k256::ecdsa::SigningKey;
 use risc0_zkvm::guest::env;
 use solana_sdk::feature_set::FeatureSet;
 use solana_sdk::hash::Hash;
-use solana_sdk::k256::ecdsa::SigningKey;
 use solana_sdk::secp256k1_instruction::new_secp256k1_instruction;
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;

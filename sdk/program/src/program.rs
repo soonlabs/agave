@@ -446,7 +446,7 @@ pub fn check_type_assumptions() {
 
         // accounts
         assert_eq!(offset_of!(StableInstruction, accounts), 0);
-        let accounts_ptr = (instruction_addr) as *const *const AccountMeta;
+        let accounts_ptr = instruction_addr as *const *const AccountMeta;
         let accounts_cap = (instruction_addr + 8) as *const usize;
         let accounts_len = (instruction_addr + 16) as *const usize;
         unsafe {
@@ -491,7 +491,7 @@ pub fn check_type_assumptions() {
 
         // key
         assert_eq!(offset_of!(AccountInfo, key), 0);
-        let key_ptr = (account_info_addr) as *const &Pubkey;
+        let key_ptr = account_info_addr as *const &Pubkey;
         unsafe {
             assert_eq!(**key_ptr, key);
         }
