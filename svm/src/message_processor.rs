@@ -665,15 +665,8 @@ mod tests {
         // copies the `random` implementation at:
         // https://docs.rs/libsecp256k1/latest/src/libsecp256k1/lib.rs.html#430
         let secret_key = {
-            use solana_type_overrides::rand::RngCore;
             let mut rng = rand::thread_rng();
-            loop {
-                let mut ret = [0u8; libsecp256k1::util::SECRET_KEY_SIZE];
-                rng.fill_bytes(&mut ret);
-                if let Ok(key) = libsecp256k1::SecretKey::parse(&ret) {
-                    break key;
-                }
-            }
+            k256::ecdsa::SigningKey::random(&mut rng)
         };
         let message = new_sanitized_message(Message::new(
             &[

@@ -279,7 +279,7 @@ fn memset_non_contiguous(
     let dst_chunk_iter = MemoryChunkIterator::new(memory_mapping, AccessType::Store, dst_addr, n)?;
     for item in dst_chunk_iter {
         let (dst_region, dst_vm_addr, dst_len) = item?;
-        let dst_host_addr = Result::from(dst_region.vm_to_host(dst_vm_addr, dst_len as u64))?;
+        let dst_host_addr = Result::from(dst_region.vm_to_host(dst_vm_addr, dst_len))?;
         unsafe { slice::from_raw_parts_mut(dst_host_addr as *mut u8, dst_len).fill(c) }
     }
 
@@ -355,8 +355,8 @@ where
             };
 
             (
-                Result::from(src_region.vm_to_host(src_addr, chunk_len as u64))?,
-                Result::from(dst_region.vm_to_host(dst_addr, chunk_len as u64))?,
+                Result::from(src_region.vm_to_host(src_addr, chunk_len))?,
+                Result::from(dst_region.vm_to_host(dst_addr, chunk_len))?,
             )
         };
 
@@ -397,7 +397,7 @@ struct MemoryChunkIterator<'a> {
     vm_addr_start: u64,
     // exclusive end index (start + len, so one past the last valid address)
     vm_addr_end: u64,
-    len: u64,
+    len: usize,
 }
 
 impl<'a> MemoryChunkIterator<'a> {
@@ -410,14 +410,14 @@ impl<'a> MemoryChunkIterator<'a> {
         let vm_addr_end = vm_addr.checked_add(len).ok_or(EbpfError::AccessViolation(
             access_type,
             vm_addr,
-            len,
+            len as usize,
             "unknown",
         ))?;
         Ok(MemoryChunkIterator {
             memory_mapping,
             access_type,
             initial_vm_addr: vm_addr,
-            len,
+            len: len as usize,
             vm_addr_start: vm_addr,
             vm_addr_end,
         })

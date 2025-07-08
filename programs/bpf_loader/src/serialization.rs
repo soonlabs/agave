@@ -143,7 +143,7 @@ impl Serializer {
                     MemoryRegion::new_cow(account.get_data(), self.vaddr, index_in_transaction)
                 }
             };
-            self.vaddr += region.len;
+            self.vaddr += region.len as u64;
             self.regions.push(region);
         }
 

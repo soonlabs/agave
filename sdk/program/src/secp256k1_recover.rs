@@ -125,10 +125,10 @@ impl Secp256k1Pubkey {
 ///
 /// [sp]: crate::secp256k1_program
 ///
-/// The `secp256k1_recover` syscall is implemented with the [`libsecp256k1`]
+/// The `secp256k1_recover` syscall is implemented with the [`k256`]
 /// crate, which clients may also want to use.
 ///
-/// [`libsecp256k1`]: https://docs.rs/libsecp256k1/latest/libsecp256k1
+/// [`k256`]: https://docs.rs/k256/latest/k256
 ///
 /// # Hashing messages
 ///
@@ -162,7 +162,8 @@ impl Secp256k1Pubkey {
 /// this:
 ///
 /// ```rust
-/// # use solana_program::program_error::ProgramError;
+/// use k256::elliptic_curve::scalar::IsHigh;
+/// use solana_program::program_error::ProgramError;
 /// # let signature_bytes = [
 /// #     0x83, 0x55, 0x81, 0xDF, 0xB1, 0x02, 0xA7, 0xD2,
 /// #     0x2D, 0x33, 0xA4, 0x07, 0xDD, 0x7E, 0xFA, 0x9A,
@@ -173,20 +174,20 @@ impl Secp256k1Pubkey {
 /// #     0x1E, 0xBF, 0x06, 0x8E, 0x8A, 0x9F, 0xA9, 0xC3,
 /// #     0xA5, 0xEA, 0x21, 0xAC, 0xED, 0x5B, 0x22, 0x13,
 /// # ];
-/// let signature = libsecp256k1::Signature::parse_standard_slice(&signature_bytes)
+/// let signature = k256::ecdsa::Signature::from_slice(&signature_bytes)
 ///     .map_err(|_| ProgramError::InvalidArgument)?;
 ///
-/// if signature.s.is_high() {
+/// if signature.s().is_high() {
 ///     return Err(ProgramError::InvalidArgument);
 /// }
 /// # Ok::<_, ProgramError>(())
 /// ```
 ///
-/// This has the downside that the program must link to the [`libsecp256k1`]
-/// crate and parse the signature just for this check. Note that `libsecp256k1`
-/// version 0.7.0 or greater is required for running on the Solana SBF target.
+/// This has the downside that the program must link to the [`k256`]
+/// crate and parse the signature just for this check. Note that `k256`
+/// version 0.13.2 or greater is required for running on the Solana SBF target.
 ///
-/// [`libsecp256k1`]: https://docs.rs/libsecp256k1/latest/libsecp256k1
+/// [`k256`]: https://docs.rs/k256/latest/k256
 ///
 /// For the most accurate description of signature malleability, and its
 /// prevention in secp256k1, refer to comments in [`secp256k1.h`] in the Bitcoin
@@ -254,10 +255,11 @@ impl Secp256k1Pubkey {
 /// }
 /// ```
 ///
-/// The Solana program. Note that it uses `libsecp256k1` version 0.7.0 to parse
+/// The Solana program. Note that it uses `k256` version 0.13.2 to parse
 /// the secp256k1 signature to prevent malleability.
 ///
 /// ```no_run
+/// use k256::elliptic_curve::scalar::IsHigh;
 /// use solana_program::{
 ///     entrypoint::ProgramResult,
 ///     keccak, msg,
@@ -298,10 +300,10 @@ impl Secp256k1Pubkey {
 ///     // Solana does not do this itself.
 ///     // This may or may not be necessary depending on use case.
 ///     {
-///         let signature = libsecp256k1::Signature::parse_standard_slice(&instruction.signature)
+///         let signature = k256::ecdsa::Signature::from_slice(&instruction.signature)
 ///             .map_err(|_| ProgramError::InvalidArgument)?;
 ///
-///         if signature.s.is_high() {
+///         if signature.s().is_high() {
 ///             msg!("signature with high-s value");
 ///             return Err(ProgramError::InvalidArgument);
 ///         }
@@ -350,7 +352,7 @@ impl Secp256k1Pubkey {
 ///
 /// pub fn demo_secp256k1_recover(
 ///     payer_keypair: &Keypair,
-///     secp256k1_secret_key: &libsecp256k1::SecretKey,
+///     secp256k1_secret_key: &k256::ecdsa::SigningKey,
 ///     client: &RpcClient,
 ///     program_keypair: &Keypair,
 /// ) -> Result<()> {
@@ -361,15 +363,14 @@ impl Secp256k1Pubkey {
 ///         hasher.result()
 ///     };
 ///
-///     let secp_message = libsecp256k1::Message::parse(&message_hash.0);
-///     let (signature, recovery_id) = libsecp256k1::sign(&secp_message, &secp256k1_secret_key);
+///     let (signature, recovery_id) = secp256k1_secret_key.sign_prehash_recoverable(&message_hash.0)?;
 ///
-///     let signature = signature.serialize();
+///     let signature = signature.to_bytes();
 ///
 ///     let instr = DemoSecp256k1RecoverInstruction {
 ///         message: message.to_vec(),
-///         signature,
-///         recovery_id: recovery_id.serialize(),
+///         signature: signature.into(),
+///         recovery_id: recovery_id.to_byte(),
 ///     };
 ///     let instr = Instruction::new_with_borsh(
 ///         program_keypair.pubkey(),

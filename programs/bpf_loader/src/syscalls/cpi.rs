@@ -1345,7 +1345,7 @@ fn update_caller_account(
             // An account's data pointer can change if the account is reallocated because of CoW,
             // because of BorrowedAccount::make_data_mut or by a program that uses the
             // AccountSharedData API directly (deprecated).
-            let callee_ptr = callee_account.get_data().as_ptr() as u64;
+            let callee_ptr = callee_account.get_data().as_ptr() as usize;
             if region.host_addr.get() != callee_ptr {
                 region.host_addr.set(callee_ptr);
                 zero_all_mapped_spare_capacity = true;

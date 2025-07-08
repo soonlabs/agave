@@ -2800,17 +2800,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hmac-drbg"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17ea0a1394df5b6574da6e0c1ade9e78868c9fb0a4e5ef4428e32da4676b85b1"
-dependencies = [
- "digest 0.9.0",
- "generic-array 0.14.7",
- "hmac 0.8.1",
-]
-
-[[package]]
 name = "http"
 version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3367,14 +3356,12 @@ dependencies = [
  "arrayref",
  "base64 0.12.3",
  "digest 0.9.0",
- "hmac-drbg",
  "libsecp256k1-core",
  "libsecp256k1-gen-ecmult",
  "libsecp256k1-gen-genmult",
  "rand 0.7.3",
  "serde",
  "sha2 0.9.9",
- "typenum",
 ]
 
 [[package]]
@@ -6981,7 +6968,6 @@ dependencies = [
  "js-sys",
  "k256",
  "lazy_static",
- "libsecp256k1",
  "log",
  "memoffset 0.9.1",
  "num-bigint 0.4.5",
@@ -7636,8 +7622,8 @@ version = "2.0.14"
 dependencies = [
  "bincode",
  "itertools 0.12.1",
+ "k256",
  "lazy_static",
- "libsecp256k1",
  "log",
  "percentage",
  "prost",
@@ -8168,7 +8154,7 @@ dependencies = [
 [[package]]
 name = "solana_rbpf"
 version = "0.8.4"
-source = "git+https://github.com/soonlabs/rbpf?branch=feat/risc0-zkvm#28208a2558381ad53484766b949730c9ab56e75f"
+source = "git+https://github.com/soonlabs/rbpf?branch=feat/risc0-zkvm#0be6917a98c71dddf408149bbfb2feee237a2270"
 dependencies = [
  "byteorder",
  "combine",

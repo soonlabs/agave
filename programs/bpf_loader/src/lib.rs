@@ -294,7 +294,7 @@ pub fn create_vm<'a, 'b>(
                 // MAX_PERMITTED_DATA_INCREASE bytes here.
                 account.reserve(MAX_PERMITTED_DATA_INCREASE);
             }
-            Ok(account.data_as_mut_slice().as_mut_ptr() as u64)
+            Ok(account.data_as_mut_slice().as_mut_ptr() as usize)
         })),
     )?;
     invoke_context.set_syscall_context(SyscallContext {
@@ -3779,6 +3779,7 @@ mod tests {
         let mut file = File::open("test_elfs/out/noop_unaligned.so").expect("file open failed");
         let mut elf = Vec::new();
         file.read_to_end(&mut elf).unwrap();
+        println!("elf len: {:?}", elf.len());
         deploy_program!(
             invoke_context,
             program_id,
