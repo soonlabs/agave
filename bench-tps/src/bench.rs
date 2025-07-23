@@ -134,9 +134,63 @@ impl<'a> KeypairChunks<'a> {
                     .collect(),
             );
         }
+
         KeypairChunks {
             source: source_keypair_chunks,
             dest: dest_keypair_chunks,
+        }
+    }
+
+    /// Apply hotspot distribution to destination accounts based on ratio and hot parameters
+    fn apply_hotspot_distribution(
+        &self,
+        chunk_index: usize,
+        num_hotspot_accounts: Option<usize>,
+        hotspot_rate: f64,
+    ) -> VecDeque<&'a Keypair> {
+        if let Some(num_hotspots) = num_hotspot_accounts {
+            // If num_hotspots is 0, disable hotspot behavior
+            if num_hotspots == 0 {
+                return self.dest[chunk_index].clone();
+            }
+            
+            let dest_chunk = &self.dest[chunk_index];
+            let source_len = self.source[chunk_index].len();
+            
+            // Calculate how many transactions should go to hotspot accounts
+            let hotspot_count = (source_len as f64 * hotspot_rate).round() as usize;
+            let non_hotspot_count = source_len - hotspot_count;
+            
+            let mut aligned_dest = VecDeque::new();
+            let hotspot_accounts: Vec<_> = dest_chunk.iter().take(num_hotspots.min(dest_chunk.len())).cloned().collect();
+            let non_hotspot_accounts: Vec<_> = dest_chunk.iter().skip(num_hotspots.min(dest_chunk.len())).cloned().collect();
+            
+            // Add hotspot destinations (distributed across hotspot accounts)
+            if !hotspot_accounts.is_empty() {
+                for i in 0..hotspot_count {
+                    let account_idx = i % hotspot_accounts.len();
+                    aligned_dest.push_back(hotspot_accounts[account_idx]);
+                }
+            }
+            
+            // Add non-hotspot destinations (distributed across remaining accounts)
+            if !non_hotspot_accounts.is_empty() {
+                for i in 0..non_hotspot_count {
+                    let account_idx = i % non_hotspot_accounts.len();
+                    aligned_dest.push_back(non_hotspot_accounts[account_idx]);
+                }
+            } else if !hotspot_accounts.is_empty() {
+                // Fallback to hotspot accounts if no non-hotspot accounts available
+                for i in 0..non_hotspot_count {
+                    let account_idx = i % hotspot_accounts.len();
+                    aligned_dest.push_back(hotspot_accounts[account_idx]);
+                }
+            }
+            
+            aligned_dest
+        } else {
+            // No hotspot mode, return original dest chunk
+            self.dest[chunk_index].clone()
         }
     }
 }
@@ -150,6 +204,9 @@ struct TransactionChunkGenerator<'a, 'b, T: ?Sized> {
     compute_unit_price: Option<ComputeUnitPrice>,
     instruction_padding_config: Option<InstructionPaddingConfig>,
     skip_tx_account_data_size: bool,
+    // Hotspot configuration
+    num_hotspot_accounts: Option<usize>,
+    hotspot_rate: f64,
 }
 
 impl<'a, 'b, T> TransactionChunkGenerator<'a, 'b, T>
@@ -164,10 +221,16 @@ where
         compute_unit_price: Option<ComputeUnitPrice>,
         instruction_padding_config: Option<InstructionPaddingConfig>,
         num_conflict_groups: Option<usize>,
+        num_hotspot_accounts: Option<usize>,
+        hotspot_rate: f64,
         skip_tx_account_data_size: bool,
     ) -> Self {
         let account_chunks = if let Some(num_conflict_groups) = num_conflict_groups {
-            KeypairChunks::new_with_conflict_groups(gen_keypairs, chunk_size, num_conflict_groups)
+            KeypairChunks::new_with_conflict_groups(
+                gen_keypairs, 
+                chunk_size, 
+                num_conflict_groups,
+            )
         } else {
             KeypairChunks::new(gen_keypairs, chunk_size)
         };
@@ -183,8 +246,11 @@ where
             compute_unit_price,
             instruction_padding_config,
             skip_tx_account_data_size,
+            num_hotspot_accounts,
+            hotspot_rate,
         }
     }
+
 
     /// generate transactions to transfer lamports from source to destination accounts
     /// if durable nonce is used, blockhash is None
@@ -197,14 +263,22 @@ where
         let signing_start = Instant::now();
 
         let source_chunk = &self.account_chunks.source[self.chunk_index];
-        let dest_chunk = &self.account_chunks.dest[self.chunk_index];
+        
+        // Apply hotspot distribution if enabled, otherwise use original dest chunk
+        let dest_chunk = self.account_chunks.apply_hotspot_distribution(
+            self.chunk_index,
+            self.num_hotspot_accounts,
+            self.hotspot_rate,
+        );
+        
         let transactions = if let Some(nonce_chunks) = &self.nonce_chunks {
             let source_nonce_chunk = &nonce_chunks.source[self.chunk_index];
             let dest_nonce_chunk: &VecDeque<&Keypair> = &nonce_chunks.dest[self.chunk_index];
+            // TODO: Add hotspot support for nonce transactions later
             generate_nonced_system_txs(
                 self.client.clone(),
                 source_chunk,
-                dest_chunk,
+                dest_nonce_chunk,
                 source_nonce_chunk,
                 dest_nonce_chunk,
                 self.reclaim_lamports_back_to_source_account,
@@ -215,7 +289,7 @@ where
             assert!(blockhash.is_some());
             generate_system_txs(
                 source_chunk,
-                dest_chunk,
+                &dest_chunk,
                 self.reclaim_lamports_back_to_source_account,
                 blockhash.unwrap(),
                 &self.instruction_padding_config,
@@ -433,6 +507,8 @@ where
         compute_unit_price,
         instruction_padding_config,
         num_conflict_groups,
+        config.num_hotspot_accounts,
+        config.hotspot_rate,
         skip_tx_account_data_size,
     );
 
@@ -566,6 +642,7 @@ fn metrics_submit_lamport_balance(lamport_balance: u64) {
         ("balance", lamport_balance, i64)
     );
 }
+
 
 fn generate_system_txs(
     source: &[&Keypair],

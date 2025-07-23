@@ -75,6 +75,8 @@ pub struct Config {
     pub use_durable_nonce: bool,
     pub instruction_padding_config: Option<InstructionPaddingConfig>,
     pub num_conflict_groups: Option<usize>,
+    pub num_hotspot_accounts: Option<usize>,
+    pub hotspot_rate: f64,
     pub bind_address: IpAddr,
     pub client_node_id: Option<Keypair>,
     pub commitment_config: CommitmentConfig,
@@ -112,6 +114,8 @@ impl Default for Config {
             use_durable_nonce: false,
             instruction_padding_config: None,
             num_conflict_groups: None,
+            num_hotspot_accounts: None,
+            hotspot_rate: 0.8,
             bind_address: IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)),
             client_node_id: None,
             commitment_config: CommitmentConfig::confirmed(),
@@ -412,6 +416,29 @@ pub fn build_args<'a>(version: &'_ str) -> App<'a, '_> {
                 .help("The number of unique destination accounts per transactions 'chunk'. Lower values will result in more transaction conflicts.")
         )
         .arg(
+            Arg::with_name("num_hotspot_accounts")
+                .long("num-hotspot-accounts")
+                .takes_value(true)
+                .validator(|arg| is_within_range(arg, 0..))
+                .requires("num_conflict_groups")
+                .help("Number of hotspot accounts within conflict groups that will receive concentrated traffic. Must be less than --num-conflict-groups. Use 0 to disable hotspot behavior.")
+        )
+        .arg(
+            Arg::with_name("hotspot_rate")
+                .long("hotspot-rate")
+                .takes_value(true)
+                .validator(|arg| {
+                    let val: Result<f64, _> = arg.parse();
+                    match val {
+                        Ok(v) if v >= 0.0 && v <= 1.0 => Ok(()),
+                        _ => Err(String::from("hotspot-rate must be between 0.0 and 1.0")),
+                    }
+                })
+                .requires("num_hotspot_accounts")
+                .default_value("0.8")
+                .help("Fraction of transactions that will target hotspot accounts (0.0 to 1.0). Default is 0.8.")
+        )
+        .arg(
             Arg::with_name("bind_address")
                 .long("bind-address")
                 .value_name("HOST")
@@ -617,6 +644,19 @@ pub fn parse_args(matches: &ArgMatches) -> Result<Config, &'static str> {
         args.num_conflict_groups = Some(parsed_num_conflict_groups);
     }
 
+    if let Some(num_hotspot_accounts) = matches.value_of("num_hotspot_accounts") {
+        let parsed_num_hotspot_accounts = num_hotspot_accounts
+            .parse()
+            .map_err(|_| "Can't parse num-hotspot-accounts")?;
+        args.num_hotspot_accounts = Some(parsed_num_hotspot_accounts);
+    }
+
+    if let Some(hotspot_rate) = matches.value_of("hotspot_rate") {
+        args.hotspot_rate = hotspot_rate
+            .parse()
+            .map_err(|_| "Can't parse hotspot-rate")?;
+    }
+
     if let Some(addr) = matches.value_of("bind_address") {
         args.bind_address =
             solana_net_utils::parse_host(addr).map_err(|_| "Failed to parse bind-address")?;
@@ -633,6 +673,14 @@ pub fn parse_args(matches: &ArgMatches) -> Result<Config, &'static str> {
     args.transaction_data_file = matches
         .value_of("transaction_data_file")
         .map(|s| s.to_string());
+
+    // Validate hotspot parameters
+    if let (Some(num_hotspot_accounts), Some(num_conflict_groups)) = 
+        (args.num_hotspot_accounts, args.num_conflict_groups) {
+        if num_hotspot_accounts > 0 && num_hotspot_accounts >= num_conflict_groups {
+            return Err("num-hotspot-accounts must be less than num-conflict-groups");
+        }
+    }
 
     Ok(args)
 }
