@@ -60,6 +60,7 @@ use {
     dashmap::{DashMap, DashSet},
     itertools::izip,
     log::*,
+    parking_lot::RwLock as ParkingLotRwLock,
     rayon::{
         iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator},
         slice::ParallelSlice,
@@ -714,7 +715,7 @@ pub struct Bank {
     pub rc: BankRc,
 
     /// A cache of signature statuses
-    pub status_cache: Arc<RwLock<BankStatusCache>>,
+    pub status_cache: Arc<ParkingLotRwLock<BankStatusCache>>,
 
     /// FIFO queue of `recent_blockhash` items
     pub blockhash_queue: RwLock<BlockhashQueue>,
@@ -944,7 +945,7 @@ impl Bank {
             skipped_rewrites: Mutex::default(),
             incremental_snapshot_persistence: None,
             rc: BankRc::new(accounts),
-            status_cache: Arc::<RwLock<BankStatusCache>>::default(),
+            status_cache: Arc::<ParkingLotRwLock<BankStatusCache>>::default(),
             blockhash_queue: RwLock::<BlockhashQueue>::default(),
             ancestors: Ancestors::default(),
             hash: RwLock::<Hash>::default(),
@@ -1598,7 +1599,7 @@ impl Bank {
             skipped_rewrites: Mutex::default(),
             incremental_snapshot_persistence: fields.incremental_snapshot_persistence,
             rc: bank_rc,
-            status_cache: Arc::<RwLock<BankStatusCache>>::default(),
+            status_cache: Arc::<ParkingLotRwLock<BankStatusCache>>::default(),
             blockhash_queue: RwLock::new(fields.blockhash_queue),
             ancestors,
             hash: RwLock::new(fields.hash),
@@ -1804,7 +1805,8 @@ impl Bank {
     }
 
     pub fn status_cache_ancestors(&self) -> Vec<u64> {
-        let mut roots = self.status_cache.read().unwrap().roots().clone();
+        let mut roots = self.status_cache.read().roots().clone();
+        std::thread::yield_now();
         let min = roots.iter().min().cloned().unwrap_or(0);
         for ancestor in self.ancestors.keys() {
             if ancestor >= min {
@@ -2891,9 +2893,11 @@ impl Bank {
         *self.rc.parent.write().unwrap() = None;
 
         let mut squash_cache_time = Measure::start("squash_cache_time");
-        roots
-            .iter()
-            .for_each(|slot| self.status_cache.write().unwrap().add_root(*slot));
+
+        roots.iter().for_each(|slot| {
+            self.status_cache.write().add_root(*slot);
+        });
+
         squash_cache_time.stop();
 
         SquashTiming {
@@ -3152,11 +3156,11 @@ impl Bank {
 
     /// Forget all signatures. Useful for benchmarking.
     pub fn clear_signatures(&self) {
-        self.status_cache.write().unwrap().clear();
+        self.status_cache.write().clear();
     }
 
     pub fn clear_slot_signatures(&self, slot: Slot) {
-        self.status_cache.write().unwrap().clear_slot_entries(slot);
+        self.status_cache.write().clear_slot_entries(slot);
     }
 
     fn update_transaction_statuses(
@@ -3164,7 +3168,7 @@ impl Bank {
         sanitized_txs: &[SanitizedTransaction],
         execution_results: &[TransactionExecutionResult],
     ) {
-        let mut status_cache = self.status_cache.write().unwrap();
+        let mut status_cache = self.status_cache.write();
         assert_eq!(sanitized_txs.len(), execution_results.len());
         for (tx, execution_result) in sanitized_txs.iter().zip(execution_results) {
             if let Some(details) = execution_result.details() {
@@ -3557,7 +3561,8 @@ impl Bank {
         lock_results: Vec<TransactionCheckResult>,
         error_counters: &mut TransactionErrorMetrics,
     ) -> Vec<TransactionCheckResult> {
-        let rcache = self.status_cache.read().unwrap();
+        let rcache = self.status_cache.read();
+        std::thread::yield_now();
         sanitized_txs
             .iter()
             .zip(lock_results)
@@ -5423,14 +5428,16 @@ impl Bank {
         signature: &Signature,
         blockhash: &Hash,
     ) -> Option<Result<()>> {
-        let rcache = self.status_cache.read().unwrap();
+        let rcache = self.status_cache.read();
+        std::thread::yield_now();
         rcache
             .get_status(signature, blockhash, &self.ancestors)
             .map(|v| v.1)
     }
 
     pub fn get_signature_status_slot(&self, signature: &Signature) -> Option<(Slot, Result<()>)> {
-        let rcache = self.status_cache.read().unwrap();
+        let rcache = self.status_cache.read();
+        std::thread::yield_now();
         rcache.get_status_any_blockhash(signature, &self.ancestors)
     }
 

@@ -638,7 +638,7 @@ fn rebuild_bank_from_unarchived_snapshots(
 
     verify_slot_deltas(slot_deltas.as_slice(), &bank)?;
 
-    bank.status_cache.write().unwrap().append(&slot_deltas);
+    bank.status_cache.write().append(&slot_deltas);
 
     info!("Rebuilt bank for slot: {}", bank.slot());
     Ok(bank)
@@ -699,7 +699,7 @@ fn rebuild_bank_from_snapshot(
 
     verify_slot_deltas(slot_deltas.as_slice(), &bank)?;
 
-    bank.status_cache.write().unwrap().append(&slot_deltas);
+    bank.status_cache.write().append(&slot_deltas);
 
     info!("Rebuilt bank for slot: {}", bank.slot());
     Ok(bank)
@@ -915,7 +915,8 @@ fn bank_to_full_snapshot_archive_with(
         bank.update_accounts_hash(CalcAccountsHashDataSource::Storages, false, false);
 
     let snapshot_storages = bank.get_snapshot_storages(None);
-    let status_cache_slot_deltas = bank.status_cache.read().unwrap().root_slot_deltas();
+    let status_cache_slot_deltas = bank.status_cache.read().root_slot_deltas();
+    std::thread::yield_now();
     let accounts_package = AccountsPackage::new_for_snapshot(
         AccountsPackageKind::Snapshot(SnapshotKind::FullSnapshot),
         bank,
@@ -972,7 +973,10 @@ pub fn bank_to_incremental_snapshot_archive(
         bank.update_incremental_accounts_hash(full_snapshot_slot);
 
     let snapshot_storages = bank.get_snapshot_storages(Some(full_snapshot_slot));
-    let status_cache_slot_deltas = bank.status_cache.read().unwrap().root_slot_deltas();
+
+    let status_cache_slot_deltas = bank.status_cache.read().root_slot_deltas();
+    std::thread::yield_now();
+
     let accounts_package = AccountsPackage::new_for_snapshot(
         AccountsPackageKind::Snapshot(SnapshotKind::IncrementalSnapshot(full_snapshot_slot)),
         bank,
