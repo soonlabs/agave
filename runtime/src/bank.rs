@@ -798,7 +798,7 @@ pub struct Bank {
     collector_fees: AtomicU64,
 
     /// Track cluster signature throughput and adjust fee rate
-    pub(crate) fee_rate_governor: FeeRateGovernor,
+    pub fee_rate_governor: FeeRateGovernor,
 
     /// Rent that has been collected
     collected_rent: AtomicU64,
