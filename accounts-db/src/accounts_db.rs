@@ -7732,6 +7732,7 @@ impl AccountsDb {
             let (calculated_accounts_hash, calculated_lamports) =
                 self.calculate_accounts_hash(&calc_config, &sorted_storages, HashStats::default());
 
+            let mut recalculated_lamports_matched = false;
             if calculated_lamports != total_lamports {
                 warn!(
                     "Mismatched total lamports: {} calculated: {}",
@@ -7756,6 +7757,7 @@ impl AccountsDb {
                     info!(
                         "ignoring mismatch in total lamports when calculating accounts hash because it matches when scanning accounts"
                     );
+                    recalculated_lamports_matched = true;
                 } else {
                     return Err(AccountsHashVerificationError::MismatchedTotalLamports(
                         calculated_lamports,
@@ -7771,7 +7773,7 @@ impl AccountsDb {
                     "Mismatched accounts hash for slot {slot}: \
                     {calculated_accounts_hash:?} (calculated) != {found_accounts_hash:?} (expected)"
                 );
-                if hash_mismatch_is_error {
+                if hash_mismatch_is_error && !recalculated_lamports_matched {
                     return Err(AccountsHashVerificationError::MismatchedAccountsHash);
                 }
             }
