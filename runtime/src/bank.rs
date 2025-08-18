@@ -5610,6 +5610,7 @@ impl Bank {
             use_bg_thread_pool: config.run_in_background,
         };
         if config.run_in_background {
+            self.force_flush_accounts_cache();
             let accounts = Arc::clone(accounts);
             let accounts_ = Arc::clone(&accounts);
             let ancestors = self.ancestors.clone();
