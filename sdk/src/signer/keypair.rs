@@ -65,7 +65,7 @@ impl Keypair {
 
     /// Returns this `Keypair` as a base58-encoded string
     pub fn to_base58_string(&self) -> String {
-        bs58::encode(&self.0.to_bytes()).into_string()
+        bs58::encode(&self.to_bytes()).into_string()
     }
 
     /// Gets this `Keypair`'s SecretKey
