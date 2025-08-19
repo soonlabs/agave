@@ -193,11 +193,12 @@ pub fn write_keypair_file<F: AsRef<Path>>(
 
 /// Constructs a `Keypair` from caller-provided seed entropy
 pub fn keypair_from_seed(seed: &[u8]) -> Result<Keypair, Box<dyn error::Error>> {
-    if let Ok(keypair) = ed25519_dalek::SigningKey::try_from(seed) {
-        Ok(Keypair(keypair))
-    } else {
-        Err("Seed is not the correct length".into())
+    if seed.len() < ed25519_dalek::SECRET_KEY_LENGTH {
+        return Err("Seed is too short".into());
     }
+    // this won't fail as we've already checked the length
+    let secret_key = ed25519_dalek::SecretKey::try_from(&seed[..ed25519_dalek::SECRET_KEY_LENGTH])?;
+    Ok(Keypair(ed25519_dalek::SigningKey::from(secret_key)))
 }
 
 /// Generates a Keypair using Bip32 Hierarchical Derivation if derivation-path is provided;
