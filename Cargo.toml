@@ -462,6 +462,8 @@ zstd = "0.11.2"
 k256 = "=0.13.4"
 tiny-keccak = "=2.0.2"
 
+risc0-zkvm = { version = "^2.1.0", features = ["std", "heap-embedded-alloc", "unstable", "getrandom"] }
+
 [patch.crates-io]
 # for details, see https://github.com/anza-xyz/crossbeam/commit/fd279d707025f0e60951e429bf778b4813d1b6bf
 crossbeam-epoch = { git = "https://github.com/anza-xyz/crossbeam", rev = "fd279d707025f0e60951e429bf778b4813d1b6bf" }

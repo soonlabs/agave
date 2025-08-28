@@ -22,6 +22,7 @@ solana-program-runtime = { workspace = true }
 solana-sdk = { workspace = true }
 solana-type-overrides = { workspace = true }
 thiserror = { workspace = true }
+risc0-zkvm = { workspace = true }
 
 [target.'cfg(not(target_os = "zkvm"))'.dependencies]
 solana-measure = { workspace = true }

@@ -779,6 +779,9 @@ declare_builtin_function!(
         bump_seed_addr: u64,
         memory_mapping: &mut MemoryMapping,
     ) -> Result<u64, Error> {
+        // #[cfg(target_os = "zkvm")]
+        risc0_zkvm::guest::env::log(&format!("seeds_addr: {seeds_addr}, seeds_len: {seeds_len}, program_id_addr: {program_id_addr}, address_addr: {address_addr}, bump_seed_addr: {bump_seed_addr}"));
+
         let cost = invoke_context
             .get_compute_budget()
             .create_program_address_units;
