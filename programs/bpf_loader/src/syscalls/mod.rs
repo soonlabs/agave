@@ -564,10 +564,6 @@ fn translate_slice_inner<'a, T>(
     }
 
     let host_addr = translate(memory_mapping, access_type, vm_addr, total_size)?;
-    #[cfg(target_os = "zkvm")]
-    {
-        risc0_zkvm::guest::env::log(&format!("host addr: {:#x}, total size: {:#x}", host_addr, total_size));
-    }
 
     if check_aligned && !address_is_aligned::<T>(host_addr) {
         return Err(SyscallError::UnalignedPointer.into());
@@ -720,6 +716,12 @@ fn translate_and_check_program_address_inputs<'a>(
             if untranslated_seed.len() > MAX_SEED_LEN {
                 return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
             }
+
+            #[cfg(target_os = "zkvm")]
+            {
+                risc0_zkvm::guest::env::log(&format!("untranslated_seed: {:?}", untranslated_seed.as_ptr() as *const _ as u64));
+            }
+
             translate_slice::<u8>(
                 memory_mapping,
                 untranslated_seed.as_ptr() as *const _ as u64,
