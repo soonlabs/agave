@@ -563,6 +563,10 @@ fn translate_slice_inner<'a, T>(
         return Err(SyscallError::InvalidLength.into());
     }
 
+    #[cfg(target_os = "zkvm")]
+    {
+        risc0_zkvm::guest::env::log(&format!("vm addr: {:#x}", vm_addr));
+    }
     let host_addr = translate(memory_mapping, access_type, vm_addr, total_size)?;
     #[cfg(target_os = "zkvm")]
     {
