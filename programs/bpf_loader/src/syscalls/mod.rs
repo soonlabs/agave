@@ -711,15 +711,10 @@ fn translate_and_check_program_address_inputs<'a>(
         return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
     }
 
-    #[cfg(target_os = "zkvm")]
-    {
-        risc0_zkvm::guest::env::log(&format!("size of &[u8]: {}", size_of::<&[u8]>()));
-    }
-
     let seeds = untranslated_seeds
         .iter()
         .enumerate()
-        .map(|(_i, untranslated_seed)| {
+        .map(|(i, untranslated_seed)| {
             if untranslated_seed.len() > MAX_SEED_LEN {
                 return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
             }
@@ -731,7 +726,8 @@ fn translate_and_check_program_address_inputs<'a>(
 
             translate_slice::<u8>(
                 memory_mapping,
-                untranslated_seed.as_ptr() as *const _ as u64,
+                // untranslated_seed.as_ptr() as *const _ as u64,
+                (i as u64).saturating_mul(8).saturating_add(seeds_addr),
                 untranslated_seed.len() as u64,
                 check_aligned,
             )
