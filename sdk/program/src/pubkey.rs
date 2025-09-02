@@ -513,9 +513,6 @@ impl Pubkey {
         // Call via a system call to perform the calculation
         #[cfg(target_os = "solana")]
         {
-            crate::msg!("seeds: {:?}", seeds as *const _ as *const u8);
-            crate::msg!("program id: {:?}", program_id as *const _ as *const u8);
-
             let mut bytes = [0; 32];
             let mut bump_seed = u8::MAX;
             let result = unsafe {

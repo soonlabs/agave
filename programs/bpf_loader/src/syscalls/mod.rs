@@ -564,6 +564,10 @@ fn translate_slice_inner<'a, T>(
     }
 
     let host_addr = translate(memory_mapping, access_type, vm_addr, total_size)?;
+    #[cfg(target_os = "zkvm")]
+    {
+        risc0_zkvm::guest::env::log(&format!("host addr: {:#x}", host_addr));
+    }
 
     if check_aligned && !address_is_aligned::<T>(host_addr) {
         return Err(SyscallError::UnalignedPointer.into());
