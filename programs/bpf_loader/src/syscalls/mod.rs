@@ -780,7 +780,10 @@ declare_builtin_function!(
         memory_mapping: &mut MemoryMapping,
     ) -> Result<u64, Error> {
         #[cfg(target_os = "zkvm")]
-        risc0_zkvm::guest::env::log(&format!("seeds_addr: {seeds_addr}, seeds_len: {seeds_len}, program_id_addr: {program_id_addr}, address_addr: {address_addr}, bump_seed_addr: {bump_seed_addr}"));
+        risc0_zkvm::guest::env::log(&format!(
+            "seeds_addr: {:#x}, seeds_len: {:#x}, program_id_addr: {:#x}, address_addr: {:#x}, bump_seed_addr: {:#x}",
+            seeds_addr, seeds_len, program_id_addr, address_addr, bump_seed_addr,
+        ));
 
         let cost = invoke_context
             .get_compute_budget()
