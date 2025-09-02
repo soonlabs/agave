@@ -719,11 +719,6 @@ fn translate_and_check_program_address_inputs<'a>(
                 return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
             }
 
-            #[cfg(target_os = "zkvm")]
-            {
-                risc0_zkvm::guest::env::log(&format!("untranslated_seed: {:?}", untranslated_seed.as_ptr() as *const _ as u64));
-            }
-
             translate_slice::<u8>(
                 memory_mapping,
                 // untranslated_seed.as_ptr() as *const _ as u64,
