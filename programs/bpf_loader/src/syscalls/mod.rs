@@ -715,14 +715,18 @@ fn translate_and_check_program_address_inputs<'a>(
         .iter()
         .enumerate()
         .map(|(i, untranslated_seed)| {
+            #[cfg(target_os = "zkvm")]
+            {
+                risc0_zkvm::guest::env::log(&format!("seed len: {}", untranslated_seed.len()));
+            }
+
             if untranslated_seed.len() > MAX_SEED_LEN {
                 return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
             }
 
             translate_slice::<u8>(
                 memory_mapping,
-                // untranslated_seed.as_ptr() as *const _ as u64,
-                (i as u64).saturating_mul(8).saturating_add(seeds_addr),
+                (i as u64).saturating_mul(size_of::<&u8>() as u64).saturating_add(seeds_addr),
                 untranslated_seed.len() as u64,
                 check_aligned,
             )
