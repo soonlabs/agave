@@ -65,6 +65,7 @@ impl UiAccountData {
             UiAccountData::Binary(blob, encoding) => match encoding {
                 UiAccountEncoding::Base58 => bs58::decode(blob).into_vec().ok(),
                 UiAccountEncoding::Base64 => BASE64_STANDARD.decode(blob).ok(),
+                #[cfg(not(target_os = "zkvm"))]
                 UiAccountEncoding::Base64Zstd => {
                     BASE64_STANDARD.decode(blob).ok().and_then(|zstd_data| {
                         let mut data = vec![];
@@ -74,6 +75,8 @@ impl UiAccountData {
                             .ok()
                     })
                 }
+                #[cfg(target_os = "zkvm")]
+                UiAccountEncoding::Base64Zstd => None, // Zstd not supported on zkVM
                 UiAccountEncoding::Binary | UiAccountEncoding::JsonParsed => None,
             },
         }
@@ -125,6 +128,7 @@ impl UiAccount {
                 BASE64_STANDARD.encode(slice_data(account.data(), data_slice_config)),
                 encoding,
             ),
+            #[cfg(not(target_os = "zkvm"))]
             UiAccountEncoding::Base64Zstd => {
                 let mut encoder = zstd::stream::write::Encoder::new(Vec::new(), 0).unwrap();
                 match encoder
@@ -140,6 +144,11 @@ impl UiAccount {
                     ),
                 }
             }
+            #[cfg(target_os = "zkvm")]
+            UiAccountEncoding::Base64Zstd => UiAccountData::Binary(
+                BASE64_STANDARD.encode(slice_data(account.data(), data_slice_config)),
+                UiAccountEncoding::Base64,
+            ),
             UiAccountEncoding::JsonParsed => {
                 if let Ok(parsed_data) =
                     parse_account_data_v2(pubkey, account.owner(), account.data(), additional_data)
