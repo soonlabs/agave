@@ -715,13 +715,26 @@ fn translate_and_check_program_address_inputs<'a>(
         .iter()
         .enumerate()
         .map(|(i, untranslated_seed)| {
-            #[cfg(target_os = "zkvm")]
-            {
-                risc0_zkvm::guest::env::log(&format!("seed len: {}", untranslated_seed.len()));
-            }
-
             if untranslated_seed.len() > MAX_SEED_LEN {
                 return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
+            }
+
+            log::info!(
+                "{}: actual vm addr: {}, expected vm addr: {}, seed len: {}",
+                i,
+                (i as u64).saturating_mul(size_of::<&u8>() as u64).saturating_add(seeds_addr),
+                untranslated_seed.as_ptr() as u64,
+                untranslated_seed.len()
+            );
+
+            #[cfg(target_os = "zkvm")]
+            {
+                risc0_zkvm::guest::env::log(&format!(
+                    "{}: actual vm addr: {}, expected vm addr: {}, seed len: {}",
+                    i,
+                    (i as u64).saturating_mul(size_of::<&u8>() as u64).saturating_add(seeds_addr),
+                    untranslated_seed.as_ptr() as u64,
+                ));
             }
 
             translate_slice::<u8>(
