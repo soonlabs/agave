@@ -76,6 +76,13 @@ mod logging;
 mod mem_ops;
 mod sysvar;
 
+/// A slice type used for passing slices type from the VM to the host, used for SOON
+#[repr(C)]
+struct SliceType {
+    data_ptr: u64,
+    size: u64,
+}
+
 /// Maximum signers
 pub const MAX_SIGNERS: usize = 16;
 
@@ -706,20 +713,20 @@ fn translate_and_check_program_address_inputs<'a>(
     check_aligned: bool,
 ) -> Result<(Vec<&'a [u8]>, &'a Pubkey), Error> {
     let untranslated_seeds =
-        translate_slice::<&[u8]>(memory_mapping, seeds_addr, seeds_len, check_aligned)?;
+        translate_slice::<SliceType>(memory_mapping, seeds_addr, seeds_len, check_aligned)?;
     if untranslated_seeds.len() > MAX_SEEDS {
         return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
     }
     let seeds = untranslated_seeds
         .iter()
         .map(|untranslated_seed| {
-            if untranslated_seed.len() > MAX_SEED_LEN {
+            if untranslated_seed.size > MAX_SEED_LEN as u64 {
                 return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
             }
             translate_slice::<u8>(
                 memory_mapping,
-                untranslated_seed.as_ptr() as *const _ as u64,
-                untranslated_seed.len() as u64,
+                untranslated_seed.data_ptr,
+                untranslated_seed.size,
                 check_aligned,
             )
         })
@@ -1776,7 +1783,7 @@ declare_builtin_function!(
             poseidon::HASH_BYTES as u64,
             invoke_context.get_check_aligned(),
         )?;
-        let inputs = translate_slice::<&[u8]>(
+        let inputs = translate_slice::<SliceType>(
             memory_mapping,
             vals_addr,
             vals_len,
@@ -1787,8 +1794,8 @@ declare_builtin_function!(
             .map(|input| {
                 translate_slice::<u8>(
                     memory_mapping,
-                    input.as_ptr() as *const _ as u64,
-                    input.len() as u64,
+                    input.data_ptr,
+                    input.size,
                     invoke_context.get_check_aligned(),
                 )
             })
@@ -1992,7 +1999,7 @@ declare_builtin_function!(
         )?;
         let mut hasher = H::create_hasher();
         if vals_len > 0 {
-            let vals = translate_slice::<&[u8]>(
+            let vals = translate_slice::<SliceType>(
                 memory_mapping,
                 vals_addr,
                 vals_len,
@@ -2001,13 +2008,13 @@ declare_builtin_function!(
             for val in vals.iter() {
                 let bytes = translate_slice::<u8>(
                     memory_mapping,
-                    val.as_ptr() as u64,
-                    val.len() as u64,
+                    val.data_ptr,
+                    val.size,
                     invoke_context.get_check_aligned(),
                 )?;
                 let cost = compute_budget.mem_op_base_cost.max(
                     hash_byte_cost.saturating_mul(
-                        (val.len() as u64)
+                        val.size
                             .checked_div(2)
                             .expect("div by non-zero literal"),
                     ),
