@@ -79,6 +79,12 @@ mod sysvar;
 /// Maximum signers
 pub const MAX_SIGNERS: usize = 16;
 
+#[repr(C)]
+struct RefTypeX64 {
+    val: u64,
+    size: u64,
+}
+
 /// Error definitions
 #[derive(Debug, ThisError, PartialEq, Eq)]
 pub enum SyscallError {
@@ -706,7 +712,7 @@ fn translate_and_check_program_address_inputs<'a>(
     check_aligned: bool,
 ) -> Result<(Vec<&'a [u8]>, &'a Pubkey), Error> {
     let untranslated_seeds =
-        translate_slice::<&[u8]>(memory_mapping, seeds_addr, seeds_len, check_aligned)?;
+        translate_slice::<RefTypeX64>(memory_mapping, seeds_addr, seeds_len, check_aligned)?;
     if untranslated_seeds.len() > MAX_SEEDS {
         return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
     }
@@ -715,33 +721,31 @@ fn translate_and_check_program_address_inputs<'a>(
         .iter()
         .enumerate()
         .map(|(i, untranslated_seed)| {
-            if untranslated_seed.len() > MAX_SEED_LEN {
+            if untranslated_seed.size > MAX_SEED_LEN as u64 {
                 return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
             }
 
             log::info!(
-                "{}: actual vm addr: {}, expected vm addr: {}, seed len: {}",
+                "{}: vm addr: {}, seed len: {}",
                 i,
-                (i as u64).saturating_mul(size_of::<&u8>() as u64).saturating_add(seeds_addr),
-                untranslated_seed.as_ptr() as u64,
-                untranslated_seed.len()
+                untranslated_seed.val,
+                untranslated_seed.size,
             );
 
             #[cfg(target_os = "zkvm")]
             {
                 risc0_zkvm::guest::env::log(&format!(
-                    "{}: actual vm addr: {}, expected vm addr: {}, seed len: {}",
+                    "{}: vm addr: {}, seed len: {}",
                     i,
-                    (i as u64).saturating_mul(size_of::<&u8>() as u64).saturating_add(seeds_addr),
-                    untranslated_seed.as_ptr() as u64,
-                    untranslated_seed.len()
+                    untranslated_seed.val,
+                    untranslated_seed.size,
                 ));
             }
 
             translate_slice::<u8>(
                 memory_mapping,
-                (i as u64).saturating_mul(size_of::<&u8>() as u64).saturating_add(seeds_addr),
-                untranslated_seed.len() as u64,
+                untranslated_seed.val,
+                untranslated_seed.size,
                 check_aligned,
             )
         })
