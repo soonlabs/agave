@@ -734,6 +734,7 @@ fn translate_and_check_program_address_inputs<'a>(
                     i,
                     (i as u64).saturating_mul(size_of::<&u8>() as u64).saturating_add(seeds_addr),
                     untranslated_seed.as_ptr() as u64,
+                    untranslated_seed.len()
                 ));
             }
 
