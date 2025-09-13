@@ -75,9 +75,8 @@ trees = { workspace = true }
 [dependencies.rocksdb]
 # Avoid the vendored bzip2 within rocksdb-sys that can cause linker conflicts
 # when also using the bzip2 crate
-version = "0.22.0"
-default-features = false
-features = ["lz4"]
+version = "0.23.0"
+default-features = true
 
 [dev-dependencies]
 bs58 = { workspace = true }
