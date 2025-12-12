@@ -1247,6 +1247,13 @@ fn main() {
                         .validator(is_pubkey)
                         .conflicts_with("account")
                         .help("Limit output to accounts owned by the provided program pubkey"),
+                )
+                .arg(
+                    Arg::with_name("hash_output")
+                        .long("hash-output")
+                        .takes_value(true)
+                        .value_name("FILE")
+                        .help("Output file path for pubkey and keccak256 hashes (format: pubkey_hex,keccak256_hex)"),
                 ),
         )
         .subcommand(
@@ -2270,39 +2277,96 @@ fn main() {
                         );
                     let bank = bank_forks.read().unwrap().working_bank();
 
-                    let include_sysvars = arg_matches.is_present("include_sysvars");
-                    let include_account_contents = !arg_matches.is_present("no_account_contents");
-                    let include_account_data = !arg_matches.is_present("no_account_data");
-                    let account_data_encoding = parse_encoding_format(arg_matches);
-                    let mode = if let Some(pubkeys) = pubkeys_of(arg_matches, "account") {
-                        info!("Scanning individual accounts: {pubkeys:?}");
-                        AccountsOutputMode::Individual(pubkeys)
-                    } else if let Some(pubkey) = pubkey_of(arg_matches, "program_accounts") {
-                        info!("Scanning program accounts for {pubkey}");
-                        AccountsOutputMode::Program(pubkey)
-                    } else {
-                        info!("Scanning all accounts");
-                        AccountsOutputMode::All
-                    };
-                    let config = AccountsOutputConfig {
-                        mode,
-                        include_sysvars,
-                        include_account_contents,
-                        include_account_data,
-                        account_data_encoding,
-                    };
-                    let output_format =
-                        OutputFormat::from_matches(arg_matches, "output_format", false);
+                    // Check if hash output is requested
+                    if let Some(hash_output_path) = arg_matches.value_of("hash_output") {
+                        use std::io::Write;
+                        use std::cell::RefCell;
+                        use solana_sdk::keccak;
 
-                    let accounts_streamer =
-                        AccountsOutputStreamer::new(bank, output_format, config);
-                    let (_, scan_time) = measure!(
-                        accounts_streamer
-                            .output()
-                            .map_err(|err| error!("Error while outputting accounts: {err}")),
-                        "accounts scan"
-                    );
-                    info!("{scan_time}");
+                        info!("Outputting account hashes to: {}", hash_output_path);
+                        let file = std::fs::File::create(hash_output_path)
+                            .unwrap_or_else(|err| {
+                                eprintln!("Failed to create output file: {err}");
+                                std::process::exit(1);
+                            });
+                        let file = RefCell::new(file);
+
+                        // Write CSV header
+                        writeln!(file.borrow_mut(), "pubkey_hex,keccak256_hex")
+                            .unwrap_or_else(|err| {
+                                eprintln!("Failed to write to file: {err}");
+                                std::process::exit(1);
+                            });
+
+                        let account_count = RefCell::new(0u64);
+                        let scan_func = |account_tuple: Option<(&solana_sdk::pubkey::Pubkey, solana_sdk::account::AccountSharedData, solana_sdk::clock::Slot)>| {
+                            if let Some((pubkey, _account, _slot)) = account_tuple {
+                                // Get pubkey as bytes (32 bytes)
+                                let pubkey_bytes = pubkey.to_bytes();
+
+                                // Calculate keccak256 hash of pubkey
+                                let hash = keccak::hash(&pubkey_bytes);
+
+                                // Write to file: pubkey_hex, keccak256_hex
+                                writeln!(
+                                    file.borrow_mut(),
+                                    "{},{}",
+                                    hex::encode(pubkey_bytes),
+                                    hex::encode(hash.as_ref())
+                                ).unwrap_or_else(|err| {
+                                    eprintln!("Failed to write account: {err}");
+                                    std::process::exit(1);
+                                });
+
+                                *account_count.borrow_mut() += 1;
+                                if *account_count.borrow() % 10000 == 0 {
+                                    info!("Processed {} accounts", *account_count.borrow());
+                                }
+                            }
+                        };
+
+                        let (_, scan_time) = measure!(
+                            bank.scan_all_accounts(scan_func, true).unwrap(),
+                            "accounts scan and hash"
+                        );
+                        info!("Total accounts processed: {}", *account_count.borrow());
+                        info!("{scan_time}");
+                    } else {
+                        // Original accounts command logic
+                        let include_sysvars = arg_matches.is_present("include_sysvars");
+                        let include_account_contents = !arg_matches.is_present("no_account_contents");
+                        let include_account_data = !arg_matches.is_present("no_account_data");
+                        let account_data_encoding = parse_encoding_format(arg_matches);
+                        let mode = if let Some(pubkeys) = pubkeys_of(arg_matches, "account") {
+                            info!("Scanning individual accounts: {pubkeys:?}");
+                            AccountsOutputMode::Individual(pubkeys)
+                        } else if let Some(pubkey) = pubkey_of(arg_matches, "program_accounts") {
+                            info!("Scanning program accounts for {pubkey}");
+                            AccountsOutputMode::Program(pubkey)
+                        } else {
+                            info!("Scanning all accounts");
+                            AccountsOutputMode::All
+                        };
+                        let config = AccountsOutputConfig {
+                            mode,
+                            include_sysvars,
+                            include_account_contents,
+                            include_account_data,
+                            account_data_encoding,
+                        };
+                        let output_format =
+                            OutputFormat::from_matches(arg_matches, "output_format", false);
+
+                        let accounts_streamer =
+                            AccountsOutputStreamer::new(bank, output_format, config);
+                        let (_, scan_time) = measure!(
+                            accounts_streamer
+                                .output()
+                                .map_err(|err| error!("Error while outputting accounts: {err}")),
+                            "accounts scan"
+                        );
+                        info!("{scan_time}");
+                    }
                 }
                 ("capitalization", Some(arg_matches)) => {
                     let process_options = parse_process_options(&ledger_path, arg_matches);

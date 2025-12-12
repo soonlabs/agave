@@ -162,6 +162,7 @@ dependencies = [
  "csv",
  "dashmap",
  "futures 0.3.30",
+ "hex",
  "histogram",
  "itertools 0.12.1",
  "log",
