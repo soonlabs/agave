@@ -887,7 +887,7 @@ declare_builtin_function!(
         };
 
         let public_key = match k256::ecdsa::VerifyingKey::recover_from_prehash(hash, &signature, recover_id) {
-            Ok(key) => key.to_sec1_bytes(),
+            Ok(key) => key.to_encoded_point(false).to_bytes(),
             Err(_) => {
                 return Ok(Secp256k1RecoverError::InvalidSignature.into());
             }

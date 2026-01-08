@@ -910,7 +910,7 @@ pub fn construct_eth_pubkey(
 ) -> [u8; HASHED_PUBKEY_SERIALIZED_SIZE] {
     let mut addr = [0u8; HASHED_PUBKEY_SERIALIZED_SIZE];
     let mut hasher = tiny_keccak::Keccak::v256();
-    hasher.update(&pubkey.to_sec1_bytes()[1..]);
+    hasher.update(&pubkey.to_encoded_point(false).as_bytes()[1..]);
     let mut output = [0u8; 32];
     hasher.finalize(&mut output);
     addr.copy_from_slice(&output[12..]);
